@@ -8,6 +8,7 @@ ICAC Scoresheet is envisioned to be a mobile-first fullstack web app to facilita
 
 A user flow diagram summarizing the key features to be developed for the first prototype can be accessed [here](https://lucid.app/lucidchart/53149233-88d6-4a3e-afb4-5ee23f86edc6/edit?viewport_loc=4384%2C-1008%2C8388%2C4563%2C0_0&invitationId=inv_f0088e1f-dea4-40ec-9b89-0c3331b7934c) on Lucidcharts.
 
+
 ## Project Structure
 
 The project will be composed of 4 main services.
@@ -43,6 +44,7 @@ The project will be composed of 4 main services.
 </table>
 
 The exact host/technologies used for each service are subject to change according to any challenges encountered through the course of development.
+
 
 ## Setting Up A Local Dev Environment
 
@@ -98,6 +100,7 @@ docker-compose down
 
 and this will terminate all the containers but persist their images.
 
+
 ## Connecting to the Dev Servers
 
 This repository contains the frontend, backend, and cache services - all of which are run on separate containers. `docker-compose up -d` spins up all these containers for you and forwards ports from the services (running inside a container) to process ports on your local machine. The compose file has configured the services to run on ports:
@@ -124,6 +127,7 @@ This repository contains the frontend, backend, and cache services - all of whic
 </table>
 
 For example, if you want to connect to the backend service, use the URL: `localhost:3001` or `127.0.0.1:3001`. It is important that you do not have other programs/services on your computer listening on these ports. Otherwise, the containers will refuse to start.
+
 
 ## Creating Pull Requests
 
