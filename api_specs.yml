@@ -1,0 +1,112 @@
+openapi: '3.0.2'
+
+info:
+  title: ICAC Scoresheet Backend APIs
+  version: '0.1'
+
+servers:
+  - url: http://localhost:3001
+
+paths:
+  /auth/sign-up/user:
+    post:
+      summary: Sign up endpoint for regular users (archers and judges) on ICAC Scoresheet.
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User was successfully created.
+        '409':
+          description: Email already exists.
+  /auth/sign-up/club:
+    post:
+      summary: Sign up endpoint for clubs on ICAC Scoresheet.
+      description: Clubs would need to consult our team to use the service before being authorized to use this endpoint. Once payment is made, we will send a link to their email leading to the sign up page issued with a **sign up token**. This token will be set as a query parameter for the sign up page and forwarded to this endpoint automatically. The token would be generated as a unique hash of the **club name**, **email address**, and **creation timestamp**. The submitted **club name** and **email address** would therefore be validated by first looking up the token, obtaining its **creation timestamp**, and checking if its hash with the **club name** and **email address** matches the **unused and valid (not expired)** token.
+      tags:
+        - auth
+      parameters:
+        - name: token
+          in: query
+          required: true
+          description: The **sign up token** issued for the club.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Club'
+      responses:
+        '201':
+          description: User was successfully created.
+        '401':
+          description: User creation denied due to problems with the **sign up token**.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - token missing from request
+                      - token not found
+                      - token already used
+                      - token expired
+        '409':
+          description: Club name or email does not match an existing valid token.
+
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - email
+        - first_name
+        - last_name
+        - password
+        - gender
+        - date_of_birth
+      properties:
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        password:
+          type: string
+        gender:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        archery_gb_experience:
+          type: string
+        archery_gb_membership:
+          type: string
+        disability:
+          type: boolean
+    Club:
+      type: object
+      required:
+        - club_name
+        - email
+      properties:
+        club_name:
+          type: string
+        email:
+          type: string
+        university:
+          type: string
+        archery_gb_membership:
+          type: string
+
