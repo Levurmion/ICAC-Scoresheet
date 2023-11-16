@@ -11,7 +11,7 @@ A user flow diagram summarizing the key features to be developed for the first p
 
 ## Project Structure
 
-The project will be composed of 4 main services.
+The project will be composed of 5 main services.
 
 <table>
   <thead>
@@ -39,6 +39,11 @@ The project will be composed of 4 main services.
       <td>frontend</td>
       <td>NextJS (React)</td>
       <td>Vercel/AWS</td>
+    </tr>
+    <tr>
+      <td>reverse proxy</td>
+      <td>NGINX</td>
+      <td>AWS</td>
     </tr>
   </tbody>
 </table>
@@ -126,8 +131,9 @@ This repository contains the frontend, backend, and cache services - all of whic
   </tbody>
 </table>
 
-For example, if you want to connect to the backend service, use the URL: `localhost:3001` or `127.0.0.1:3001`. It is important that you do not have other programs/services on your computer listening on these ports. Otherwise, the containers will refuse to start.
+However, only use these ports for debugging purposes. For development, connect to `localhost:8000`. Both backend and frontend services have been configured to be reverse proxied by NGINX running in a separate container. NGINX will serve the frontend pages through the `/app/` path while backend APIs are accessible through `/api/` path. This configuration will save us a lot of headache from having to deal with cross-domain authentication as instead of the frontend and backend being served from `localhost:3000` and `localhost:3001` respectively, they will be served instead from `localhost:8000/app/` and `localhost:8000/api/`.
 
+Therefore, all client-side API calls should be prefixed with the `/api/` path so that NGINX can proxy the request to the backend service.
 
 ## Creating Pull Requests
 
