@@ -55,7 +55,7 @@ The exact host/technologies used for each service are subject to change accordin
 
 To start contributing, please create a new branch with the following convention:
 
-`[CATEGORY]-[NAME]-[DATE]`
+`[CATEGORY]-[NAME]-[MONTH]-[DAY]-[YEAR]`
 
 **CATEGORIES**
 <table>
