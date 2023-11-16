@@ -1,7 +1,13 @@
 import express from 'express'
 import { home } from './home/home'
+import cors from 'cors'
 
 const app = express()
+
+app.use(cors({
+    origin: 'http://frontend',
+    credentials: true
+}))
 
 app.use('/home', home)
 

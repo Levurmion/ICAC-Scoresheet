@@ -10,4 +10,4 @@ RUN npm install
 
 EXPOSE 3001
 
-CMD ["nodemon", "dist/app.js"]
+CMD ["nodemon", "src/app.ts"]

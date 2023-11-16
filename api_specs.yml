@@ -62,6 +62,13 @@ paths:
                       - token expired
         '409':
           description: Club name or email does not match an existing valid token.
+  /auth/sign-in:
+    post:
+      summary: Sign in endpoint for all users (clubs and regular users) on ICAC Scoresheet.
+      description: All users will sign in through this endpoint. Based on the submitted credentials, a database lookup will be performed to determine whether the user is a **club** or a **regular user**. A link will be returned with the response body if sign in was successful, leading to either the **user** or **club** home page. If sign in credentials do not match, a 401 error is returned.
+      tags:
+        - auth
+      
 
 
 components:

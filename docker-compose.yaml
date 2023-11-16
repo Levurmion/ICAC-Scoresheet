@@ -11,8 +11,8 @@ services:
     volumes:
       # bind mount the distributable Typescript JS output
       - type: bind
-        source: ./backend/dist
-        target: /app/dist/
+        source: ./backend/
+        target: /app/
   
   frontend:
     build: frontend
@@ -31,3 +31,11 @@ services:
     image: redis:7.2.3-alpine3.18
     ports:
       - "6379:6379"
+  
+  nginx:
+    image: 'nginx'
+    restart: unless-stopped
+    ports:
+      - '8000:80'
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
