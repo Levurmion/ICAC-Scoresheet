@@ -77,7 +77,7 @@ To start contributing, please create a new branch with the following convention:
       <td>for adding, removing or modifying a feature</td>
     </tr>
     <tr>
-      <td>test</td>
+      <td>exp</td>
       <td>for experimenting something which is not an issue</td>
     </tr>
   </tbody>
