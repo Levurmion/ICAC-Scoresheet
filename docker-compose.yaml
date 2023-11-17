@@ -9,16 +9,19 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      # bind mount the distributable Typescript JS output
       - type: bind
-        source: ./backend/
-        target: /app/
+        source: ./backend/src
+        target: /app/src/
+      - type: bind
+        source: ./backend/.env
+        target: /app/.env
   
   frontend:
     build: frontend
     ports:
       - "3000:3000"
     restart: always
+    command: sh -c "npm install && npm run dev"
     volumes:
       - type: bind
         source: ./frontend
@@ -35,7 +38,10 @@ services:
   nginx:
     image: 'nginx'
     restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
     ports:
-      - '8000:80'
+      - '8001:80'
     volumes:
       - ./conf.d:/etc/nginx/conf.d

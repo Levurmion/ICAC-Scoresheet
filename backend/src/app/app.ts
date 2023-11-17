@@ -1,15 +1,25 @@
 import express from 'express'
-import { home } from './home/home'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
+import auth from './auth/auth'
+
+// initialize environment variables
+import 'dotenv/config'
+
+console.log(process.env.SUPABASE_URL)
 
 const app = express()
 
+// GLOBAL MIDDLEWARES
 app.use(cors({
     origin: 'http://frontend',
     credentials: true
 }))
+app.use(cookieParser())
+app.use(express.json())
 
-app.use('/home', home)
+// ROUTES
+app.use('/auth', auth)
 
 app.get('/', (req, res) => {
     res.send('Welcome to ICAC Scoresheet!')
