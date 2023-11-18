@@ -1,4 +1,4 @@
-FROM node:21-alpine3.18
+FROM node:latest
 
 RUN npm install -g nodemon
 
@@ -10,4 +10,4 @@ RUN npm install
 
 EXPOSE 3001
 
-CMD ["nodemon", "src/app.ts"]
+CMD ["nodemon", "src/app/app.ts"]
