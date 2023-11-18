@@ -131,7 +131,7 @@ This repository contains the frontend, backend, and cache services - all of whic
   </tbody>
 </table>
 
-However, only use these ports for debugging purposes. For development, connect to `localhost:8000`. Both backend and frontend services have been configured to be reverse proxied by NGINX running in a separate container. NGINX will serve the frontend pages through the `/app/` path while backend APIs are accessible through `/api/` path. This configuration will save us a lot of headache from having to deal with cross-domain authentication as instead of the frontend and backend being served from `localhost:3000` and `localhost:3001` respectively, they will be served instead from `localhost:8000/app/` and `localhost:8000/api/`.
+However, only use these ports for debugging purposes. For development, connect to `localhost:8001`. Both backend and frontend services have been configured to be reverse proxied by NGINX running in a separate container. NGINX will serve the frontend pages through the root `/` path while backend APIs are accessible through `/api/` path. This configuration will save us a lot of headache from having to deal with cross-domain authentication as instead of the frontend and backend being served from `localhost:3000` and `localhost:3001` respectively, they will be served instead from `localhost:8001/` and `localhost:8001/api/`.
 
 Therefore, all client-side API calls should be prefixed with the `/api/` path so that NGINX can proxy the request to the backend service.
 
