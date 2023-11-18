@@ -6,8 +6,6 @@ import auth from './auth/auth'
 // initialize environment variables
 import 'dotenv/config'
 
-console.log(process.env.SUPABASE_URL)
-
 const app = express()
 
 // GLOBAL MIDDLEWARES

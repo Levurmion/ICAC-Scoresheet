@@ -81,8 +81,6 @@ auth.post('/sign-in', async (req, res) => {
 
 auth.get('/sign-out', async (req, res) => {
 
-    console.log('signing out')
-
     const supabase = useSupabaseClient({ req, res })
 
     const { error } = await supabase.auth.signOut()

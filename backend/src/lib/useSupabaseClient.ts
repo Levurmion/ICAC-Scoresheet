@@ -20,7 +20,6 @@ export default function useSupabaseClient (context: { req: Request, res: Respons
                 })
               },
               remove: (key, options) => {
-                console.log('removing cookie')
                 if (!context.res) 
                 return
                 context.res.cookie(key, '', { ...options, httpOnly: true })
