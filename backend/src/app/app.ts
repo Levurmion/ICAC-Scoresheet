@@ -20,7 +20,7 @@ app.use(express.json())
 app.use('/auth', auth)
 
 app.get('/', (req, res) => {
-    res.send('Welcome to ICAC Scoresheet!')
+    res.send('Welcome to ICAC Scoresheet APIs!')
 })
 
 app.listen(3001, () => {

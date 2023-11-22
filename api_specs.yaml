@@ -3,14 +3,28 @@ openapi: '3.0.2'
 info:
   title: ICAC Scoresheet Backend APIs
   version: '0.1'
-
+  description: >
+    This document describes the specifications of the ICAC Scoresheet HTTP API server for simple CRUD operations. Matches **ARE NOT** served through these endpoints. Refer to the `/match-server` AsyncAPI specs using Websockets at `http://localhost:8001/match-server/`.
+  contact: {
+    email: ignatiuselbert5@gmail.com
+  }
+    
 servers:
-  - url: http://localhost:3001
+  - url: http://localhost:8001/api
+ 
+tags:
+  - name: auth
+    description: HTTP endpoints pertaining to user creation, deletion, and authentication.
+  - name: matches
+    description: HTTP endpoints pertaining to match creation, retrieval, and access authentication.
 
 paths:
   /auth/sign-up/user:
     post:
-      summary: Sign up endpoint for regular users (archers and judges) on ICAC Scoresheet.
+      summary: Sign up regular users on ICAC Scoresheet.
+      description: >
+        Sign up regular users through this endpoint. Call after form submission, attaching the required fields in the request body. Details beyond `email` and `password` are going to be saved in the table `public.archer_profiles` as well as the Supabase default `auth.users` table as a JSON document in the `raw_user_meta_data` column.
+      operationId: signUpUser
       tags:
         - auth
       requestBody:
@@ -24,10 +38,16 @@ paths:
           description: User was successfully created.
         '409':
           description: Email already exists.
+        '400':
+          description: Request body is missing one or more required fields.
+        '429':
+          description: Rate limit exceeded.
   /auth/sign-up/club:
     post:
-      summary: Sign up endpoint for clubs on ICAC Scoresheet.
-      description: Clubs would need to consult our team to use the service before being authorized to use this endpoint. Once payment is made, we will send a link to their email leading to the sign up page issued with a **sign up token**. This token will be set as a query parameter for the sign up page and forwarded to this endpoint automatically. The token would be generated as a unique hash of the **club name**, **email address**, and **creation timestamp**. The submitted **club name** and **email address** would therefore be validated by first looking up the token, obtaining its **creation timestamp**, and checking if its hash with the **club name** and **email address** matches the **unused and valid (not expired)** token.
+      summary: Sign up clubs on ICAC Scoresheet. *not yet implemented
+      description: >
+        Clubs would need to consult our team to use the service before being authorized to use this endpoint. Once payment is made, we will send a link to their email leading to the sign up page issued with a **sign up token**. This token will be set as a query parameter for the sign up page and forwarded to this endpoint automatically. The token would be generated as a unique hash of the **club name**, **email address**, and **creation timestamp**. The submitted **club name** and **email address** would therefore be validated by first looking up the token, obtaining its **creation timestamp**, and checking if its hash with the **club name** and **email address** matches the **unused and valid (not expired)** token.
+      operationId: signUpClub
       tags:
         - auth
       parameters:
@@ -62,16 +82,209 @@ paths:
                       - token expired
         '409':
           description: Club name or email does not match an existing valid token.
+        '400':
+          description: Request body is missing one or more required fields.
   /auth/sign-in:
     post:
-      summary: Sign in endpoint for all users (clubs and regular users) on ICAC Scoresheet.
-      description: All users will sign in through this endpoint. Based on the submitted credentials, a database lookup will be performed to determine whether the user is a **club** or a **regular user**. A link will be returned with the response body if sign in was successful, leading to either the **user** or **club** home page. If sign in credentials do not match, a 401 error is returned.
+      summary: Sign in users into ICAC Scoresheet.
+      description: >
+        All users will sign in through this endpoint. Based on the submitted credentials, a database lookup will be performed to determine whether the user is a **club** or a **regular user**. A link will be returned with the response body if sign in was successful, leading to either the **user** or **club** home page. If sign in credentials do not match, a 401 error is returned.
+      operationId: signInUser
       tags:
         - auth
-      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Sign in successful.
+        '401':
+          description: Sign in failed.
+  /auth/sign-out:
+    post:
+      summary: Sign out users from ICAC Scoresheet.
+      description: >
+        All users should be signed out through this endpoint. Sign out will be performed on the Express backend (server-side) by removing the **authentication cookie** (carrying the issued JWT) from the request. A response with the cookie removed is then returned, effectively removing the user's authentication credentials.
+      operationId: signOutUser
+      tags:
+        - auth
+      responses:
+        '200':
+          description: Sign out successful.
+  /auth/user:
+    delete:
+      summary: Delete user account.
+      description: >
+        This is an authenticated endpoint that allows **signed in Users** to delete their own accounts. Upon successful deletion, users are going to be automatically signed out. The user ID will be automatically extracted from the submitted JWT. If the JWT is invalid or not found with the request, a 401 error is returned.
+      operationId: deleteUserAccount
+      tags:
+        - auth
+      security:
+        - auth-token: []
+      responses:
+        '200':
+          description: User successfully deleted. Handle with redirection back to the home page.
+        '401':
+          description: User was not signed in due to an invalid or missing JWT.
+        
+
+  /matches:
+    post:
+      summary: Create a new match.
+      description: >
+        When users choose to host a match, call this endpoint to create a new **Match** in Redis. The **Match** will be automatically assigned a UUID which will become the Redis key. There will be an extra hash table stored in Redis to map each **Match** name to their respective UUIDs.
+      tags:
+        - matches
+      operationId: createMatch
+      security:
+        - auth-token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Match'
+      responses:
+        '201':
+          description: Match successfully created.
+        '409':
+          description: A live match currently exists with the same name.
+        '401':
+          description: User is unauthenticated.
+  /matches/{match_name}:
+    get:
+      summary: Retrieves matches by match name.
+      description: >
+        Retrieves live or past **Matches** by name. The `state` query parameter can be included to determine whether to search for only **live Matches** at the specified **Match** lifecycle `state` or excluded to search for past **Matches**. 
+      tags:
+        - matches
+      operationId: getMatchesByName
+      security:
+        - auth-token: []
+      parameters:
+        - name: match_name
+          in: path
+          required: true
+          description: name to search
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: >
+            Specify live match states to confine search to. If not included, only past matches already saved in database will be returned.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - open
+                - full
+                - submit
+                - waiting submit
+                - confirmation
+                - waiting confirmation
+                - finished
+      responses:
+        '200':
+          description: One or more **Matches** found with matching name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    match_name:
+                      type: string
+                    match_id:
+                      type: string
+        '204':
+          description: No **Matches** found with matching name.
+        '401':
+          description: User is unauthenticated.
+          
+  /matches/{match_id}/results:
+    get:
+      summary: Retrieves match results by ID.
+      description: >
+        Retrieves all **Scoresheets** associated with the **Match** requested. If **Match ID** is not known, users should first be provided with the option to search by **Match name** through `/matches/{match_name}` which will return the IDs associated with each **Match**. Because **Scoresheets** are only saved in the database after the completion of a **Match**, this endpoint only retrieves the results of completed **Matches**.
+      operationId: getMatchResults
+      security:
+        - auth-token: []
+      tags:
+        - matches
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: The **Match ID** of the requested **Scoresheets**.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A **Match** was found with the queried `match_id`.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scoresheet'
+        '204':
+          description: No **Matches** were found with the queried `match_id`.
+        '401':
+          description: User is unauthenticated.
+  
+  /matches/{match_id}/token:
+    get:
+      summary: Request access token for a live match.
+      description: >
+        Users need to be authenticated to obtain an `access_token` for the requested **Match**. Furthermore, the **Match** needs to be in the "open" state at request time. If both conditions are met, the access token will be returned as a JWT and should be saved in `localStorage` for submission to the `/match-server` when connecting to the match lobby.
+      operationId: getMatchAccessToken
+      security:
+        - auth-token: []
+      tags:
+        - matches
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: The **Match ID** to request access to.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested **Match** is open and token granted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '403':
+          description: The requested **Match** is no longer open or does not exist.
+        '401':
+          description: User is unauthenticated.
 
 
 components:
+  securitySchemes:
+    auth-token:
+      type: apiKey
+      in: cookie
+      name: JWT
+
   schemas:
     User:
       type: object
@@ -100,20 +313,69 @@ components:
           type: string
         archery_gb_membership:
           type: string
+        club:
+          type: string
         disability:
           type: boolean
     Club:
       type: object
       required:
-        - club_name
+        - name
         - email
       properties:
-        club_name:
+        name:
           type: string
         email:
           type: string
         university:
           type: string
-        archery_gb_membership:
+    Match:
+      type: object
+      required:
+        - name
+        - num_archers
+        - arrows_per_end
+        - num_ends
+      properties:
+        name:
           type: string
-
+        round:
+          type: string
+        num_archers:
+          type: integer
+        arrows_per_end:
+          type: integer
+        num_ends:
+          type: integer
+    Scoresheet:
+      type: object
+      required:
+        - user_id
+        - arrows_shot
+        - arrows_per_end
+        - created_at
+        - match_id
+        - scoresheet
+      properties:
+        user_id:
+          type: string
+        arrows_shot:
+          type: integer
+        arrows_per_end:
+          type: integer
+        created_at:
+          type: string
+          format: datetime
+        match_id:
+          type: string
+        scoresheet:
+          type: array
+          items:
+            type: object
+            properties:
+              score: 
+                type: integer
+              prev_score: 
+                type: integer
+              judge: 
+                type: string

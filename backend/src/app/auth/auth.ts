@@ -1,19 +1,16 @@
 import { Request, Response, Router } from "express";
 import useSupabaseClient from "../../lib/useSupabaseClient";
 import { MobileOtpType, EmailOtpType, VerifyOtpParams } from "@supabase/supabase-js";
+import useSupabaseAdminClient from "../../lib/useSupabaseAdminClient";
 
 const auth = Router()
 
-// confirm sign up from email link
+// confirm sign in from email link
 auth.get("/confirm", async (req, res) => {
-
-    console.log('confirming with api!')
 
     const token_hash = req.query.token_hash as string
     const type = req.query.type as MobileOtpType | EmailOtpType
-
     const next = req.query.next
-    console.log(next)
 
     if (token_hash && type) {
         const supabase = useSupabaseClient({ req, res })
@@ -33,33 +30,44 @@ auth.get("/confirm", async (req, res) => {
 })
 
 
-// sign up
-auth.post('/sign-up', async (req, res) => {
+// sign up user
+auth.post('/sign-up/user', async (req, res, next) => {
 
-    const { email, password } = req.body
-
-    console.log('sign up!')
-
+    const { email, password, gender, date_of_birth, first_name, last_name } = req.body
     const supabase = useSupabaseClient({ req, res })
+
+    // check that all required fields are present
+    if ([email, password, gender, date_of_birth, first_name, last_name].some(item => item === undefined)) {
+        res.sendStatus(400)
+        return
+    }
 
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            emailRedirectTo: 'localhost:8001/app/'
+            emailRedirectTo: 'localhost:8001/app/',
+            data: {
+                type: 'regular',
+                ...req.body
+            }
         }
     })
 
     if (!error) {
-        res.send('sign up!')
+        res.sendStatus(201)
+    }
+    else if (error.status === 400 && error.message === 'User already registered') {
+        res.sendStatus(409)
     }
     else {
-        res.status(409).send('sign up failed')
+        res.sendStatus(error.status!)
     }
 
 })
 
 
+// sign in user
 auth.post('/sign-in', async (req, res) => {
 
     const { email, password } = req.body
@@ -72,14 +80,18 @@ auth.post('/sign-in', async (req, res) => {
     if (!error) {
         res.sendStatus(200)
     } 
-    else {
+    else if (error.status === 400 && error.message === 'Invalid login credentials') {
         res.sendStatus(401)
+    }
+    else {
+        res.status(error.status!).send(error.message)
     }
 
 })
 
 
-auth.get('/sign-out', async (req, res) => {
+// sign out user
+auth.post('/sign-out', async (req, res) => {
 
     const supabase = useSupabaseClient({ req, res })
 
@@ -89,7 +101,33 @@ auth.get('/sign-out', async (req, res) => {
         res.sendStatus(200)
     }
     else {
-        res.sendStatus(500)
+        res.status(error.status!).send(error.message)
+    }
+
+})
+
+
+// delete user
+auth.delete('/user', async (req, res) => {
+
+    const supabase = useSupabaseClient({ req, res })
+    const supabaseAdmin = useSupabaseAdminClient({ req, res })
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user !== null) {
+        await supabase.auth.signOut()
+        const { data, error } = await supabaseAdmin.auth.admin.deleteUser(user.id)
+        
+        if (!error) {
+            res.sendStatus(200)
+        }
+        else {
+            res.status(error.status!).send(error.message)
+        }
+    }
+    else {
+        res.sendStatus(401)
     }
 
 })
