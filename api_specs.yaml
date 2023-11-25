@@ -143,7 +143,7 @@ paths:
     post:
       summary: Create a new match.
       description: >
-        When users choose to host a match, call this endpoint to create a new **Match** in Redis. The **Match** will be automatically assigned a UUID which will become the Redis key. There will be an extra hash table stored in Redis to map each **Match** name to their respective UUIDs.
+        When users choose to host a match, call this endpoint to create a new **Match** in Redis. The **Match** will be automatically created as a Redis JSON object with an assigned UUID as its key. Additional JSON objects mapping each **Match name** to their respective hosts and UUIDs will be created. The inclusion of the `whitelist` field in the request body implies the creation of a **restricted Match**. These would be **Matches** where only specific users in the `whitelist` can join the **Match**.
       tags:
         - matches
       operationId: createMatch
@@ -158,10 +158,41 @@ paths:
       responses:
         '201':
           description: Match successfully created.
+        '400':
+          description: Request body missing required fields.
         '409':
           description: A live match currently exists with the same name.
         '401':
           description: User is unauthenticated.
+
+  /matches/{match_id}:
+    delete:
+      summary: Delete a live match.
+      description: >
+        Sometimes, **Matches** could stall due to unforeseen errors. For whatever reason, this endpoint would allow match hosts/administrators to remove live **Matches** from Redis. 
+      operationId: deleteMatch
+      tags:
+        - matches
+      security:
+        - auth-token: []
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: The `match_id` of a live **Match** to delete.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            **Match** successfully deleted.
+        '401':
+          description: User is unauthenticated.
+        '403':
+          description: User was neither a **Match** host nor a system administrator.
+        '404':
+          description: The submitted `match_id` was not found in Redis.
+
   /matches/{match_name}:
     get:
       summary: Retrieves matches by match name.
@@ -176,18 +207,19 @@ paths:
         - name: match_name
           in: path
           required: true
-          description: name to search
+          description: Match name to search in Redis/PostgreSQL. The wildcard (*) character is not permitted unless using the `host-only` query parameter.
           schema:
             type: string
         - name: state
           in: query
           description: >
-            Specify live match states to confine search to. If not included, only past matches already saved in database will be returned.
+            Specify an array live match states to confine search to. Setting this to **live** will return all currently live **Matches**. If not included, only past matches already saved in PostgreSQL will be returned.
           schema:
             type: array
             items:
               type: string
               enum:
+                - live
                 - open
                 - full
                 - submit
@@ -195,6 +227,12 @@ paths:
                 - confirmation
                 - waiting confirmation
                 - finished
+        - name: host_only
+          in: query
+          description: >
+            When set to **true**, only returns **Matches** hosted by the currently logged in user. The user's `id` is going to be automatically extracted from the submitted authentication cookie. Usage of the wildcard (*) character in the `match_name` path parameter is only permitted when this switch is enabled.
+          schema:
+            type: boolean
       responses:
         '200':
           description: One or more **Matches** found with matching name.
@@ -211,6 +249,9 @@ paths:
                       type: string
         '204':
           description: No **Matches** found with matching name.
+        '400':
+          description: >
+            `match_name` path parameter was missing/malformed or using the wildcard (*) character without setting `host_only` to **true**.
         '401':
           description: User is unauthenticated.
           
@@ -347,6 +388,10 @@ components:
           type: integer
         num_ends:
           type: integer
+        whitelist:
+          type: array
+          items:
+            type: string
     Scoresheet:
       type: object
       required:

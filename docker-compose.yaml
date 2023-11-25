@@ -8,6 +8,7 @@ services:
       - redis_cache
     ports:
       - "3001:3001"
+    command: sh -c "npm install && npm run dev"
     volumes:
       - type: bind
         source: ./backend/src
@@ -15,6 +16,8 @@ services:
       - type: bind
         source: ./backend/.env
         target: /app/.env
+      - ./backend/package.json:/app/package.json
+      - ./backend/package-lock.json:/app/package-lock.json
   
   frontend:
     build: frontend
@@ -31,7 +34,7 @@ services:
       - /app/.next          # persisting as bind mount will populate the container with OS-specific artefacts
 
   redis_cache:
-    image: redis:7.2.3-alpine3.18
+    image: redis/redis-stack:latest
     ports:
       - "6379:6379"
   
