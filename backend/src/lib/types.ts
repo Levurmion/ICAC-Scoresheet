@@ -39,7 +39,7 @@ export type MatchParticipant<R extends MatchRole> = {
     ready: boolean,
     role: R,
     scores: R extends "judge" ? undefined : Arrow[],
-    ends_confirmed: boolean[];
+    ends_confirmed?: boolean[];
 }
 
 export interface MatchParams {

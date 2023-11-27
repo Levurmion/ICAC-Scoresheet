@@ -1,3 +1,5 @@
+import { Request, Response } from "express"
+import useSupabaseClient from "./supabase/useSupabaseClient"
 import { UserSignInCredentials, UserSignUpCredentials } from "./types"
 
 export const userSignUp: UserSignUpCredentials = {
@@ -17,4 +19,14 @@ export const userSignIn: UserSignInCredentials = {
 export const persistentUserSignIn: UserSignInCredentials = {
     email: "ignatiuselbert5@gmail.com",
     password: "password123"
+}
+
+export function isValidAlphanumeric(string: string): boolean {
+    const regex = /^[A-Za-z0-9_ ]+$/
+    return regex.test(string)
+}
+
+export async function getUserId(context: { req: Request, res: Response }) {
+    const supabase = useSupabaseClient(context)
+    return (await supabase.auth.getUser()).data.user?.id ?? false
 }

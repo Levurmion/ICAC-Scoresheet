@@ -143,7 +143,7 @@ paths:
     post:
       summary: Create a new match.
       description: >
-        When users choose to host a match, call this endpoint to create a new **Match** in Redis. The **Match** will be automatically created as a Redis JSON object with an assigned UUID as its key. Additional JSON objects mapping each **Match name** to their respective hosts and UUIDs will be created. The inclusion of the `whitelist` field in the request body implies the creation of a **restricted Match**. These would be **Matches** where only specific users in the `whitelist` can join the **Match**.
+        When users choose to host a match, call this endpoint to create a new **Match** in Redis. The **Match** will be automatically created as a Redis JSON object with an assigned UUID as its key. Additional JSON objects mapping each **Match name** to their respective hosts and UUIDs will be created. The inclusion of the `whitelist` field in the request body implies the creation of a **restricted Match**. These would be **Matches** where only specific users in the `whitelist` can join the **Match**. The **Match** name must be **exclusively alphanumeric** with **underscores** or **spaces**.
       tags:
         - matches
       operationId: createMatch
@@ -157,9 +157,10 @@ paths:
               $ref: '#/components/schemas/Match'
       responses:
         '201':
-          description: Match successfully created.
+          description: >
+            **Match** successfully created.
         '400':
-          description: Request body missing required fields.
+          description: Request body missing required fields or **Match** name contains forbidden characters.
         '409':
           description: A live match currently exists with the same name.
         '401':
@@ -239,19 +240,18 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    match_name:
-                      type: string
-                    match_id:
-                      type: string
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/LiveMatch'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/CompletedMatch'
         '204':
           description: No **Matches** found with matching name.
         '400':
           description: >
-            `match_name` path parameter was missing/malformed or using the wildcard (*) character without setting `host_only` to **true**.
+            `match_name` path parameter was missing/malformed, attempting using the wildcard (*) character without setting `host_only` to **true**, or the requested live **Match** state was invalid.
         '401':
           description: User is unauthenticated.
           
@@ -358,6 +358,7 @@ components:
           type: string
         disability:
           type: boolean
+
     Club:
       type: object
       required:
@@ -370,6 +371,7 @@ components:
           type: string
         university:
           type: string
+
     Match:
       type: object
       required:
@@ -392,6 +394,107 @@ components:
           type: array
           items:
             type: string
+    
+    CompletedMatch:
+      type: object
+      required:
+        - id
+        - name
+        - host
+        - created_at
+        - finished_at
+      properties:
+        competition:
+          type: string
+        finished_at:
+          type: string
+          format: datetime
+        created_at:
+          type: string
+          format: datetime
+        host:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+
+    LiveMatch:
+      type: object
+      required:
+        - name
+        - num_archers
+        - arrows_per_end
+        - num_ends
+        - created_at
+        - current_end
+        - current_state
+        - previous_state
+        - host
+        - participants
+      properties:
+        name:
+          type: string
+        num_archers:
+          type: integer
+        arrows_per_end:
+          type: integer
+        num_ends:
+          type: integer
+        created_at:
+          type: string
+          format: datetime
+        current_end:
+          type: integer
+        current_state:
+          type: string
+        previous_state:
+          type: string
+        host:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchParticipant'
+        whitelist:
+          type: array
+          items:
+            type: string
+
+    MatchParticipant:
+      type: object
+      required:
+        - ready
+        - role
+      properties:
+        ready:
+          type: boolean
+        role:
+          type: string
+          enum:
+            - archer
+            - judge
+        scores:
+          type: array
+          items:
+            type: object
+        ends_confirmed:
+          type: array
+          items:
+            type: boolean
+    
+    Arrow:
+      type: object
+      required:
+        - score
+      properties:
+        score:
+          type: integer
+        prev_score:
+          type: integer
+        judge_uuid:
+          type: string
+
     Scoresheet:
       type: object
       required:
@@ -416,11 +519,4 @@ components:
         scoresheet:
           type: array
           items:
-            type: object
-            properties:
-              score: 
-                type: integer
-              prev_score: 
-                type: integer
-              judge: 
-                type: string
+            $ref: '#/components/schemas/Arrow'

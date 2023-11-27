@@ -230,6 +230,7 @@ export interface Database {
         Row: {
           competition: string | null
           finished_at: string
+          host: string | null
           id: string
           name: string
           started_at: string
@@ -237,6 +238,7 @@ export interface Database {
         Insert: {
           competition?: string | null
           finished_at: string
+          host?: string | null
           id?: string
           name: string
           started_at: string
@@ -244,6 +246,7 @@ export interface Database {
         Update: {
           competition?: string | null
           finished_at?: string
+          host?: string | null
           id?: string
           name?: string
           started_at?: string
@@ -254,6 +257,13 @@ export interface Database {
             columns: ["competition"]
             isOneToOne: false
             referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_host_fkey"
+            columns: ["host"]
+            isOneToOne: false
+            referencedRelation: "archer_profiles"
             referencedColumns: ["id"]
           }
         ]

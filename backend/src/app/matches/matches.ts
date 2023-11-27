@@ -5,6 +5,8 @@ import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from 'uuid'
 import { RedisJSON } from "@redis/json/dist/commands";
 import useSupabaseClient from "../../lib/supabase/useSupabaseClient";
+import { getUserId, isValidAlphanumeric } from "../../lib/utilities";
+import { isValidLiveMatchState } from "../../lib/typeGuards";
 
 
 const matches = Router()
@@ -17,18 +19,19 @@ matches.post('/', async (req, res) => {
 
     const matchParams: MatchParams = req.body
     const { name, num_archers, arrows_per_end, num_ends } = matchParams
-    
-    const supabase = useSupabaseClient({ req, res })
-    const userData = await supabase.auth.getUser()
-    const host = userData.data.user?.id
+    const host = await getUserId({ req, res })
 
     // if one of the required fields are missing
     if ([name, num_archers, arrows_per_end, num_ends].some(param => param === undefined || null)) {
-        res.sendStatus(400)
+        res.status(400).send("missing required fields")
+        return
+    }
+    else if (!isValidAlphanumeric(name)) {
+        res.status(400).send("match name is not a valid alphanumeric string with underscores or spaces")
         return
     }
 
-    if (host === undefined) {
+    if (host === false) {
         res.sendStatus(401)
         return
     }
@@ -44,15 +47,12 @@ matches.post('/', async (req, res) => {
         participants: {}
     }
 
-    // always prefix match name with "match:" to prevent accidental key collisions
-    const matchName = `match:${matchParams.name}`
-
-    // check if match name exists
-    if (await redisClient.EXISTS(matchUUID)) {
+    // check if an exact match name exists
+    if ((await redisClient.ft.search("idx:matches", `@name:"${name}"`)).total > 0) {
         res.status(409).send('name already taken by an existing live match')
     } 
     else {
-        await redisClient.json.SET(matchUUID, '$', match as unknown as RedisJSON)
+        await redisClient.json.SET(`match:${matchUUID}`, '$', match as unknown as RedisJSON)
         res.sendStatus(201)
     }
 })
@@ -60,24 +60,29 @@ matches.post('/', async (req, res) => {
 
 // retrieve an existing match
 matches.get('/:match_name', async (req, res) => {
-
     const { match_name } = req.params
     const { state, host_only } = req.query
+    const host = await getUserId({ req, res })
 
-    console.log(match_name)
-    console.log(state)
-    console.log(host_only)
+    if (host === false) {
+        res.sendStatus(401)
+        return
+    }
 
     if (
         match_name === undefined ||
-        (match_name === "*" && host_only !== "true")
+        (match_name === "*" && host_only !== "true") ||
+        (state !== undefined && state !== "live" && !isValidLiveMatchState(state as unknown as string | string[]))
     ) {
         res.sendStatus(400)
         return
     }
     else if (state === undefined) {
         const supabase = useSupabaseClient({ req, res })
-        const { data, error } = await supabase.from('matches').select('*').ilike('name', `%${match_name}%`)
+        const { data, error } = host_only === "true" ? (
+            await supabase.from('matches').select('*').ilike('name', `%${match_name}%`).eq("host", host)) : (
+            await supabase.from('matches').select('*').ilike('name', `%${match_name}%`)
+            )
 
         if (error) {
             res.status(Number(error.code)).send(error.hint)
@@ -92,15 +97,33 @@ matches.get('/:match_name', async (req, res) => {
         }
     }
     else {
-        const stateQuery = `{${(state as string[]).join("|")}}`
-        console.log(stateQuery)
+        const nameQuery = match_name === "*" ? "" : `@name:*${match_name}*`
+        let stateQuery: string|undefined = undefined
+        let hostQuery: string|undefined = undefined
 
+        // generate stateQuery
+        if (state === "live") {
+            // leave as is
+        }
+        else if (Array.isArray(state)) {
+            stateQuery = "live" in state ? "" : `@current_state:(${state.join("|")})`
+        }
+        else if (typeof state === "string") {
+            stateQuery = `@current_state:${state}`
+        }
+
+        // generate hostQuery
+        if (host_only === "true") {
+            const supabase = useSupabaseClient({ req, res })
+            // escape hyphens in UUID
+            hostQuery = `@host:{${host.replace(/-/g, "\\-")}}`
+        }
+
+        const redisQuery = [nameQuery, stateQuery, hostQuery].filter(val => val !== undefined).join(" ")
         const matches = await redisClient.ft.SEARCH(
             "idx:matches", 
-            `@name:${match_name} @current_state:${stateQuery} @host:${host_only ?? "*"}`
+            redisQuery,
         )
-
-        console.log(matches)
         
         if (matches.total > 0) {
             res.status(200).json(matches.documents)
@@ -114,13 +137,26 @@ matches.get('/:match_name', async (req, res) => {
 
 
 matches.delete('/:match_id', async (req, res) => {
+    const { match_id } = req.params
+    // $.host is a TAG field, returns as an array of strings
+    // needs to be typecasted since TS doesn't know this
+    const matchHost = (await redisClient.json.GET(match_id, {
+        path: "$.host"
+    }) as string[])[0]
+    const userId = await getUserId({ req, res })
 
-    const { match_id } = req.body.param
-    const match = await redisClient.json.GET(match_id)
-
-    console.log(match_id)
-    console.log(match)
-
-}) 
+    if (matchHost) {
+        if (matchHost === userId) {
+            await redisClient.DEL(match_id)
+            res.sendStatus(200)
+        }
+        else {
+            res.sendStatus(403)
+        }
+    }
+    else {
+        res.sendStatus(404)
+    }
+})
 
 export default matches

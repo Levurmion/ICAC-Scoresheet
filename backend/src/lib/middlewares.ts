@@ -12,7 +12,6 @@ export async function authenticate (req: Request, res: Response, next: NextFunct
         res.sendStatus(401)
         return
     } else {
-        console.log(user)
         next()
     }
 

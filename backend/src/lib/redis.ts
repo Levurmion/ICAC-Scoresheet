@@ -15,7 +15,7 @@ import { SchemaFieldTypes } from "redis";
                 AS: "name"
             },
             "$.host": {
-                type: SchemaFieldTypes.TEXT,
+                type: SchemaFieldTypes.TAG,
                 AS: "host"
             },
             "$.current_state": {
