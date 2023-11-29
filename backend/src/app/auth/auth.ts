@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
-import useSupabaseClient from "../../lib/useSupabaseClient";
+import useSupabaseClient from "../../lib/supabase/useSupabaseClient";
 import { MobileOtpType, EmailOtpType, VerifyOtpParams } from "@supabase/supabase-js";
-import useSupabaseAdminClient from "../../lib/useSupabaseAdminClient";
+import useSupabaseAdminClient from "../../lib/supabase/useSupabaseAdminClient";
 
 const auth = Router()
 
@@ -48,6 +48,7 @@ auth.post('/sign-up/user', async (req, res, next) => {
         options: {
             emailRedirectTo: 'localhost:8001/app/',
             data: {
+                is_disabled: false,
                 type: 'regular',
                 ...req.body
             }

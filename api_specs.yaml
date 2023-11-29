@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: ICAC Scoresheet Backend APIs
-  version: '0.1'
+  version: '0.2'
   description: >
     This document describes the specifications of the ICAC Scoresheet HTTP API server for simple CRUD operations. Matches **ARE NOT** served through these endpoints. Refer to the `/match-server` AsyncAPI specs using Websockets at `http://localhost:8001/match-server/`.
   contact: {
@@ -143,7 +143,7 @@ paths:
     post:
       summary: Create a new match.
       description: >
-        When users choose to host a match, call this endpoint to create a new **Match** in Redis. The **Match** will be automatically assigned a UUID which will become the Redis key. There will be an extra hash table stored in Redis to map each **Match** name to their respective UUIDs.
+        When users choose to host a match, call this endpoint to create a new **Match** in Redis. The **Match** will be automatically created as a Redis JSON object with an assigned UUID as its key. The inclusion of the `whitelist` field in the request body implies the creation of a **restricted Match**. These would be **Matches** where only specific users in the `whitelist` can join the **Match**. The **Match** name must be **exclusively alphanumeric** with **underscores** or **spaces**.
       tags:
         - matches
       operationId: createMatch
@@ -157,11 +157,43 @@ paths:
               $ref: '#/components/schemas/Match'
       responses:
         '201':
-          description: Match successfully created.
+          description: >
+            **Match** successfully created.
+        '400':
+          description: Request body missing required fields or **Match** name contains forbidden characters.
         '409':
           description: A live match currently exists with the same name.
         '401':
           description: User is unauthenticated.
+
+  /matches/{match_id}:
+    delete:
+      summary: Delete a live match.
+      description: >
+        Sometimes, **Matches** could stall due to unforeseen errors. For whatever reason, this endpoint would allow match hosts/administrators to remove live **Matches** from Redis. 
+      operationId: deleteMatch
+      tags:
+        - matches
+      security:
+        - auth-token: []
+      parameters:
+        - name: match_id
+          in: path
+          required: true
+          description: The `match_id` of a live **Match** to delete.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            **Match** successfully deleted.
+        '401':
+          description: User is unauthenticated.
+        '403':
+          description: User was neither a **Match** host nor a system administrator.
+        '404':
+          description: The submitted `match_id` was not found in Redis.
+
   /matches/{match_name}:
     get:
       summary: Retrieves matches by match name.
@@ -176,18 +208,19 @@ paths:
         - name: match_name
           in: path
           required: true
-          description: name to search
+          description: Match name to search in Redis/PostgreSQL. The wildcard (*) character is not permitted unless using the `host-only` query parameter.
           schema:
             type: string
         - name: state
           in: query
           description: >
-            Specify live match states to confine search to. If not included, only past matches already saved in database will be returned.
+            Specify an array live match states to confine search to. Setting this to **live** will return all currently live **Matches**. If not included, only past matches already saved in PostgreSQL will be returned.
           schema:
             type: array
             items:
               type: string
               enum:
+                - live
                 - open
                 - full
                 - submit
@@ -195,22 +228,31 @@ paths:
                 - confirmation
                 - waiting confirmation
                 - finished
+                - paused
+        - name: host_only
+          in: query
+          description: >
+            When set to **true**, only returns **Matches** hosted by the currently logged in user. The user's `id` is going to be automatically extracted from the submitted authentication cookie. Usage of the wildcard (*) character in the `match_name` path parameter is only permitted when this switch is enabled.
+          schema:
+            type: boolean
       responses:
         '200':
           description: One or more **Matches** found with matching name.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    match_name:
-                      type: string
-                    match_id:
-                      type: string
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/LiveMatch'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/CompletedMatch'
         '204':
           description: No **Matches** found with matching name.
+        '400':
+          description: >
+            `match_name` path parameter was missing/malformed, attempting using the wildcard (*) character without setting `host_only` to **true**, or the requested live **Match** state was invalid.
         '401':
           description: User is unauthenticated.
           
@@ -245,11 +287,11 @@ paths:
         '401':
           description: User is unauthenticated.
   
-  /matches/{match_id}/token:
-    get:
-      summary: Request access token for a live match.
+  /matches/{match_id}/reserve:
+    post:
+      summary: Request access into and reserve a spot in a live match.
       description: >
-        Users need to be authenticated to obtain an `access_token` for the requested **Match**. Furthermore, the **Match** needs to be in the "open" state at request time. If both conditions are met, the access token will be returned as a JWT and should be saved in `localStorage` for submission to the `/match-server` when connecting to the match lobby.
+        Users need to be authenticated to obtain an `access_token` for a requested **Match**. Furthermore, the **Match** needs to be in the "open" state at request time. Users cannot request for more than one valid `access_token` at a time and this will be evaluated based on the presence of a valid token in the request cookie. Restricted **Matches** would additionally require that users are in the configured `whitelist`. The `access_token` will have a configured TTL of 15s. Because routing and Websocket connection to the lobby will be performed automatically by the client, the short TTL of the issued token should not be an problem under authorized use cases of this endpoint. If all the above conditions are met, the `access_token` will be returned as a JWT in an *HttpOnly* cookie to be submitted to the `/match-server` when connecting to the match lobby. A spot in the match will be reserved for the user for the TTL of the `access_token` to prevent race conditions that could be caused by multiple users requesting access to the same match at the same time.
       operationId: getMatchAccessToken
       security:
         - auth-token: []
@@ -264,16 +306,11 @@ paths:
             type: string
       responses:
         '200':
-          description: The requested **Match** is open and token granted.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
+          description: The requested **Match** is open with available reservation spots. Token granted as an *HttpOnly* cookie.
         '403':
-          description: The requested **Match** is no longer open or does not exist.
+          description: The requested **Match** is no longer open, is fully reserved, or the user has attempted to obtain a second `access_token` whilst possessing a currently valid one.
+        '404':
+          description: The requested **Match** does not exist.
         '401':
           description: User is unauthenticated.
 
@@ -317,6 +354,7 @@ components:
           type: string
         disability:
           type: boolean
+
     Club:
       type: object
       required:
@@ -329,6 +367,7 @@ components:
           type: string
         university:
           type: string
+
     Match:
       type: object
       required:
@@ -341,12 +380,128 @@ components:
           type: string
         round:
           type: string
-        num_archers:
+        max_participants:
           type: integer
         arrows_per_end:
           type: integer
         num_ends:
           type: integer
+        whitelist:
+          type: array
+          items:
+            type: string
+    
+    CompletedMatch:
+      type: object
+      required:
+        - id
+        - name
+        - host
+        - created_at
+        - finished_at
+      properties:
+        id:
+          type: string
+        host:
+          type: string
+        name:
+          type: string
+        finished_at:
+          type: string
+          format: datetime
+        created_at:
+          type: string
+          format: datetime
+        competition:
+          type: string
+        round:
+          type: string
+
+    LiveMatch:
+      type: object
+      required:
+        - name
+        - num_archers
+        - arrows_per_end
+        - num_ends
+        - created_at
+        - current_end
+        - current_state
+        - previous_state
+        - host
+        - participants
+      properties:
+        id:
+          type: string
+        value:
+          type: object
+          properties:        
+            name:
+              type: string
+            num_archers:
+              type: integer
+            arrows_per_end:
+              type: integer
+            num_ends:
+              type: integer
+            created_at:
+              type: string
+              format: datetime
+            current_end:
+              type: integer
+            current_state:
+              type: string
+            previous_state:
+              type: string
+            host:
+              type: string
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/MatchParticipant'
+            whitelist:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum:
+                    - archer
+                    - judge
+
+    MatchParticipant:
+      type: object
+      required:
+        - ready
+        - role
+      properties:
+        ready:
+          type: boolean
+        role:
+          type: string
+          enum:
+            - archer
+            - judge
+        scores:
+          type: array
+          items:
+            type: object
+        ends_confirmed:
+          type: array
+          items:
+            type: boolean
+    
+    Arrow:
+      type: object
+      required:
+        - score
+      properties:
+        score:
+          type: integer
+        prev_score:
+          type: integer
+        judge_uuid:
+          type: string
+
     Scoresheet:
       type: object
       required:
@@ -357,12 +512,20 @@ components:
         - match_id
         - scoresheet
       properties:
+        id:
+          type: string
+        competition:
+          type: string
         user_id:
+          type: string
+        round:
           type: string
         arrows_shot:
           type: integer
         arrows_per_end:
           type: integer
+        bow:
+          type: string
         created_at:
           type: string
           format: datetime
@@ -371,11 +534,4 @@ components:
         scoresheet:
           type: array
           items:
-            type: object
-            properties:
-              score: 
-                type: integer
-              prev_score: 
-                type: integer
-              judge: 
-                type: string
+            $ref: '#/components/schemas/Arrow'

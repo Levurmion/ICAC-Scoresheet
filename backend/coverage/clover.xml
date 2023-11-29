@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1701250468924" clover="3.2.0">
+  <project timestamp="1701250468924" name="All files">
+    <metrics statements="31" coveredstatements="7" conditionals="18" coveredconditionals="3" methods="9" coveredmethods="0" elements="58" coveredelements="10" complexity="0" loc="31" ncloc="31" packages="3" files="3" classes="3"/>
+    <package name="lib">
+      <metrics statements="17" coveredstatements="4" conditionals="4" coveredconditionals="0" methods="5" coveredmethods="0"/>
+      <file name="utilities.ts" path="/Users/elberttimothy/Desktop/icac_scoresheet/backend/src/lib/utilities.ts">
+        <metrics statements="17" coveredstatements="4" conditionals="4" coveredconditionals="0" methods="5" coveredmethods="0"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="47" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="lib.redis">
+      <metrics statements="4" coveredstatements="3" conditionals="4" coveredconditionals="3" methods="0" coveredmethods="0"/>
+      <file name="useRedisClient.ts" path="/Users/elberttimothy/Desktop/icac_scoresheet/backend/src/lib/redis/useRedisClient.ts">
+        <metrics statements="4" coveredstatements="3" conditionals="4" coveredconditionals="3" methods="0" coveredmethods="0"/>
+        <line num="8" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="9" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="lib.supabase">
+      <metrics statements="10" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="4" coveredmethods="0"/>
+      <file name="useSupabaseClient.ts" path="/Users/elberttimothy/Desktop/icac_scoresheet/backend/src/lib/supabase/useSupabaseClient.ts">
+        <metrics statements="10" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="4" coveredmethods="0"/>
+        <line num="7" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="8" count="0" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="12" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="13" count="0" type="stmt"/>
+        <line num="16" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="24" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
