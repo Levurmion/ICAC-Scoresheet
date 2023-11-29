@@ -26,13 +26,10 @@ export type Arrow = {
     judge_uuid: string | null
 }
 
-export type MatchTokenBody = {
+export type MatchTokenPayload = {
     user_uuid: string,
     match_uuid: string,
-    iat: Date,
-    exp: Date,
     role: MatchRole,
-    nonce: string
 }
 
 export type MatchParticipant<R extends MatchRole> = {
@@ -45,7 +42,7 @@ export type MatchParticipant<R extends MatchRole> = {
 export interface MatchParams {
     name: string;
     round?: string;
-    num_archers: number;
+    max_participants: number;
     arrows_per_end: number;
     num_ends: number;
 }
@@ -62,7 +59,36 @@ export interface PublicMatch extends MatchParams {
 }
 
 export interface RestrictedMatch extends PublicMatch {
-    whitelist: string[]
+    whitelist: {
+        [user_id: string]: MatchRole
+    }
 }
 
-export type Match = RestrictedMatch | PublicMatch
+export type LiveMatch = RestrictedMatch | PublicMatch
+
+export type LiveMatchRedisType = {
+    id: string,
+    value: LiveMatch
+}
+
+export interface CompletedMatch {
+    id: string;
+    name: string;
+    host: string;
+    created_at: Date;
+    finished_at: Date;
+    competition?: string;
+}
+
+export interface Scoresheet {
+    id: string;
+    competition?: string;
+    user_id: string;
+    round?: string;
+    arrows_shot: number;
+    arrows_per_end: number;
+    bow?: string;
+    created_at: Date;
+    match_id: string;
+    scoresheet: Arrow[];
+}

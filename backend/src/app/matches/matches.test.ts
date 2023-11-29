@@ -1,5 +1,5 @@
-import { MatchParams } from "../../lib/types"
-import { persistentUserSignIn } from "../../lib/utilities"
+import { CompletedMatch, LiveMatch, LiveMatchRedisType, MatchParams } from "../../lib/types"
+import { persistentUserSignIn, testUsersSignIn } from "../../lib/utilities"
 
 const supertest = require('supertest')
 const agent = supertest.agent
@@ -8,30 +8,26 @@ const userAgent = agent('http://localhost:8001/api')
 
 describe("Testing /matches endpoints", () => {
 
-    // test data
+    // CRUD test data
     const badMatches = [
-        {"name": "Mighty_Match_1@", "num_archers": 227, "num_ends": 200, "arrows_per_end": 166},
-        {"name": "Swift_Match()_2", "num_archers": 197, "num_ends": 6, "arrows_per_end": 63},
+        {"name": "Mighty_Match_1@", "max_participants": 227, "num_ends": 200, "arrows_per_end": 166},
+        {"name": "Swift_Match()_2", "max_participants": 197, "num_ends": 6, "arrows_per_end": 63},
         {"name": "Swift_Match_3", "num_ends": 117, "arrows_per_end": 75},
     ]
     const matchesToCreate = [
-        {"name": "Mighty_Match_1", "num_archers": 227, "num_ends": 200, "arrows_per_end": 166},
-        {"name": "Swift_Match_2", "num_archers": 197, "num_ends": 6, "arrows_per_end": 63},
-        {"name": "Swift_Match_3", "num_archers": 24, "num_ends": 117, "arrows_per_end": 75},
-        {"name": "Storm_Match_4", "num_archers": 21, "num_ends": 172, "arrows_per_end": 195},
-        {"name": "Eagle_Match_5", "num_archers": 157, "num_ends": 47, "arrows_per_end": 221},
-        {"name": "Mighty_Match_6", "num_archers": 41, "num_ends": 55, "arrows_per_end": 193},
-        {"name": "Mighty_Match_7", "num_archers": 69, "num_ends": 119, "arrows_per_end": 253},
-        {"name": "Falcon_Match_8", "num_archers": 180, "num_ends": 62, "arrows_per_end": 144},
-        {"name": "Rapid_Match_9", "num_archers": 3, "num_ends": 214, "arrows_per_end": 114},
-        {"name": "Mighty_Match_10", "num_archers": 17, "num_ends": 139, "arrows_per_end": 131}
+        {"name": "Mighty_Match_1", "max_participants": 2, "num_ends": 200, "arrows_per_end": 166},
+        {"name": "Swift_Match_2", "max_participants": 197, "num_ends": 6, "arrows_per_end": 63},
+        {"name": "Swift_Match_3", "max_participants": 24, "num_ends": 117, "arrows_per_end": 75},
+        {"name": "Rapid_Match_9", "max_participants": 3, "num_ends": 214, "arrows_per_end": 114},
+        {"name": "Mighty_Match_10", "max_participants": 17, "num_ends": 139, "arrows_per_end": 131}
     ]
     const existingMatches = [
-        {"name": "Rapid_Match_9", "num_archers": 3, "num_ends": 214, "arrows_per_end": 114},
-        {"name": "Mighty_Match_10", "num_archers": 17, "num_ends": 139, "arrows_per_end": 131}
+        {"name": "Rapid_Match_9", "max_participants": 3, "num_ends": 214, "arrows_per_end": 114},
+        {"name": "Mighty_Match_10", "max_participants": 17, "num_ends": 139, "arrows_per_end": 131}
     ]
     const matchNames = matchesToCreate.map(matchParams => matchParams.name)
-    let liveMatchIds: []
+    let liveMatchIds: string[]
+    let completedMatchIds: string[]
 
 
     test("Sign In User: POST /auth/sign-in", async () => {
@@ -85,7 +81,7 @@ describe("Testing /matches endpoints", () => {
         })
         const matchProperties = [
             "name",
-            "num_archers",
+            "max_participants",
             "arrows_per_end",
             "num_ends",
             "created_at",
@@ -97,7 +93,7 @@ describe("Testing /matches endpoints", () => {
         ]
         const retrievedMatches = res.body
         const firstRetrievedMatch = retrievedMatches?.[0]
-        liveMatchIds = retrievedMatches.map((match: {id: string, value: {}}) => {
+        liveMatchIds = retrievedMatches.map((match: LiveMatchRedisType) => {
             return match.id
         })
 
@@ -141,6 +137,50 @@ describe("Testing /matches endpoints", () => {
         for (const pastMatch of retrievedPastMatches) {
             expect(pastMatchNames).toContain(pastMatch.name)
         }
+
+        // save match IDs for following tests
+        completedMatchIds = retrievedPastMatches.map((match: CompletedMatch) => match.id)
+    })
+
+    test("Request Access to a Live Match: POST /matches/:match_id/reserve", async () => {
+        const getMatchRes = await userAgent.get('/matches/Mighty_Match_1').query({
+            state: "open"
+        })
+        const match: LiveMatchRedisType = getMatchRes.body?.[0]
+        const matchId = match.id
+
+        // initialize 3 user agents
+        const userAgents = [
+            agent('http://localhost:8001/api'),
+            agent('http://localhost:8001/api'),
+            agent('http://localhost:8001/api')
+        ]
+
+        // sign in all 3
+        for (let i = 0; i < 3; i++) {
+            const agent = userAgents[i]
+            const signInRes = await agent.post('/auth/sign-in').send(testUsersSignIn[i])
+            expect(signInRes.statusCode).toEqual(200)
+        }
+
+        // first two attempts to reserve match
+        for (let i = 0; i < 2; i++) {
+            const agent = userAgents[i]
+            const matchJoinRes = await agent.post(`/matches/${matchId}/reserve`)
+            expect(matchJoinRes.statusCode).toBe(200)
+            // if attempts to reserve another match while this one is valid, will reject
+            const secondMatchJoinRes = await agent.post(`/matches/${matchId}/reserve`)
+            expect(secondMatchJoinRes.statusCode).toBe(403)
+            const verifyTokenRes = await agent.get('/matches/token/validate')
+            expect(verifyTokenRes.statusCode).toBe(200)
+        }
+
+        // third one should get 403 because Mighty_Match_1 only has a max_participants = 2
+        const forbiddenMatchJoinRes = await userAgents[2].post(`/matches/${matchId}/reserve`)
+        expect(forbiddenMatchJoinRes.statusCode).toBe(403)
+
+        const verifyTokenRes = await userAgents[2].get('/matches/token/validate')
+        expect(verifyTokenRes.statusCode).toBe(400)
     })
 
     test("Delete Live Matches by ID: DELETE /matches", async () => {
@@ -148,6 +188,38 @@ describe("Testing /matches endpoints", () => {
             const res = await userAgent.delete(`/matches/${matchId}`)
             expect(res.statusCode).toBe(200)
         }
+    })
+
+    test("Retrieve Results for Completed Match: GET /matches/:match_id/results", async () => {
+        const matchId = (completedMatchIds)?.[0]
+        const scoresheetProperties = [
+            "id",
+            "user_id",
+            "arrows_shot",
+            "arrows_per_end",
+            "created_at",
+            "match_id",
+            "scoresheet"
+        ]
+        const res = await userAgent
+        .get(`/matches/${matchId}/results`)
+
+        const scoresheets = res.body
+        const firstScoresheet = scoresheets[0]
+
+        // check that scoresheet has at least the required properties
+        scoresheetProperties.forEach(prop => {
+            expect(firstScoresheet).toHaveProperty(prop)
+        })
+
+        // check that 2 scoresheets were retrieved (as per the dummy data setup)
+        expect(scoresheets.length).toBe(2)
+
+        const emptyRes = await userAgent
+        .get(`/matches/empty/results`)
+
+        // check that it return 204
+        expect(emptyRes.statusCode).toBe(204)
     })
 
 })
