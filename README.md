@@ -117,7 +117,7 @@ This repository contains the frontend, backend, and cache services - all of whic
   </thead>
   <tbody>
     <tr>
-      <td>cache database</td>
+      <td>Redis</td>
       <td>6379</td>
     </tr>
     <tr>
