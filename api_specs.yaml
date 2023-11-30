@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: ICAC Scoresheet Backend APIs
-  version: '0.2'
+  version: '0.3'
   description: >
     This document describes the specifications of the ICAC Scoresheet HTTP API server for simple CRUD operations. Matches **ARE NOT** served through these endpoints. Refer to the `/match-server` AsyncAPI specs using Websockets at `http://localhost:8001/match-server/`.
   contact: {
@@ -193,34 +193,33 @@ paths:
           description: User was neither a **Match** host nor a system administrator.
         '404':
           description: The submitted `match_id` was not found in Redis.
-
-  /matches/{match_name}:
+  
+  /matches/live/{match_name}:
     get:
-      summary: Retrieves matches by match name.
+      summary: Retrieves currently live matches by name.
       description: >
-        Retrieves live or past **Matches** by name. The `state` query parameter can be included to determine whether to search for only **live Matches** at the specified **Match** lifecycle `state` or excluded to search for past **Matches**. 
+        Retrieves currently live **Matches** by name. The `state` parameter can be included to select for live **Matches** in a specific lifecycle state or excluded to fetch all live **Matches** matching the queried name pattern.
       tags:
         - matches
-      operationId: getMatchesByName
+      operationId: getLiveMatchesByName
       security:
         - auth-token: []
       parameters:
         - name: match_name
           in: path
           required: true
-          description: Match name to search in Redis/PostgreSQL. The wildcard (*) character is not permitted unless using the `host-only` query parameter.
+          description: Match name to search in Redis.
           schema:
             type: string
         - name: state
           in: query
           description: >
-            Specify an array live match states to confine search to. Setting this to **live** will return all currently live **Matches**. If not included, only past matches already saved in PostgreSQL will be returned.
+            Specify an array live match states to confine search to. Otherwise, exclude to fetch all live matches.
           schema:
             type: array
             items:
               type: string
               enum:
-                - live
                 - open
                 - full
                 - submit
@@ -232,27 +231,71 @@ paths:
         - name: host_only
           in: query
           description: >
-            When set to **true**, only returns **Matches** hosted by the currently logged in user. The user's `id` is going to be automatically extracted from the submitted authentication cookie. Usage of the wildcard (*) character in the `match_name` path parameter is only permitted when this switch is enabled.
+            When set to **true**, only returns **Matches** hosted by the currently logged in user. The user's `id` is going to be automatically extracted from the submitted authentication token.
           schema:
             type: boolean
       responses:
+          '200':
+            description: One or more **Matches** found with matching name.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/LiveMatch'
+          '204':
+            description: No live **Matches** found with matching name.
+          '400':
+            description: >
+              `match_name` path parameter was missing/malformed or requested state was invalid.
+          '401':
+            description: User is unauthenticated.
+
+  /matches/completed/{match_name}:
+    get:
+      summary: Retrieves completed matches by name.
+      description: >
+        Retrieves completed **Matches** by name.
+      tags:
+        - matches
+      operationId: getCompletedMatchesByName
+      security:
+        - auth-token: []
+      parameters:
+        - name: match_name
+          in: path
+          required: true
+          description: Match name to search in PostgreSQL.
+          schema:
+            type: string
+        - name: host_only
+          in: query
+          description: >
+            When set to **true**, only returns **Matches** hosted by the currently logged in user. The user's `id` is going to be automatically extracted from the submitted authentication token.
+          schema:
+            type: boolean
+        - name: after
+          in: query
+          description: Date after which match was finished.
+          schema:
+            type: string
+            format: date
+        - name: before
+          description: Date before which match was finished.
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
         '200':
-          description: One or more **Matches** found with matching name.
+          description: One or more completed **Matches** found with matching name.
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: array
-                    items:
-                      $ref: '#/components/schemas/LiveMatch'
-                  - type: array
-                    items:
-                      $ref: '#/components/schemas/CompletedMatch'
+                $ref: '#/components/schemas/CompletedMatch'
         '204':
-          description: No **Matches** found with matching name.
+          description: No completed **Matches** found with matching name.
         '400':
           description: >
-            `match_name` path parameter was missing/malformed, attempting using the wildcard (*) character without setting `host_only` to **true**, or the requested live **Match** state was invalid.
+            `match_name` path parameter was missing/malformed.
         '401':
           description: User is unauthenticated.
           

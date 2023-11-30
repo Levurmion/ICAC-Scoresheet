@@ -5,7 +5,7 @@ import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";
 import useSupabaseClient from "../../lib/supabase/useSupabaseClient";
-import { getRedisMatch, getRedisMatchReservations, getUserId, isValidAlphanumeric, setRedisMatchReservation } from "../../lib/utilities";
+import { getRedisMatch, getRedisMatchReservations, getUserId, isValidAlphanumeric, isValidDateString, setRedisMatchReservation } from "../../lib/utilities";
 import { isRestrictedMatch, isValidLiveMatchState } from "../../lib/typeGuards";
 import "dotenv/config";
 
@@ -19,17 +19,19 @@ matches.use(authenticate);
 matches.post("/", async (req, res) => {
     const matchParams: MatchParams = req.body;
     const { name, max_participants, arrows_per_end, num_ends } = matchParams;
-    const host = await getUserId({ req, res });
+    const host = await getUserId({ req, res }) as string;
+    const requiredFields = [
+        name,
+        max_participants,
+        arrows_per_end,
+        num_ends
+    ]
 
     // if one of the required fields are missing
-    if ([name, max_participants, arrows_per_end, num_ends].some((param) => param === undefined || null)) {
+    if (requiredFields.some((param) => param === undefined || null)) {
         return res.status(400).send("missing required fields");
     } else if (!isValidAlphanumeric(name)) {
-        return res.status(400).send("match name is not a valid alphanumeric string with underscores or spaces");
-    }
-
-    if (host === false) {
-        return res.sendStatus(401);
+        return res.status(400).send("name was not a valid alphanumeric string with underscores or spaces");
     }
 
     const matchUUID = uuid4();
@@ -45,73 +47,98 @@ matches.post("/", async (req, res) => {
 
     // check if an exact match name exists
     if ((await redisClient.ft.search("idx:matches", `@name:"${name}"`)).total > 0) {
-        return res.status(409).send("name already taken by an existing live match");
+        return res.status(409).send("name already taken by a live match");
     } else {
         await redisClient.json.SET(`match:${matchUUID}`, "$", match as unknown as RedisJSON);
         return res.sendStatus(201);
     }
 });
 
-// retrieve an existing (live/completed) match
-matches.get("/:match_name", async (req, res) => {
+// retrieve an existing live match
+matches.get("/live/:match_name", async (req, res) => {
     const { match_name } = req.params;
     const { state, host_only } = req.query;
-    // assert type because user already authenticated by middleware
-    const host = (await getUserId({ req, res })) as string;
+    const host = await getUserId({ req, res }) as string;
 
     // perform request validation
     // determine 400 status message if validation fails
     res.status(400);
     if (match_name === undefined) {
-        return res.send("no match name provided");
-    } else if (match_name === "*" && host_only !== "true") {
-        return res.send("wildcard character not allowed without switching `host_only` to `true`");
+        return res.send("name not provided");
     } else if (state !== undefined && state !== "live" && !isValidLiveMatchState(state)) {
-        return res.send("the queried state was not a valid live match state");
+        return res.send("invalid state query");
     }
 
-    // request valid, determine whether request was asking for a completed/live match
-    if (state === undefined) {
+    const nameQuery = match_name === "*" ? "" : `@name:*${match_name}*`;
+    let stateQuery: string | undefined = undefined;
+    let hostQuery: string | undefined = undefined;
+
+    // generate stateQuery
+    if (state === "live") {
+        // leave as is
+    } else if (Array.isArray(state)) {
+        stateQuery = "live" in state ? "" : `@current_state:(${state.join("|")})`;
+    } else if (typeof state === "string") {
+        stateQuery = `@current_state:${state}`;
+    }
+
+    // generate hostQuery
+    if (host_only === "true") {
         const supabase = useSupabaseClient({ req, res });
-        const supabaseRequest = supabase.from("matches").select("*").ilike("name", `%${match_name}%`);
-        const { data, error } = host_only === "true" ? await supabaseRequest.eq("host", host) : await supabaseRequest;
+        // escape hyphens in UUID
+        hostQuery = `@host:{${host.replace(/-/g, "\\-")}}`;
+    }
 
-        if (error) {
-            return res.status(Number(error.code)).send(error.hint);
-        } else if (data.length > 0) {
-            return res.status(200).json(data);
-        } else if (data.length === 0) {
-            return res.sendStatus(204);
-        }
-    } else {
-        const nameQuery = match_name === "*" ? "" : `@name:*${match_name}*`;
-        let stateQuery: string | undefined = undefined;
-        let hostQuery: string | undefined = undefined;
+    const redisQuery = [nameQuery, stateQuery, hostQuery].filter((val) => val !== undefined).join(" ");
+    const matches = await redisClient.ft.SEARCH("idx:matches", redisQuery);
 
-        // generate stateQuery
-        if (state === "live") {
-            // leave as is
-        } else if (Array.isArray(state)) {
-            stateQuery = "live" in state ? "" : `@current_state:(${state.join("|")})`;
-        } else if (typeof state === "string") {
-            stateQuery = `@current_state:${state}`;
-        }
+    if (matches.total > 0) {
+        res.status(200).json(matches.documents);
+    } else if (matches.total === 0) {
+        res.sendStatus(204);
+    }
+})
 
-        // generate hostQuery
-        if (host_only === "true") {
-            const supabase = useSupabaseClient({ req, res });
-            // escape hyphens in UUID
-            hostQuery = `@host:{${host.replace(/-/g, "\\-")}}`;
-        }
+// retrieve a completed match
+matches.get("/completed/:match_name", async (req, res) => {
+    const { match_name } = req.params;
+    const { state, host_only, before, after } = req.query;
+    const host = await getUserId({ req, res }) as string;
 
-        const redisQuery = [nameQuery, stateQuery, hostQuery].filter((val) => val !== undefined).join(" ");
-        const matches = await redisClient.ft.SEARCH("idx:matches", redisQuery);
+    // perform request validation
+    // determine 400 status message if validation fails
+    res.status(400);
+    if (match_name === undefined) {
+        return res.send("name not provided");
+    }
+    if (
+        (before !== undefined && !isValidDateString(before as string)) || 
+        (after !== undefined && !isValidDateString(after as string))
+    ) {
+        return res.send("invalid date queries")
+    }
 
-        if (matches.total > 0) {
-            res.status(200).json(matches.documents);
-        } else if (matches.total === 0) {
-            res.sendStatus(204);
-        }
+    // construct supabase query
+    const supabase = useSupabaseClient({ req, res });
+    let supabaseRequest = supabase.from("matches").select("*").ilike("name", `%${match_name}%`);
+    if (host_only) {
+        supabaseRequest = supabaseRequest.eq("host", host)
+    }
+    if (before) {
+        supabaseRequest = supabaseRequest.lte("finished_at", before)
+    }
+    if (after) {
+        supabaseRequest = supabaseRequest.gte("finished_at", after)
+    }
+
+    const { data, error } = await supabaseRequest
+
+    if (error) {
+        return res.status(Number(error.code)).send(error.hint);
+    } else if (data.length > 0) {
+        return res.status(200).json(data);
+    } else if (data.length === 0) {
+        return res.sendStatus(204);
     }
 });
 
@@ -157,7 +184,7 @@ matches.post("/:match_id/reserve", async (req, res) => {
     // first check if `match_access_token` cookie exists in request
     const requestCookies = req.cookies;
     if (requestCookies["match_access_token"]) {
-        return res.status(403).send("cannot reserve a spot in another match whilst possessing a valid access token");
+        return res.status(403).send("user currently possesses a valid access token");
     }
 
     const { match_id } = req.params;
@@ -165,7 +192,7 @@ matches.post("/:match_id/reserve", async (req, res) => {
     const matchState = match?.current_state;
 
     if (match === null) {
-        return res.status(404).send("The requested live match does not exist.");
+        return res.status(404).send("live match does not exist");
     } else if (matchState === "open") {
         // check that the number of participants + current reservations do not exceed the match max_participants limit
         const { max_participants } = match;
@@ -173,7 +200,7 @@ matches.post("/:match_id/reserve", async (req, res) => {
         const numberReservations = await getRedisMatchReservations(match_id);
 
         if (numberParticipants + numberReservations >= max_participants) {
-            return res.status(403).send("Match is open but currently fully reserved.");
+            return res.status(403).send("match fully reserved");
         }
 
         const user_id = (await getUserId({ req, res })) as string;
@@ -185,7 +212,7 @@ matches.post("/:match_id/reserve", async (req, res) => {
 
         if (isRestrictedMatch(match)) {
             if (!(user_id in match.whitelist)) {
-                return res.status(403).send("User not in the whitelist for this restricted match.");
+                return res.status(403).send("restricted match (not in whitelist)");
             } else {
                 // update role as user could be a judge in restricted matches
                 payload.role = match.whitelist.user_id;
@@ -212,7 +239,7 @@ matches.post("/:match_id/reserve", async (req, res) => {
 
         return res.sendStatus(200);
     } else {
-        return res.status(403).send("The requested live match is no longer open.");
+        return res.status(403).send("match is no longer open");
     }
 });
 

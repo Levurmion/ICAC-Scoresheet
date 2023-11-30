@@ -67,3 +67,8 @@ export async function getRedisMatchReservations(matchId: string): Promise<number
     const matchReservations = await redisClient.KEYS(reservationPattern)
     return matchReservations.length
 }
+
+export function isValidDateString (string: string): boolean {
+    const date = new Date(string);
+    return date instanceof Date && !isNaN(date as any);
+}
