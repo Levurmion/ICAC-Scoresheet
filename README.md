@@ -26,9 +26,9 @@ The project will be composed of 5 main services.
       <td>Supabase</td>
     </tr>
     <tr>
-      <td>cache database</td>
+      <td>cache</td>
       <td>Redis</td>
-      <td>AWS Elasticache</td>
+      <td>AWS Redis Elasticache</td>
     </tr>
     <tr>
       <td>backend</td>
@@ -38,17 +38,17 @@ The project will be composed of 5 main services.
     <tr>
       <td>frontend</td>
       <td>NextJS (React)</td>
-      <td>Vercel/AWS</td>
+      <td>AWS ECS on Fargate/EC2</td>
     </tr>
     <tr>
       <td>reverse proxy</td>
       <td>NGINX</td>
-      <td>AWS</td>
+      <td>AWS ELB in production</td>
     </tr>
   </tbody>
 </table>
 
-The exact host/technologies used for each service are subject to change according to any challenges encountered through the course of development.
+The exact host/technologies used for each service are subject to change according to any challenges encountered throughout the course of development.
 
 
 ## Setting Up A Local Dev Environment
