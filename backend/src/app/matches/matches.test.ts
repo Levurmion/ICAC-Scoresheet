@@ -53,30 +53,31 @@ describe("Testing /matches endpoints", () => {
         }
     })
 
-    test("Retrieve Matches with Bad Requests: GET /matches/:match_name", async () => {
-        // attempting to retrieve all matches without host constraint
-        const allMatchRes = await userAgent
-        .get("/matches/*")
+    test("Retrieve Matches with Bad Requests: GET /matches/live/:match_name", async () => {
         // attempting to retrieve a match that does not exist
         const noMatchRes = await userAgent
-        .get("/matches/does_not_exist")
+        .get("/matches/live/does_not_exist")
         // attempting to retrieve a live match with an invalid state
         const badStateMatchRes = await userAgent
-        .get("/matches/_Match_")
+        .get("/matches/live/_Match_")
         .query({
             state: "invalid state"
         })
+        const nonExistentStateRes = await userAgent
+        .get("/matches/live/live_Match_")
+        .query({
+            state: "full"
+        })
 
-        expect(allMatchRes.statusCode).toBe(400)
         expect(badStateMatchRes.statusCode).toBe(400)
         expect(noMatchRes.statusCode).toBe(204)
+        expect(nonExistentStateRes.statusCode).toBe(204)
     })
 
-    test("Retrieve Live Matches by Name: GET /matches/:match_name", async () => {
+    test("Retrieve Live Matches by Name: GET /matches/live/:match_name", async () => {
         const res = await userAgent
-        .get("/matches/Match")
+        .get("/matches/live/*")
         .query({
-            state: ["live"],
             host_only: true
         })
         const matchProperties = [
@@ -110,9 +111,9 @@ describe("Testing /matches endpoints", () => {
         }
     })
 
-    test("Retrieve Past Matches by Name: GET /matches/:match_name", async () => {
+    test("Retrieve Completed Matches by Name: GET /matches/completed/:match_name", async () => {
         const res = await userAgent
-        .get('/matches/completed_match')
+        .get('/matches/completed/match')
         const completedMatchProperties = [
             "competition",
             "finished_at",
@@ -122,8 +123,12 @@ describe("Testing /matches endpoints", () => {
             "started_at"
         ]
         const pastMatchNames = [
-            "completed_match1",
-            "completed_match2"
+            "match_27_Nov",
+            "match_28_Nov",
+            "match_29_Nov",
+            "match_30_Nov",
+            "match_2_Dec",
+            "match_1_Dec"
         ]
         const retrievedPastMatches = res.body
         const firstRetrievedPastMatch = retrievedPastMatches?.[0]
@@ -142,8 +147,38 @@ describe("Testing /matches endpoints", () => {
         completedMatchIds = retrievedPastMatches.map((match: CompletedMatch) => match.id)
     })
 
+    test("Retrieve Completed Matches by Name and Date: GET /matches/completed/:match_name", async () => {
+        const after28Nov = await userAgent.get('/matches/completed/match_').query({
+            after: new Date(2023, 10, 28).toDateString()
+        })
+        const before3Dec = await userAgent.get('/matches/completed/match_').query({
+            before: new Date(2023, 11, 3).toDateString()
+        })
+        const after29NovBefore2Dec = await userAgent.get('/matches/completed/match_').query({
+            after: new Date(2023, 10, 29).toDateString(),
+            before: new Date(2023, 11, 2).toDateString()
+        })
+
+        const matchNamesInDateRange = [
+            "match_27_Nov",
+            "match_28_Nov",
+            "match_29_Nov",
+            "match_30_Nov",
+            "match_1_Dec",
+            "match_2_Dec",
+        ]
+        
+        const after28NovMatchNames = after28Nov.body.map((match: CompletedMatch) => match.name)
+        const before3DecMatchnames = before3Dec.body.map((match: CompletedMatch) => match.name)
+        const after29NovBefore2DecMatchnames = after29NovBefore2Dec.body.map((match: CompletedMatch) => match.name)
+        
+        after28NovMatchNames.forEach((name: string) => expect(matchNamesInDateRange.slice(1)).toContain(name))
+        before3DecMatchnames.forEach((name: string) => expect(matchNamesInDateRange).toContain(name))
+        after29NovBefore2DecMatchnames.forEach((name: string) => expect(matchNamesInDateRange.slice(3,5)).toContain(name))
+    })
+
     test("Request Access to a Live Match: POST /matches/:match_id/reserve", async () => {
-        const getMatchRes = await userAgent.get('/matches/Mighty_Match_1').query({
+        const getMatchRes = await userAgent.get('/matches/live/Mighty_Match_1').query({
             state: "open"
         })
         const match: LiveMatchRedisType = getMatchRes.body?.[0]
@@ -191,7 +226,8 @@ describe("Testing /matches endpoints", () => {
     })
 
     test("Retrieve Results for Completed Match: GET /matches/:match_id/results", async () => {
-        const matchId = (completedMatchIds)?.[0]
+        const match = await userAgent.get('/matches/completed/match_29_Nov')
+        const matchId = match.body?.[0].id
         const scoresheetProperties = [
             "id",
             "user_id",
@@ -206,6 +242,8 @@ describe("Testing /matches endpoints", () => {
 
         const scoresheets = res.body
         const firstScoresheet = scoresheets[0]
+
+        console.log(scoresheets)
 
         // check that scoresheet has at least the required properties
         scoresheetProperties.forEach(prop => {
