@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: ICAC Scoresheet Backend APIs
-  version: '0.3'
+  version: '0.3.1'
   description: >
     This document describes the specifications of the ICAC Scoresheet HTTP API server for simple CRUD operations. Matches **ARE NOT** served through these endpoints. Refer to the `/match-server` AsyncAPI specs using Websockets at `http://localhost:8001/match-server/`.
   contact: {
@@ -159,6 +159,10 @@ paths:
         '201':
           description: >
             **Match** successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveMatch'
         '400':
           description: Request body missing required fields or **Match** name contains forbidden characters.
         '409':
