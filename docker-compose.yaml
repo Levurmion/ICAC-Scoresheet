@@ -32,6 +32,24 @@ services:
       # override bind mount by specifying as Docker-managed volumes
       - /app/node_modules   # persisting as bind mount will populate the container with OS-specific packages
       - /app/.next          # persisting as bind mount will populate the container with OS-specific artefacts
+  
+  match_server:
+    build: match_server
+    ports:
+      - "3030:3030"
+    depends_on:
+      - redis_cache
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - type: bind
+        source: ./match_server/src
+        target: /app/src/
+      - type: bind
+        source: ./match_server/.env
+        target: /app/.env
+      - ./match_server/package.json:/app/package.json
+      - ./match_server/package-lock.json:/app/package-lock.json
+      - ./match_server/nodemon.json:/app/nodemon.json
 
   redis_cache:
     image: redis/redis-stack:latest

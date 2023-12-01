@@ -50,7 +50,10 @@ matches.post("/", async (req, res) => {
         return res.status(409).send("name already taken by a live match");
     } else {
         await redisClient.json.SET(`match:${matchUUID}`, "$", match as unknown as RedisJSON);
-        return res.sendStatus(201);
+        return res.status(201).json({
+            id:`match:${matchUUID}`,
+            value: match
+        });
     }
 });
 
@@ -145,16 +148,20 @@ matches.get("/completed/:match_name", async (req, res) => {
 // delete a live match
 matches.delete("/:match_id", async (req, res) => {
     const { match_id } = req.params;
+    if (!match_id) {
+        return res.status(400).send('match id not provided')
+    }
+
     // $.host is a TAG field, returns as an array of strings
     // needs to be typecasted since TS doesn't know this
     const matchHost = (
         (await redisClient.json.GET(match_id, {
             path: "$.host",
         })) as string[]
-    )[0];
-    const user_id = await getUserId({ req, res });
-
+    )?.[0];
+    
     if (matchHost) {
+        const user_id = await getUserId({ req, res });
         if (matchHost === user_id) {
             await redisClient.DEL(match_id);
             return res.sendStatus(200);
