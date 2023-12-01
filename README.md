@@ -41,6 +41,11 @@ The project will be composed of 5 main services.
       <td>AWS ECS on Fargate/EC2</td>
     </tr>
     <tr>
+      <td>match server</td>
+      <td>Socket.IO (NodeJS)</td>
+      <td>AWS ECS on Fargate/EC2</td>
+    </tr>
+    <tr>
       <td>reverse proxy</td>
       <td>NGINX</td>
       <td>AWS ELB in production</td>
