@@ -17,7 +17,7 @@ The project will be composed of 5 main services.
   <thead>
     <th>service</th>
     <th>technology</th>
-    <th>host</th>
+    <th>hosting service</th>
   </thead>
   <tbody>
     <tr>
@@ -129,6 +129,10 @@ This repository contains the frontend, backend, and cache services - all of whic
       <td>backend</td>
       <td>3001</td>
     </tr>
+    <tr>
+      <td>match server</td>
+      <td>3030</td>
+    </tr>  
     <tr>
       <td>frontend</td>
       <td>3000</td>

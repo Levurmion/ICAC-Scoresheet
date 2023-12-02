@@ -1,36 +1,25 @@
-import { cookies } from "next/headers";
-import useSupabaseServerClient from "../../../lib/useSupabaseServerClient";
-import ClientText from "../../components/ClientText";
-import { UserResponse } from "@supabase/supabase-js";
-import SignOutButton from "@/components/SignOutButton";
+import SignOutButton from "@/components/auth/SignOutButton";
+import ClientButton from "@/components/input/ClientButton";
 import Link from "next/link";
 
-export default async function User () {
-
-    const cookieStore = cookies()
-
-    const supabase = useSupabaseServerClient(cookieStore)
-    const session = await supabase.auth.getSession()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    console.log(user)
-
-    if (user) {
-        const { email, id } = user
-        return (
-            <main className="flex flex-col">
-                <p>Welcome {email}!</p>
-                <p>This is your user ID {id}!</p>
+export default async function UserPage() {
+    return (
+        <>
+            <div className='w-full flex flex-col gap-2 mt-[30vh]'>
+                <ClientButton>
+                    <Link href='/match/join' className='block text-2xl p-2 w-full font-semibold'>
+                        Join a Match
+                    </Link>
+                </ClientButton>
+                <ClientButton>
+                    <Link href='/match/host' className='block text-2xl p-2 w-full font-semibold'>
+                        Host a Match
+                    </Link>
+                </ClientButton>
+            </div>
+            <div className='w-full h-fit mt-auto'>
                 <SignOutButton />
-            </main>
-        )
-    } else {
-        return (
-            <main className="flex flex-col">
-                <p>You're not signed in!</p>
-                <Link href='/'>return home</Link>
-            </main>
-        )
-    }
-
+            </div>
+        </>
+    );
 }

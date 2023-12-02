@@ -17,5 +17,40 @@
 }
 
 body {
-  @apply bg-white
+  @apply bg-amber-50 h-[100dvh] w-[100dvw] sm:w-[640px] mx-auto
+}
+
+h1 {
+  @apply text-6xl
+}
+
+h2 {
+  @apply text-4xl
+}
+
+h3 {
+  @apply text-2xl
+}
+
+input[type=date],
+input[type=time] {
+    box-sizing        : border-box;
+    display           : flex;
+    justify-content   : center;
+    position          : relative;
+    width             : 100%;
+    -moz-appearance   : textfield;
+    -webkit-appearance: none;
+    margin            : 0;
+}
+
+input[type=date]::-webkit-datetime-edit,
+input[type=time]::-webkit-datetime-edit {
+    text-align: left;
+    width     : 100%;
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
