@@ -17,19 +17,35 @@
 }
 
 body {
-  @apply bg-amber-50 h-[100dvh] w-[100dvw] sm:w-[640px] mx-auto
+  @apply bg-beige-50 h-[100dvh] w-[100dvw] sm:w-[640px] mx-auto
 }
 
 h1 {
-  @apply text-6xl
+  @apply text-5xl short-mobile:text-4xl
 }
 
 h2 {
-  @apply text-4xl
+  @apply text-2xl short-mobile:text-xl
 }
 
 h3 {
-  @apply text-2xl
+  @apply text-xl short-mobile:text-lg
+}
+
+p {
+  @apply text-lg short-mobile:text-base
+}
+
+.text-responsive__small {
+  @apply text-sm short-mobile:text-xs
+}
+
+.text-responsive__medium {
+  @apply text-base short-mobile:text-sm
+}
+
+.text-responsive__large {
+  @apply text-lg short-mobile:text-base
 }
 
 input[type=date],

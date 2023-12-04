@@ -1,26 +1,27 @@
 "use client";
 
-import { HTMLInputTypeAttribute, InputHTMLAttributes, forwardRef } from "react";
-import { useState } from "react";
+import { ChangeEvent, HTMLInputTypeAttribute, InputHTMLAttributes, forwardRef } from "react";
+import { useState, useEffect } from "react";
 
-interface ClientInputProps {
-    placeholder: string;
-    type: HTMLInputTypeAttribute;
-    name: string;
+export interface ClientInputProps extends InputHTMLAttributes<HTMLInputElement> {
+    textAlignment?: "text-center" | "text-left" | "text-right"
+    onChangeCb?: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
-const ClientInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>((props, ref) => {
-    const [value, setValue] = useState<string>("");
+const ClientInput = forwardRef<HTMLInputElement, ClientInputProps>((props, ref) => {
+    const [value, setValue] = useState<any>('');
+    const { textAlignment, onChangeCb, ...inputProps } = props
 
     return (
         <input
             ref={ref}
-            {...props}
+            {...inputProps}
             onChange={(e) => {
                 setValue(e.target.value);
+                if (onChangeCb) onChangeCb(e)
             }}
             value={value}
-            className='block w-full h-fit border-solid border-4 rounded-lg text-xl py-1.5 px-3 border-amber-900 placeholder:font-normal placeholder:text-xl placeholder:text-amber-900 font-semibold'
+            className={`block w-full h-fit border-solid border-4 rounded-md text-responsive__large py-1.5 px-3 border-beige-950 placeholder:font-normal placeholder:text-beige-950 font-semibold ${textAlignment}`}
             autoComplete="on"
             suppressHydrationWarning></input>
     );

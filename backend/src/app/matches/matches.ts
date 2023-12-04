@@ -1,6 +1,6 @@
 import redisClient from "../../lib/redis/useRedisClient";
 import { Router } from "express";
-import { MatchParams, LiveMatch, MatchTokenPayload } from "../../lib/types";
+import { MatchParams, LiveMatch, MatchTokenPayload, LiveMatchRedisType } from "../../lib/types";
 import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";
@@ -46,7 +46,8 @@ matches.post("/", async (req, res) => {
     };
 
     // check if an exact match name exists
-    if ((await redisClient.ft.search("idx:matches", `@name:"${name}"`)).total > 0) {
+    const potentialMatches = await redisClient.ft.search("idx:matches", `@name:"${name}"`)
+    if (potentialMatches.documents.some(match => match.value.name === name)) {
         return res.status(409).send("name already taken by a live match");
     } else {
         await redisClient.json.SET(`match:${matchUUID}`, "$", match as unknown as RedisJSON);
@@ -96,9 +97,9 @@ matches.get("/live/:match_name", async (req, res) => {
     const matches = await redisClient.ft.SEARCH("idx:matches", redisQuery);
 
     if (matches.total > 0) {
-        res.status(200).json(matches.documents);
+        return res.status(200).json(matches.documents);
     } else if (matches.total === 0) {
-        res.sendStatus(204);
+        return res.sendStatus(204);
     }
 })
 

@@ -8,9 +8,12 @@ interface ClientButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export default function ClientButton(props: ClientButtonProps) {
+
+    const {onClickHandler, ...buttonProps} = props
+
     return (
-        <button {...props} onClick={props.onClickHandler} className='bg-amber-900 w-full h-fit text-white rounded-md'>
-            {props.children}
+        <button {...buttonProps} onClick={props.onClickHandler} className=' bg-beige-950 w-full h-fit text-white rounded-md shadow-md'>
+            {buttonProps.children}
         </button>
     );
 }

@@ -20,5 +20,4 @@ process.on('SIGINT', shutdownCb);
 process.on('SIGTERM', shutdownCb);
 process.on('uncaughtException', async (err) => {
     console.error('Unhandled Exception:', err);
-    await redisClient.disconnect()
 });

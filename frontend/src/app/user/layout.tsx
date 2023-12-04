@@ -15,8 +15,8 @@ export default async function UserLayout ({ children }: { children: ReactNode })
     } = user?.user_metadata as UserMetadata
 
     return (
-        <main className="h-full w-full flex flex-col items-center p-6">
-            <h1>
+        <>
+            <h1 className="w-full">
                 <span className="font-extrabold">
                     Welcome
                 </span>
@@ -26,6 +26,6 @@ export default async function UserLayout ({ children }: { children: ReactNode })
                 </span>
             </h1>
             {children}
-        </main>
+        </>
     )
 }
