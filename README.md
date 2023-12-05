@@ -19,7 +19,7 @@ The project will be composed of 6 main services.
   <thead>
     <th>service</th>
     <th>technology</th>
-    <th>hosting service</th>
+    <th>production hosting service</th>
   </thead>
   <tbody>
     <tr>
@@ -35,22 +35,22 @@ The project will be composed of 6 main services.
     <tr>
       <td>backend</td>
       <td>Express (NodeJS)</td>
-      <td>AWS ECS on Fargate/EC2</td>
+      <td>AWS EKS</td>
     </tr>
     <tr>
       <td>frontend</td>
       <td>NextJS (React)</td>
-      <td>AWS ECS on Fargate/EC2</td>
+      <td>AWS EKS</td>
     </tr>
     <tr>
       <td>match server</td>
       <td>Socket.IO (NodeJS)</td>
-      <td>AWS ECS on Fargate/EC2</td>
+      <td>AWS EKS</td>
     </tr>
     <tr>
       <td>reverse proxy</td>
-      <td>NGINX</td>
-      <td>AWS EKS (Kubernetes)</td>
+      <td>NGINX (dev)/Kubernetes (pro)</td>
+      <td>AWS EKS</td>
     </tr>
   </tbody>
 </table>
