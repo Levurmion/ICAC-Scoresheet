@@ -50,7 +50,7 @@ The project will be composed of 6 main services.
     <tr>
       <td>reverse proxy</td>
       <td>NGINX</td>
-      <td>AWS ECS on Fargate/EC2</td>
+      <td>AWS EKS (Kubernetes)</td>
     </tr>
   </tbody>
 </table>
