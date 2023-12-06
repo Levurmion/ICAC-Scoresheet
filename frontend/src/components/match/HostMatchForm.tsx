@@ -59,7 +59,7 @@ export default function HostMatchForm() {
             );
         } else if (data?.status === 409) {
             return <span className='block text-responsive__large p-2 w-full font-semibold'>Name Already Taken!</span>;
-        } else if (isLoading && createMatchParams) {
+        } else if (isLoading) {
             return (
                 <div className='flex w-full items-center justify-center'>
                     <div className='h-6 w-6'>

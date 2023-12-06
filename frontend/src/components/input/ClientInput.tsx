@@ -21,7 +21,7 @@ const ClientInput = forwardRef<HTMLInputElement, ClientInputProps>((props, ref) 
                 if (onChangeCb) onChangeCb(e)
             }}
             value={value}
-            className={`block w-full h-fit border-solid border-4 rounded-md text-responsive__large py-1.5 px-3 border-beige-950 placeholder:font-normal placeholder:text-beige-950 font-semibold ${textAlignment}`}
+            className={`block w-full h-fit shadow-sm border-solid border rounded-md text-responsive__large py-1.5 px-3 border-beige-950 placeholder:font-normal placeholder:text-beige-950 font-semibold ${textAlignment}`}
             autoComplete="on"
             suppressHydrationWarning></input>
     );

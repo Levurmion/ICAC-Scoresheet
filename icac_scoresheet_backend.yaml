@@ -2,7 +2,7 @@ openapi: '3.0.2'
 
 info:
   title: ICAC Scoresheet Backend APIs
-  version: '0.3.1'
+  version: '0.3.2'
   description: >
     This document describes the specifications of the ICAC Scoresheet HTTP API server for simple CRUD operations. Matches **ARE NOT** served through these endpoints. Refer to the `/match-server` AsyncAPI specs using Websockets at `http://localhost:8001/match-server/`.
   contact: {
@@ -198,18 +198,18 @@ paths:
         '404':
           description: The submitted `match_id` was not found in Redis.
   
-  /matches/live/{match_name}:
+  /matches/live/{match_name or id}:
     get:
-      summary: Retrieves currently live matches by name.
+      summary: Retrieves currently live matches.
       description: >
-        Retrieves currently live **Matches** by name. The `state` parameter can be included to select for live **Matches** in a specific lifecycle state or excluded to fetch all live **Matches** matching the queried name pattern.
+        Retrieves currently live **Matches** by name. The `state` parameter can be included to select for live **Matches** in a specific lifecycle state or excluded to fetch all live **Matches** matching the queried name pattern. Switch `by_id` to **true** to search by **Match ID**.
       tags:
         - matches
       operationId: getLiveMatchesByName
       security:
         - auth-token: []
       parameters:
-        - name: match_name
+        - name: match_name or id
           in: path
           required: true
           description: Match name to search in Redis.
@@ -236,6 +236,12 @@ paths:
           in: query
           description: >
             When set to **true**, only returns **Matches** hosted by the currently logged in user. The user's `id` is going to be automatically extracted from the submitted authentication token.
+          schema:
+            type: boolean
+        - name: by_id
+          in: query
+          description: >
+            Set to **true** to instead search by **Match ID**.
           schema:
             type: boolean
       responses:
