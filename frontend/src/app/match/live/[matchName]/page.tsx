@@ -1,8 +1,10 @@
+import MatchSPAController from "@/components/match-spa/MatchSPAController";
+
 export default function LiveMatchPage () {
 
     return (
         <>
-            <p>Match page!</p>
+            <MatchSPAController />
         </>
     )
 }

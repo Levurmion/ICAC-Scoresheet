@@ -9,7 +9,11 @@ import redisClient from "../lib/redis/useRedisClient.js";
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-    cookie: true
+    cookie: true,
+    connectionStateRecovery: {
+        maxDisconnectionDuration: 15 * 60 * 1000,   // 15 minutes
+        skipMiddlewares: true
+    }
 });
 
 app.use(cors({
@@ -25,11 +29,17 @@ app.get("/", (req, res) => {
 
 io.on('connection', (socket) => {
     console.log(socket.id, 'connected!')
-    socket.emit('greetings', `Welcome!`)
 
-    socket.on('echo', (msg: string) => {
-        console.log(`echoing ${msg}!`)
-        socket.emit('echo', msg)
+    let count = 0
+
+    // setInterval(() => {
+    //     count++
+    //     socket.emit('interval', count)
+    // }, 1000)
+
+    socket.on('msg', (message: string) => {
+        console.log(message)
+        socket.broadcast.emit('message', message)
     })
 })
 
