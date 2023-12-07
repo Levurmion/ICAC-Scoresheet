@@ -31,7 +31,7 @@ export default function SignUpForm () {
 
             <div className='mt-auto'>
                 <ClientButton type='submit'>
-                    <span className='block text-2xl p-2 w-full font-semibold'>Sign Up</span>
+                    <span className='block text-responsive__large p-2 w-full font-semibold'>Sign Up</span>
                 </ClientButton>
             </div>
         </form>

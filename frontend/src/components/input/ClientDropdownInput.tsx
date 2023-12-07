@@ -24,18 +24,18 @@ export default function ClientDropdownInput(props: ClientDropdownInputProps) {
     return (
         <div className='relative flex w-full h-fit'>
             <div
-                className={`block w-full h-fit border-solid border-4 rounded-lg py-1 px-1.5 text-xl bg-white border-amber-900 ${
-                    selection === null ? "text-amber-900" : "text-black font-semibold"
+                className={`block w-full h-fit border-solid border shadow-sm rounded-lg py-1 px-1.5 text-responsive__large bg-white border-beige-950 ${
+                    selection === null ? "text-beige-950" : "text-black font-semibold"
                 }`}>
                 {selection ?? props.placeholder}
             </div>
             <div
                 onClick={handleOpenDropdown}
-                className={`absolute grid place-items-center h-full aspect-square right-0 text-4xl text-amber-900 transition-all ${open ? "rotate-180" : "rotate-0"}`}>
+                className={`absolute grid place-items-center h-full aspect-square right-0 text-4xl text-beige-950 transition-all ${open ? "rotate-180" : "rotate-0"}`}>
                 <ArrowDropDownIcon fontSize='inherit' />
             </div>
             <ul
-                className={`absolute z-50 flex flex-col overflow-y-auto top-[110%] w-full shadow-md text-xl bg-amber-800 text-white rounded-md transition-all ${
+                className={`absolute z-50 flex flex-col overflow-y-auto top-[110%] w-full shadow-sm text-responsive__medium bg-beige-800 text-white rounded-md transition-all ${
                     open ? "h-[20dvh] py-0.5" : "h-0"
                 }`}>
                 {props.options.map((option) => {

@@ -18,7 +18,6 @@ function shutdownCb () {
 // graceful shutdown handlers
 process.on('SIGINT', shutdownCb);
 process.on('SIGTERM', shutdownCb);
-process.on('uncaughtException', async (err) => {
+process.on('uncaughtException', (err) => {
     console.error('Unhandled Exception:', err);
-    await redisClient.disconnect()
 });

@@ -1,6 +1,6 @@
 import redisClient from "../../lib/redis/useRedisClient";
 import { Router } from "express";
-import { MatchParams, LiveMatch, MatchTokenPayload } from "../../lib/types";
+import { MatchParams, LiveMatch, MatchTokenPayload, LiveMatchRedisType } from "../../lib/types";
 import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";
@@ -46,7 +46,11 @@ matches.post("/", async (req, res) => {
     };
 
     // check if an exact match name exists
-    if ((await redisClient.ft.search("idx:matches", `@name:"${name}"`)).total > 0) {
+    const potentialMatches = await redisClient.ft.search("idx:matches", `@name:(${name})`)
+
+    console.log(potentialMatches)
+
+    if (potentialMatches.documents.some(match => match.value.name === name)) {
         return res.status(409).send("name already taken by a live match");
     } else {
         await redisClient.json.SET(`match:${matchUUID}`, "$", match as unknown as RedisJSON);
@@ -60,7 +64,7 @@ matches.post("/", async (req, res) => {
 // retrieve an existing live match
 matches.get("/live/:match_name", async (req, res) => {
     const { match_name } = req.params;
-    const { state, host_only } = req.query;
+    const { state, host_only, by_id } = req.query;
     const host = await getUserId({ req, res }) as string;
 
     // perform request validation
@@ -72,7 +76,17 @@ matches.get("/live/:match_name", async (req, res) => {
         return res.send("invalid state query");
     }
 
-    const nameQuery = match_name === "*" ? "" : `@name:*${match_name}*`;
+    if (by_id) {
+        const match = await redisClient.json.GET(match_name)
+
+        if (match) {
+            return res.status(200).json(match)
+        } else {
+            return res.sendStatus(204)
+        }
+    }
+
+    const nameQuery = match_name === "*" ? "" : `@name:(${match_name})`;
     let stateQuery: string | undefined = undefined;
     let hostQuery: string | undefined = undefined;
 
@@ -82,7 +96,7 @@ matches.get("/live/:match_name", async (req, res) => {
     } else if (Array.isArray(state)) {
         stateQuery = "live" in state ? "" : `@current_state:(${state.join("|")})`;
     } else if (typeof state === "string") {
-        stateQuery = `@current_state:${state}`;
+        stateQuery = `@current_state:(${state})`;
     }
 
     // generate hostQuery
@@ -96,9 +110,9 @@ matches.get("/live/:match_name", async (req, res) => {
     const matches = await redisClient.ft.SEARCH("idx:matches", redisQuery);
 
     if (matches.total > 0) {
-        res.status(200).json(matches.documents);
+        return res.status(200).json(matches.documents);
     } else if (matches.total === 0) {
-        res.sendStatus(204);
+        return res.sendStatus(204);
     }
 })
 
@@ -258,7 +272,7 @@ matches.get("/token/validate", async (req, res) => {
     // verify JWT
     try {
         const decodedToken = jwt.verify(accessToken, process.env.MATCH_TOKEN_SECRET);
-        return res.status(200).send(JSON.stringify(decodedToken));
+        return res.status(200).json(decodedToken);
     } catch (error) {
         // invalid signature
         return res.status(400).send(error);

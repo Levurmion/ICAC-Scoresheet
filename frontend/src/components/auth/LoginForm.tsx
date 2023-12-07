@@ -5,6 +5,7 @@ import ClientInput from "../input/ClientInput";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import ClientPasswordInput from "../input/ClientPasswordInput";
+import { extractFormData } from "@/lib/utilities";
 
 export default function LogInForm() {
 
@@ -13,17 +14,22 @@ export default function LogInForm() {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const formData = new FormData(e.target as HTMLFormElement);
-        const email = formData.get("email");
-        const password = formData.get("password");
+        const { email, password } = extractFormData(e)
         try {
-            await axios.post("/api/auth/sign-in", {
+            const response = await axios.post("/api/auth/sign-in", {
                 email,
                 password,
+            }, {
+                validateStatus: (status) => status < 500
             });
-            router.push('/user')
+
+            if (response.status === 200) {
+                router.push('/user')
+            } else if (response.status === 401) {
+                setLoginFailed(true)
+            }
         } catch (err) {
-            setLoginFailed(true)
+            alert('backend systems error!')
         }
     };
 
@@ -36,7 +42,7 @@ export default function LogInForm() {
             }
             <div className='mt-auto'>
                 <ClientButton type='submit'>
-                    <span className='block text-2xl p-2 w-full font-semibold'>Log In</span>
+                    <span className='block text-responsive__large p-2 w-full font-semibold'>Log In</span>
                 </ClientButton>
             </div>
         </form>

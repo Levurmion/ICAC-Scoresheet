@@ -20,7 +20,7 @@ export default function SignOutButton () {
 
     return (
         <ClientButton className="mt-auto" onClickHandler={handleSignOut}>
-            <span className="block text-2xl p-2 w-full font-semibold">Sign Out</span>
+            <span className="block text-responsive__large p-2 w-full font-semibold">Sign Out</span>
         </ClientButton>
     )
 }
