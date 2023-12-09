@@ -1,6 +1,8 @@
 # Match Server
 The ICAC Scoresheet `match-server` is a dedicated service accessible through the `http://localhost:8001/match-server/` that serves realtime matches through Websockets. Under the hood, this service makes use of the **Socket.IO** library. Connections to the `match-server` are only permitted for authenticated clients with a valid `match_access_token` obtained from `/api/matches/{match_id}/reserve`. On first connection, this token is going to be exchanged for a server-side session on the `match-server`. This server-side session will remain valid until the user chooses to **voluntarily leave the match** OR **disconnects for more than 15 minutes**.
 
+<br>
+
 ## Match Lifecycle
 A match can be in either one of the following states:
 - open
@@ -10,56 +12,67 @@ A match can be in either one of the following states:
 - finished
 - paused
 
-### lifecycle state #OPEN
-All matches start as an #OPEN match. A match is #OPEN while the number of registered participants is less than the configured `max_participants`. As users join an #OPEN match, the number of registered participants is going to be evaluated with every registration. When the number of participants hit the configured capacity, the match will transition to the #FULL state.
 
-### lifecycle state #FULL
-When the number of registered participants is equal to `max_participants`, a match will transititon to the #FULL state. No more users can register when a match is #FULL. However, users unregistering will revert the match back to an #OPEN state.
+### `OPEN`
+All matches start as an **OPEN** match. A match is **OPEN** while the number of registered participants is less than the configured `max_participants`. As users join an **OPEN** match, the number of registered participants is going to be evaluated with every registration. When the number of participants hit the configured capacity, the match will transition to the **FULL** state.
 
-### lifecycle state #SUBMIT
+
+### `FULL`
+When the number of registered participants is equal to `max_participants`, a match will transititon to the **FULL** state. No more users can register when a match is **FULL**. However, users unregistering will revert the match back to an OPEN state.
+
+
+### `SUBMIT`
 When the following conditions are met:
-- The match is #FULL.
+- The match is **FULL**.
 - All users are ready.
 
-a #FULL match will transition into the #SUBMIT state. This signifies the start of a match from the lobby. Matches will wait until all participants have submitted their scores for the current end. After all scores have been received, a match would then move to the #CONFIRMATION stage.
+a **FULL** match will transition into the **SUBMIT** state. This signifies the start of a match from the lobby. Matches will wait until all participants have submitted their scores for the current end. After all scores have been received, a match would then move to the **CONFIRMATION** stage.
 
-### lifecycle state #CONFIRMATION
-The #CONFIRMATION state waits for users to confirm all results for the current end. Based on whether the scores were agreed upon, the #CONFIRMATION state can lead to one of two outcomes:
-- **All participants agreed** and the match moves on to the next end of the #SUBMIT state.
-- **One or more participants disagreed** and the match reverts back to the current #SUBMIT state, repopulating the submission form for scores submitted for the current end.
 
-Furthermore, if this was the final end, the match will transition to the #FINISHED state.
+### `CONFIRMATION`
+The **CONFIRMATION** state waits for users to confirm all results for the current end. Based on whether the scores were agreed upon, the **CONFIRMATION** state can lead to one of two outcomes:
+- **All participants agreed** and the match moves on to the next end of the **SUBMIT** state.
+- **One or more participants disagreed** and the match reverts back to the current **SUBMIT** state, repopulating the submission form for scores submitted for the current end.
 
-### lifecycle state #FINISHED
-A match is #FINISHED once all ends have been scored and confirmed by participants. A #FINISHED match will initiate cleanup procedures like:
+Furthermore, if this was the final end, the match will transition to the **FINISHED** state.
+
+
+### `FINISHED`
+A match is **FINISHED** once all ends have been scored and confirmed by participants. A **FINISHED** match will initiate cleanup procedures like:
 * saving all scores as `Scoresheets` in Supabase
 * making sure that the `Scoresheet` can be retrieved from Supabase
 * double-checking that scores in the `Scoresheets` match the Redis match records
 * error handling
 
-A #FINISHED match will only remove itself from Redis once all of the above have been completed to make sure that match data is not accidentally lost by network failures.
+A **FINISHED** match will only remove itself from Redis once all of the above have been completed to make sure that match data is not accidentally lost by network failures.
 
-### match state #PAUSED
-A match can be #PAUSED for several reasons:
+
+### `PAUSED`
+A match can be **PAUSED** for several reasons:
 - The match host decides to pause the match.
 - A user disconnects/leaves in the middle of a running match.
 
-The match host would then have full agency on whether to terminate the match (which takes it to the #FINISHED state) or reset the match (which takes it to the #OPEN state).
+The match host would then have full agency on whether to terminate the match (which takes it to the **FINISHED** state) or reset the match (which takes it to the **OPEN** state).
+
+<br>
 
 
 ## Server Events
 The `match-server` publishes specific events to connected instances **Socket.IO Client** to notify live changes to the subscribed match state. 
 
-### server event #lobby-update
+### `lobby-update`
 Notifies a change in the match lobby state. This could be changes to:
 - list of registered participants
 - ready state of registered participants
 
-#lobby-update can only be emitted by matches in the #OPEN and #FULL states.
+> **lobby-update** can only be emitted by matches in the **OPEN** and **FULL** lifecycle states.
+
 #### payload
-```
+```typescript
 [
   {
+    id: string,
+    university: string,
     first_name: string,
     last_name: string,
     ready: boolean
@@ -68,6 +81,83 @@ Notifies a change in the match lobby state. This could be changes to:
 ]
 ```
 
-### `server event` submit-stage
-Notifies a lifecycle event.
+### `waiting-submit`
+Notifies that the match is currently waiting for participants to submit their scores. This event will be accompanied by a payload that specifies the details of the participant a user is scoring for. If this event was triggered by a failed **CONFIRMATION** state, the payload will additionally contain the scores of arrows from the last end to be displayed.
+
+> **waiting-submit** can only be emitted by matches in the **SUBMIT** lifecycle state.
+
+#### payload
+```typescript
+[
+  {
+    id: string,
+    university: string,
+    first_name: string,
+    last_name: string,
+    current_end: number,
+    arrows?: number[]
+  },
+  ...
+]
+```
+
+### `confirmation-update`
+Notifies that the match is currently waiting for participants to confirm their scores for the current end. This event will be emitted for every **confirmation** event triggered by a connected participant. The payload will consist of the current confirmation state of every participant in the match.
+
+> **confirmation-update** can only be emitted by matches in the **CONFIRMATION** lifecycle state.
+
+#### payload
+```typescript
+[
+  {
+    id: string,
+    university: string,
+    first_name: string,
+    last_name: string,
+    current_end: number,
+    confirmed: "pending" | boolean
+  },
+  ...
+]
+```
+
+### `finished-update`
+Notifies that the match has **FINISHED**. The event is going to be emitted with every check that passed in the background with a payload detailing which cleanup procedure has completed. Errors will also be notified directly to every participant in the match.
+
+> **finished-update** can only be emitted by matches in the **FINISHED** lifecycle state.
+
+#### payload
+```typescript
+{
+  scoresheets_saved: boolean,
+  scoresheets_validated: boolean,
+  error?: string
+}
+```
+
+### `paused`
+Notifies that the match has been **PAUSED**. The payload will contain a message explaining the reason for the event.
+
+> **paused** can only be emitted by matches in the **SUBMIT** and **CONFIRMATION** lifecycle states.
+
+#### payload
+```typescript
+{
+  reason: string
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
