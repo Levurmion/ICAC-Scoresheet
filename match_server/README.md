@@ -66,7 +66,7 @@ Notifies a change in the match lobby state. This could be changes to:
 - ready state of registered participants
 - users disconnecting and reconnecting
 
-> **lobby-update** can only be emitted by matches in the **OPEN** and **FULL** lifecycle states.
+> **server:lobby-update** can only be emitted by matches in the **OPEN** and **FULL** lifecycle states.
 
 #### payload
 ```typescript
@@ -86,7 +86,7 @@ Notifies a change in the match lobby state. This could be changes to:
 ### `server:waiting-submit`
 Notifies that the match is currently waiting for participants to submit their scores. This event will be accompanied by a payload that specifies the details of the participant a user is scoring for. If this event was triggered by a failed **CONFIRMATION** state, the payload will additionally contain the scores of arrows from the last end to be displayed. The length of the `arrows` array represent the number of arrows that need to be submitted for the current end.
 
-> **waiting-submit** can only be emitted by matches in the **SUBMIT** lifecycle state.
+> **server:waiting-submit** can only be emitted by matches in the **SUBMIT** lifecycle state.
 
 #### payload
 ```typescript
@@ -106,7 +106,7 @@ Notifies that the match is currently waiting for participants to submit their sc
 ### `server:confirmation-update`
 Notifies that the match is currently waiting for participants to confirm their scores for the current end. This event will be emitted for every **confirmation** event triggered by a connected participant. The payload will consist of the current confirmation state and scores of every participant in the match.
 
-> **confirmation-update** can only be emitted by matches in the **CONFIRMATION** lifecycle state.
+> **server:confirmation-update** can only be emitted by matches in the **CONFIRMATION** lifecycle state.
 
 #### payload
 ```typescript
@@ -127,7 +127,7 @@ Notifies that the match is currently waiting for participants to confirm their s
 ### `server:finished-update`
 Notifies that the match has **FINISHED**. The event is going to be emitted with every check that passed in the background with a payload detailing which cleanup procedure has completed. Errors will also be notified directly to every participant in the match.
 
-> **finished-update** can only be emitted by matches in the **FINISHED** lifecycle state.
+> **server:finished-update** can only be emitted by matches in the **FINISHED** lifecycle state.
 
 #### payload
 ```typescript
@@ -139,11 +139,11 @@ Notifies that the match has **FINISHED**. The event is going to be emitted with 
 ```
 
 ### `server:paused`
-Notifies that the match has been **PAUSED**. The payload will contain a message explaining the reason for the event. Typically, this will be emitted when:
+Notifies that the match has been **PAUSED**. The payload will contain a message explaining the reason for the event. The client should implement mechanisms to pause all client interactions until the event has been dealt with by users with the appropriate permissions. Typically, this will be emitted when:
 - a user disconnects
 - the match host pauses the match
 
-> **paused** can only be emitted by matches in the **SUBMIT** and **CONFIRMATION** lifecycle states.
+> **server:paused** can only be emitted by matches in the **SUBMIT** and **CONFIRMATION** lifecycle states.
 
 #### payload
 ```typescript
@@ -152,6 +152,11 @@ Notifies that the match has been **PAUSED**. The payload will contain a message 
   data: any
 }
 ```
+
+### `server:unpause`
+Notifies that whatever paused the match has been dealt with. The match will be reverted back to its prior state and the client can resume normal client interaction.
+
+> **server:unpause** can only be emitted by matches in the **PAUSED** lifecycle state.
 
 <br>
 
