@@ -64,6 +64,7 @@ The `match-server` publishes specific events to connected instances **Socket.IO 
 Notifies a change in the match lobby state. This could be changes to:
 - list of registered participants
 - ready state of registered participants
+- users disconnecting and reconnecting
 
 > **lobby-update** can only be emitted by matches in the **OPEN** and **FULL** lifecycle states.
 
@@ -75,7 +76,8 @@ Notifies a change in the match lobby state. This could be changes to:
     university: string,
     first_name: string,
     last_name: string,
-    ready: boolean
+    ready: boolean,
+    connected: boolean
   },
   ...
 ]
@@ -137,14 +139,17 @@ Notifies that the match has **FINISHED**. The event is going to be emitted with 
 ```
 
 ### `server:paused`
-Notifies that the match has been **PAUSED**. The payload will contain a message explaining the reason for the event.
+Notifies that the match has been **PAUSED**. The payload will contain a message explaining the reason for the event. Typically, this will be emitted when:
+- a user disconnects
+- the match host pauses the match
 
 > **paused** can only be emitted by matches in the **SUBMIT** and **CONFIRMATION** lifecycle states.
 
 #### payload
 ```typescript
 {
-  reason: string
+  reason: string,
+  data: any
 }
 ```
 
