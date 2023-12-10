@@ -49,7 +49,7 @@ services:
         target: /app/.env
       - ./match_server/package.json:/app/package.json
       - ./match_server/package-lock.json:/app/package-lock.json
-      - ./match_server/nodemon.json:/app/nodemon.json
+      - ./match_server/tsconfig.json:/app/tsconfig.json
 
   redis_cache:
     image: redis/redis-stack:latest

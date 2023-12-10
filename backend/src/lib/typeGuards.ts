@@ -1,8 +1,4 @@
-import { LiveMatch, MatchState, PublicMatch, RestrictedMatch } from "./types";
-
-export function isRestrictedMatch(match: LiveMatch): match is RestrictedMatch {
-    return (match as RestrictedMatch).whitelist !== undefined
-}
+import { LiveMatch, MatchState } from "./types";
 
 export function isValidLiveMatchState(state: any): state is MatchState {
     const validMatchStates = [

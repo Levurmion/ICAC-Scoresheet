@@ -1,52 +1,75 @@
 'use client'
 
-import useSocketIOClient from "@/lib/useSocketIoClient"
+import useSocketIOClient from "@/lib/useSocketIOClient"
 import { useEffect, useState } from "react"
 import ClientInput from "../input/ClientInput"
 import ClientButton from "../input/ClientButton"
-import { Socket } from "socket.io-client"
-
-const socket = useSocketIOClient()
+import clientSocket from "@/lib/useSocketIOClient"
+import { useRouter } from "next/navigation"
 
 export default function MatchSPAController () {
     const [isConnected, setIsConnected] = useState(false)
-    const [count, setCount] = useState(0)
-    const [message, setMessage] = useState<null | string>(null)
-    const [newMessage, setNewMessage] = useState("no new messages")
-    
+    const [connectionError, setConnectionError] = useState(false)
+    const router = useRouter()
 
-    const handleSendMessage = () => {
-        if (message) {
-            socket.emit('msg', message)
-            setMessage(null)
+    const handleLeaveMatch = () => {
+        if (!isConnected) {
+            router.push('/user')
+        } else {
+            clientSocket.emit('client:leave')
         }
+    }
+
+    const handleReady = () => {
+        console.log('readying...')
+        clientSocket.emit('client:lobby-ready')
+    }
+
+    const handleUnready = () => {
+        console.log('undreadying...')
+        clientSocket.emit('client:lobby-unready')
     }
 
     useEffect(() => {
 
-        socket.connect()
-
         const onConnect = () => {
             setIsConnected(true)
+            setConnectionError(false)
+            clientSocket.emit('client:request-init', (matchData: any) => {
+                console.log(matchData)
+            })
         }
 
-        const onInterval = (count: number) => {
-            setCount(count)
+        const onConnectError = (error: any) => {
+            console.log(error)
+            setConnectionError(true)
         }
 
-        const onMessage = (message: string) => {
-            console.log(message)
-            setNewMessage(message)
+        const onDisconnect = (reason: any) => {
+            setIsConnected(false)
+            if (reason === 'io server disconnect') {
+                router.push('/user')
+            } else {
+                alert(reason)
+            }
         }
 
-        socket.on('connect', onConnect)
-        socket.on('interval', onInterval)
-        socket.on('message', onMessage)
+        const onLobbyUpdate = (payload: any) => {
+            console.log(payload)
+        }
+
+        clientSocket.connect()
+
+        clientSocket.on('connect', onConnect)
+        clientSocket.on('connect_error', onConnectError)
+        clientSocket.on('disconnect', onDisconnect)
+        clientSocket.on('server:lobby-update', onLobbyUpdate)
 
         return () => {
-            socket.off('connect', onConnect)
-            socket.off('interval', onInterval)
-            socket.off('message', onMessage)
+            clientSocket.off('connect', onConnect)
+            clientSocket.off('connect_error', onConnectError)
+            clientSocket.off('disconnect', onDisconnect)
+            clientSocket.off('server:lobby-update', onLobbyUpdate)
         }
 
     }, [])
@@ -54,11 +77,15 @@ export default function MatchSPAController () {
     return (
         <div className="w-full h-full flex flex-col gap-2">
             <h1>{isConnected ? 'Connected': 'Disconnected'}</h1>
-            <h2>{count}</h2>
-            <h2>{newMessage}</h2>
-            <ClientInput onChangeCb={(e) => {setMessage(e.target.value)}}/>
-            <ClientButton onClickHandler={handleSendMessage}>
-                <span className="block text-responsive__large p-2 font-semibold">Send Message</span>
+            {connectionError && <h2 className="text-red-500">Connection Error</h2>}
+            <ClientButton onClickHandler={handleReady}>
+                <span className="block text-responsive__large p-2 font-semibold">Ready</span>
+            </ClientButton>
+            <ClientButton onClickHandler={handleUnready}>
+                <span className="block text-responsive__large p-2 font-semibold">Unready</span>
+            </ClientButton>
+            <ClientButton onClickHandler={handleLeaveMatch}>
+                <span className="block text-responsive__large p-2 font-semibold">Leave Match</span>
             </ClientButton>
         </div>
     )

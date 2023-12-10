@@ -6,7 +6,7 @@ import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";
 import useSupabaseClient from "../../lib/supabase/useSupabaseClient";
 import { getRedisMatch, getRedisMatchReservations, getUserId, isValidAlphanumeric, isValidDateString, setRedisMatchReservation } from "../../lib/utilities";
-import { isRestrictedMatch, isValidLiveMatchState } from "../../lib/typeGuards";
+import { isValidLiveMatchState } from "../../lib/typeGuards";
 import "dotenv/config";
 
 const jwt = require("jsonwebtoken");
@@ -231,8 +231,8 @@ matches.post("/:match_id/reserve", async (req, res) => {
             role: "archer",
         }; // defaults role to archer
 
-        if (isRestrictedMatch(match)) {
-            if (!(user_id in match.whitelist)) {
+        if (match.whitelist) {
+            if (match.whitelist && !(user_id in match.whitelist)) {
                 return res.status(403).send("restricted match (not in whitelist)");
             } else {
                 // update role as user could be a judge in restricted matches

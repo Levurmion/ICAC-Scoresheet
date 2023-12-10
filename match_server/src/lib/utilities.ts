@@ -1,7 +1,12 @@
 import { Request, Response } from "express"
 import useSupabaseClient from "./supabase/useSupabaseClient"
-import { LiveMatch, UserSignInCredentials, UserSignUpCredentials } from "./types"
-import redisClient from "./redis/useRedisClient"
+import { LiveMatch, MatchTokenPayload, UserSignInCredentials, UserSignUpCredentials } from "./types"
+import redisClient from "./redis/redisClient"
+import 'dotenv/config'
+import EventEmitter = require("events")
+
+const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 
 export const userSignUp: UserSignUpCredentials = {
     email: "elberttimothy23@gmail.com",
@@ -71,4 +76,38 @@ export async function getRedisMatchReservations(matchId: string): Promise<number
 export function isValidDateString (string: string): boolean {
     const date = new Date(string);
     return date instanceof Date && !isNaN(date as any);
+}
+
+export function decodeJWT(accessToken: string) {
+    if (!process.env.MATCH_TOKEN_SECRET) throw new Error('MATCH_TOKEN_SECRET is undefined')
+    const decodedToken = jwt.verify(accessToken, process.env.MATCH_TOKEN_SECRET)
+    return decodedToken as MatchTokenPayload
+}
+
+/**
+ * We compute session ID server-side by hashing the client IP and user ID.
+ * @param clientIp IPv4 address of the client.
+ * @param userId authentication user ID of the client.
+ * @returns SHA256 hash of the two strings.
+ */
+export function createMatchSessionId (clientIp: string, userId: string) {
+    const toHash = clientIp + userId
+    const sessionId = crypto.createHash('sha256').update(toHash).digest('hex')
+    return sessionId
+}
+
+/**
+ * @returns The session expiry time (in s) as set in the SESSION_EXPIRY environment variable (in minutes).
+ */
+export function getMatchSessionExpiry () {
+    if (!process.env.SESSION_EXPIRY) {
+        throw new Error('SESSION_EXPIRY is undefined')
+    }
+    return Number(process.env.SESSION_EXPIRY) * 60
+}
+
+export function waitForEvent (eventEmitter: EventEmitter, event: string) {
+    return new Promise((resolve, reject) => {
+        eventEmitter.once(event, payload => resolve(payload))
+    })
 }

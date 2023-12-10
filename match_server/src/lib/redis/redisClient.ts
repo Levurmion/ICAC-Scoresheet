@@ -2,11 +2,11 @@ import { RedisClientType, createClient } from "redis";
 import 'dotenv/config'
 
 declare global {
-    var redisClient: RedisClientType
+    var RedisClient: RedisClientType
 }
 
 if (process.env.REDIS_URL) {
-    global.redisClient = globalThis.redisClient ?? createClient({
+    global.RedisClient = globalThis.RedisClient ?? createClient({
         url: process.env.REDIS_URL
     })
 
@@ -14,7 +14,7 @@ if (process.env.REDIS_URL) {
     throw new Error('REDIS_URL is undefined.')
 }
 
-const redisClient = globalThis.redisClient
+const redisClient = globalThis.RedisClient
 
 export default redisClient
 
