@@ -97,7 +97,7 @@ Notifies that the match is currently waiting for participants to submit their sc
     first_name: string,
     last_name: string,
     current_end: number,
-    arrows: number|null[]
+    arrows: number[] | null[]
   },
   ...
 ]
