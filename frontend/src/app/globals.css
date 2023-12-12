@@ -16,8 +16,12 @@
   }
 }
 
+html {
+  @apply bg-beige-800
+}
+
 body {
-  @apply bg-beige-50 h-[100dvh] w-[100dvw] sm:w-[640px] mx-auto
+  @apply bg-beige-50 h-[100dvh] w-[100dvw] sm:w-[640px] sm:rounded-lg sm:h-[95dvh] sm:my-[2.5dvh] sm:shadow-lg mx-auto
 }
 
 h1 {
@@ -25,7 +29,7 @@ h1 {
 }
 
 h2 {
-  @apply text-2xl short-mobile:text-xl
+  @apply text-3xl short-mobile:text-2xl
 }
 
 h3 {
@@ -54,6 +58,10 @@ p {
 
 .text-responsive__xx-large {
   @apply text-2xl short-mobile:text-xl
+}
+
+.text-responsive__xxx-large {
+  @apply text-3xl short-mobile:text-2xl
 }
 
 input[type=date],
