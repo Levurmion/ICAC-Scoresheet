@@ -19,5 +19,8 @@ export default class MatchParticipant {
         if (!participant.connected) {
             this.connected = true
         }
+        if (participant.ready === undefined) {
+            this.ready = false
+        }
     }
 }

@@ -42,13 +42,12 @@ matches.post("/", async (req, res) => {
         current_end: 0,
         current_state: "open",
         previous_state: "open",
+        submission_map: {},
         participants: {},
     };
 
     // check if an exact match name exists
     const potentialMatches = await redisClient.ft.search("idx:matches", `@name:(${name})`)
-
-    console.log(potentialMatches)
 
     if (potentialMatches.documents.some(match => match.value.name === name)) {
         return res.status(409).send("name already taken by a live match");

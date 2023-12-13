@@ -38,6 +38,7 @@ export interface MatchParticipant<R extends MatchRole> {
     first_name: string,
     last_name: string,
     ready: boolean,
+    connected: boolean,
     role: R,
     scores: R extends "judge" ? undefined : Arrow[],
     ends_confirmed?: boolean[];
@@ -62,6 +63,9 @@ export interface LiveMatch extends MatchParams {
     };
     whitelist?: {
         [user_id: string]: MatchRole
+    };
+    submission_map?: {
+        [submitter_id: string]: MatchParticipant<"archer">
     }
 }
 

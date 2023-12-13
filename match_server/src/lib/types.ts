@@ -35,6 +35,7 @@ export type MatchTokenPayload = {
 
 export interface MatchParticipant<R extends MatchRole> {
     // first and last names to be derived from token
+    session: string;
     first_name: string;
     last_name: string;
     ready: boolean;
@@ -42,7 +43,7 @@ export interface MatchParticipant<R extends MatchRole> {
     role: R;
     scores: R extends "judge" ? undefined : Arrow[];
     ends_confirmed: R extends "judge" ? undefined : boolean[];
-    connected?: boolean
+    connected: boolean
 }
 
 export interface MatchParams {
@@ -54,7 +55,7 @@ export interface MatchParams {
 }
 
 export interface LiveMatch extends MatchParams {
-    created_at: Date;
+    created_at: string;
     current_end: number;
     host: string;
     participants: {

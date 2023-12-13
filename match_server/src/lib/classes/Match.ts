@@ -67,7 +67,7 @@ export class LiveMatch extends EventEmitter {
         } else {
             // convert strings to their appropriate types
             match.arrows_per_end = Number(match.arrows_per_end);
-            match.created_at = new Date(match.created_at);
+            match.created_at = match.created_at;
             match.max_participants = Number(match.max_participants);
             match.num_ends = Number(match.num_ends);
             return new LiveMatch(matchId, match);
