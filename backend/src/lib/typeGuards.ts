@@ -1,4 +1,4 @@
-import { LiveMatch, MatchState } from "./types";
+import { RedisMatch, MatchState } from "./types";
 
 export function isValidLiveMatchState(state: any): state is MatchState {
     const validMatchStates = [

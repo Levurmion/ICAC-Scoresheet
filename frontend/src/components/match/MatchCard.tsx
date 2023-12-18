@@ -30,7 +30,7 @@ export function MatchCard({ match, children, selected }: MatchCardProps) {
             <div className={`w-full flex gap-2 ${selected ? "text-beige-100" : "text-beige-900"} text-responsive__small`}>
                 <MatchStateBadge matchState={matchInfo.current_state} />
                 <span className='font-bold'>
-                    {Object.keys(matchInfo.participants).length}/{matchInfo.max_participants}
+                    {matchInfo.participant_sessions.length}/{matchInfo.max_participants}
                 </span>
                 {matchInfo.round && <span className='font-bold'>{matchInfo.round}</span>}
                 <span>{new Date(matchInfo.created_at).toDateString()}</span>

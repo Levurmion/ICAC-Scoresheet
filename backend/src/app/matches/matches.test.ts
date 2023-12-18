@@ -1,4 +1,4 @@
-import { CompletedMatch, LiveMatch, LiveMatchRedisType, MatchParams } from "../../lib/types"
+import { CompletedMatch, RedisMatchReturnType, MatchParams } from "../../lib/types"
 import { persistentUserSignIn, testUsersSignIn } from "../../lib/utilities"
 
 const supertest = require('supertest')
@@ -90,11 +90,10 @@ describe("Testing /matches endpoints", () => {
             "current_state",
             "previous_state",
             "host",
-            "participants"
         ]
         const retrievedMatches = res.body
         const firstRetrievedMatch = retrievedMatches?.[0]
-        liveMatchIds = retrievedMatches.map((match: LiveMatchRedisType) => {
+        liveMatchIds = retrievedMatches.map((match: RedisMatchReturnType) => {
             return match.id
         })
 
@@ -181,7 +180,7 @@ describe("Testing /matches endpoints", () => {
         const getMatchRes = await userAgent.get('/matches/live/Mighty_Match_1').query({
             state: "open"
         })
-        const match: LiveMatchRedisType = getMatchRes.body?.[0]
+        const match: RedisMatchReturnType = getMatchRes.body?.[0]
         const matchId = match.id
 
         // initialize 3 user agents

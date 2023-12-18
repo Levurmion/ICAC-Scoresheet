@@ -1,9 +1,12 @@
 import { Request, Response } from "express"
 import useSupabaseClient from "./supabase/useSupabaseClient"
-import { LiveMatch, MatchTokenPayload, UserSignInCredentials, UserSignUpCredentials } from "./types"
+import { RedisMatch, UserSession, MatchTokenPayload, UserSignInCredentials, UserSignUpCredentials } from "./types"
 import redisClient from "./redis/redisClient"
 import 'dotenv/config'
 import EventEmitter = require("events")
+import { User } from '@supabase/gotrue-js/src/lib/types'
+import { RedisJSON } from "@redis/json/dist/commands"
+import { Socket } from "socket.io"
 
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
@@ -54,7 +57,7 @@ export async function getUserId(context: { req: Request, res: Response }) {
 
 export async function getRedisMatch(matchId: string) {
     const matchObject = await redisClient.json.GET(matchId)
-    if (matchObject !== null) return matchObject as unknown as LiveMatch
+    if (matchObject !== null) return matchObject as unknown as RedisMatch
     else return null
 }
 
@@ -85,27 +88,80 @@ export function decodeJWT(accessToken: string) {
 }
 
 /**
- * We compute session ID server-side by hashing the client IP and user ID.
- * @param clientIp IPv4 address of the client.
- * @param userId authentication user ID of the client.
- * @returns SHA256 hash of the two strings.
- */
-export function createMatchSessionId (clientIp: string, userId: string) {
-    const toHash = clientIp + userId
-    const sessionId = crypto.createHash('sha256').update(toHash).digest('hex')
-    return sessionId
-}
-
-/**
  * @returns The session expiry time (in s) as set in the SESSION_EXPIRY environment variable (in minutes).
  */
-export function getMatchSessionExpiry () {
+export function getSessionExpirySeconds () {
     if (!process.env.SESSION_EXPIRY) {
         throw new Error('SESSION_EXPIRY is undefined')
     }
     return Number(process.env.SESSION_EXPIRY) * 60
 }
 
+
+// MATCH SERVER SESSION MANAGEMENT
+export function createSessionId (authToken: User) {
+    const userId = authToken.id
+    return `match-session:${userId}`
+}
+
+export async function getSession (authToken: User) {
+    const userSessionId = createSessionId(authToken)
+    const userSession = await redisClient.json.GET(userSessionId) as unknown as UserSession
+    return {
+        sessionId: userSessionId,
+        session: userSession
+    }
+}
+
+/**
+ * Sets a session in redis assuming `accessToken` signature has been verified.
+ * @param authToken Supabase auth JWT `UserResponse.data.user`.
+ * @param accessToken Authenticated access token.
+ * @returns `null` if session could not be set and the `sessionId` if successful.
+ */
+export async function setSession (authToken: User, accessToken: MatchTokenPayload) {
+    const userMetadata = authToken.user_metadata
+    const authTokenUserId = authToken.id
+    const accessTokenUserId = accessToken.user_uuid
+    const { first_name, last_name, university } = userMetadata
+    
+    if (authTokenUserId === accessTokenUserId) {
+        const userSessionId = createSessionId(authToken)
+        const matchId = accessToken.match_uuid
+        const sessionData: UserSession = {
+            match_id: matchId,
+            user_id: authTokenUserId,
+            first_name,
+            last_name,
+            university,
+            ready: false,
+            connected: true,
+            role: accessToken.role,
+            scores: [],
+            ends_confirmed: []
+        }
+
+        // create a HASHMAP mapping sessionId -> matchId
+        await redisClient.HSET("matches-for-session", userSessionId, matchId)
+        // save session as a JSON
+        await redisClient.json.SET(userSessionId, "$", sessionData as unknown as RedisJSON)
+
+        return userSessionId
+    } else {
+        return null
+    }
+}
+
+export function saveDataIntoSocket (socket: Socket, matchId: string, userId: string, sessionId: string) {
+    socket.data = {
+        matchId,
+        userId,
+        sessionId
+    }
+}
+
+
+// for testing event callbacks
 export function waitForEvent (eventEmitter: EventEmitter, event: string) {
     return new Promise((resolve, reject) => {
         eventEmitter.once(event, payload => resolve(payload))

@@ -1,6 +1,6 @@
 import redisClient from "../../lib/redis/useRedisClient";
 import { Router } from "express";
-import { MatchParams, LiveMatch, MatchTokenPayload, LiveMatchRedisType } from "../../lib/types";
+import { MatchParams, RedisMatch, MatchTokenPayload, RedisMatchReturnType } from "../../lib/types";
 import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";
@@ -35,19 +35,21 @@ matches.post("/", async (req, res) => {
     }
 
     const matchUUID = uuid4();
-    const match: LiveMatch = {
+    const match: RedisMatch = {
         ...matchParams,
         host,
-        created_at: new Date(),
+        created_at: new Date().toUTCString(),
         current_end: 0,
         current_state: "open",
         previous_state: "open",
         submission_map: {},
-        participants: {},
+        participant_sessions: [],
     };
 
     // check if an exact match name exists
     const potentialMatches = await redisClient.ft.search("idx:matches", `@name:(${name})`)
+
+    console.log(potentialMatches)
 
     if (potentialMatches.documents.some(match => match.value.name === name)) {
         return res.status(409).send("name already taken by a live match");
@@ -216,7 +218,7 @@ matches.post("/:match_id/reserve", async (req, res) => {
     } else if (matchState === "open") {
         // check that the number of participants + current reservations do not exceed the match max_participants limit
         const { max_participants } = match;
-        const numberParticipants = Object.keys(match.participants).length;
+        const numberParticipants = Object.keys(match.participant_sessions).length;
         const numberReservations = await getRedisMatchReservations(match_id);
 
         if (numberParticipants + numberReservations >= max_participants) {

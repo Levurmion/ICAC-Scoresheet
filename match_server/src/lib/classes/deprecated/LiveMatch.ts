@@ -1,6 +1,6 @@
 import { RedisClientOptions, RedisClientType, createClient } from "redis";
 import { EventEmitter } from "stream";
-import * as types from "../types";
+import * as types from "../../types";
 import { RedisJSON } from "@redis/json/dist/commands";
 
 export type LiveMatchInfoFields =

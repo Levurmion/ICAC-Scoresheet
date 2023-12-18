@@ -4,9 +4,10 @@ import "dotenv/config";
 import redisClient from "../lib/redis/redisClient";
 import { Response, Request } from "express";
 import useSupabaseClient from "../lib/supabase/useSupabaseClient";
-import { createMatchSessionId, decodeJWT, getMatchSessionExpiry } from "../lib/utilities";
-import { MatchTokenPayload } from "../lib/types";
-import { LiveMatch } from "../lib/classes/Match";
+import { decodeJWT, getSession, getSessionExpirySeconds, saveDataIntoSocket, setSession } from "../lib/utilities";
+import { MatchTokenPayload, UserSession } from "../lib/types";
+import { LiveMatch } from "../lib/classes/deprecated/Match";
+import Match from "../lib/classes/Match";
 
 const cors = require("cors");
 const cookie = require("cookie");
@@ -17,13 +18,16 @@ const server = createServer(app);
 const io = new Server(server, {
     cookie: true,
     connectionStateRecovery: {
-        maxDisconnectionDuration: 15 * 60 * 1000, // 15 minutes
+        maxDisconnectionDuration: 5 * 1000, // 5 minutes
         skipMiddlewares: true,
     },
 });
 
 // COMPUTED FROM ENVIRONMENT VARIABLES
-const sessionExpiry = getMatchSessionExpiry();
+const sessionExpirySeconds = getSessionExpirySeconds();
+
+// SESSION EXPIRY CLEANUP CLIENT
+const cleanupClient = redisClient.duplicate();
 
 app.use(
     cors({
@@ -38,154 +42,87 @@ app.get("/", (req: Request, res: Response) => {
 // middleware to authenticate connections prior to Websocket upgrade
 io.use(async (socket, next) => {
     const { request } = socket;
-    const clientIp = request.headers["x-forwarded-for"] as string;
     const cookieJar = request.headers.cookie;
     const cookies = cookie.parse(cookieJar as string);
-    const accessToken = cookies["match_access_token"];
-
     const supabase = useSupabaseClient({ req: request as Request });
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    const authResponse = await supabase.auth.getUser();
 
-    try {
-        if (user === null) {
-            throw new Error("user is unauthenticated");
-        }
+    if (authResponse.error) {
+        console.log(authResponse.error)
+        throw new Error('authentication error');
+    }
 
-        const userId = user.id;
-        let decodedToken: MatchTokenPayload | undefined;
+    const accessToken = cookies["match_access_token"];
+    const authToken = authResponse.data.user;
+    const userId = authToken.id
 
+    // attempt to get user session from Redis
+    const userSession = await Match.getSession(userId, redisClient);
+
+    if (userSession) {
+        const sessionId = Match.createUserSessionId(userId)
+        saveDataIntoSocket(socket, userSession.match_id, userId, sessionId);
+        next();
+    } else if (accessToken) {
+        // verify, throw error otherwise
+        let tokenPayload: MatchTokenPayload;
         try {
-            // check if user has a valid token
-            decodedToken = decodeJWT(accessToken);
-        } catch (error) {
-            console.log(error);
+            tokenPayload = decodeJWT(accessToken);
+        } catch (error: any) {
+            throw new Error(`Access token error: ${error.message}.`);
         }
 
-        // check if user has an active session in Redis
-        const sessionId = createMatchSessionId(clientIp, userId);
-        const matchId = await redisClient.get(sessionId);
-        const userMetadata = user?.user_metadata
-
-        // if user has both a valid token and active session, check that the matchIds match
-        if (matchId && decodedToken) {
-            // matchId in session matches token - let through to the match
-            if (decodedToken.match_uuid === matchId) {
-                socket.data = {
-                    ...userMetadata,
-                    userId,
-                    sessionId,
-                    matchId
-                }
-                return next();
-                // matchId in session does not match token - user is trying to access more than 1 match
-            } else if (decodedToken.match_uuid !== matchId) {
-                throw new Error("user has an active session in another match");
+        if (tokenPayload.user_uuid === authToken.id) {
+            const userMetadata = authToken.user_metadata
+            const sessionPayload: UserSession = {
+                match_id: tokenPayload.match_uuid,
+                user_id: userId,
+                first_name: userMetadata.first_name,
+                last_name: userMetadata.last_name,
+                university: userMetadata.university,
+                ready: false,
+                connected: true,
+                role: tokenPayload.role,
+                scores: [],
+                ends_confirmed: []
             }
 
-            // user has an active session but no access token - connect to the match with the active session
-        } else if (matchId) {
-            socket.data = {
-                ...userMetadata,
-                userId,
-                sessionId,
-                matchId
-            }
-            return next();
-
-            // user is joining a new match as they have no active sessions but a valid token
-        } else if (decodedToken) {
-            // credentials in access token match authentication credentials
-            if (userId === decodedToken.user_uuid) {
-                await redisClient.SET(sessionId, decodedToken.match_uuid); // save session
-                socket.data = {
-                    ...userMetadata,
-                    userId,
-                    sessionId,
-                    matchId: decodedToken.match_uuid
-                }
-                return next();
+            const sessionId = await Match.setSession(sessionPayload, redisClient);
+            if (sessionId) {
+                saveDataIntoSocket(socket, accessToken.match_uuid, authToken.id, sessionId);
+                next();
             } else {
-                throw new Error("access token does not match auth credentials");
+                throw new Error("Failed to set a new session.");
             }
+        } else {
+            throw new Error("Access and auth token credentials did not match.");
         }
-
-        throw new Error("user does not have an active session nor a valid access token");
-    } catch (error: any) {
-        console.log(error);
-        next(error);
+    } else {
+        throw new Error("User does not have a valid session/access token.");
     }
 });
 
 io.on("connection", async (socket) => {
+    console.log(socket.data.userId, "connected!");
+    // cancel session expiry
+    await redisClient.PERSIST(socket.data.sessionId)
 
-    console.log(socket.id, "connected!");
 
-    // PERSIST session in Redis if client reconnected
-    await redisClient.PERSIST(socket.data.sessionId);
-    const match = (await LiveMatch.getLiveMatch(socket.data.matchId, redisClient)) as LiveMatch;
-
-    // utility function to sync before and save after all modifications
-    async function syncAndSave (callback: (...args: any[]) => any) {
-        await match.sync(redisClient)
-        callback()
-        await match.save(redisClient)
-    }
-
-    // ATTACH SERVER EVENT CALLBACKS
-    match.on("server:lobby-update", (payload) => {
-        console.log('lobby updated!')
-        io.to(match.id).emit("server:lobby-update", payload);
-    });
-
-    // ATTACH CLIENT EVENT CALLBACKS
-    socket.on('client:request-init', (replyCb) => {
-        replyCb(JSON.parse(JSON.stringify(match)))
+    socket.on('disconnect', async (reason) => {
+        await redisClient.expire(socket.data.sessionId, sessionExpirySeconds)
+        console.log(reason, `${socket.data.sessionId} expiring in ${sessionExpirySeconds}...`)
     })
-
-    socket.on("client:leave", async () => {
-        await syncAndSave(() => {
-            match.removeUser(socket.data.userId)
-        })
-        const { sessionId } = socket.data;
-        await redisClient.DEL(sessionId);
-        socket.disconnect();
-    });
-
-    socket.on("client:lobby-ready", async () => {
-        await syncAndSave(() => {
-            match.setReady(socket.data.userId);
-        })
-    });
-
-    socket.on("client:lobby-unready", async () => {
-        await syncAndSave(() => {
-            match.setUnready(socket.data.userId)
-        })
-    });
-
-    socket.on("disconnect", async (reason) => {
-        await redisClient.EXPIRE(socket.data.sessionId, sessionExpiry, "NX");
-        await syncAndSave(() => {
-            match.setDisconnected(socket.data.userId)
-        })
-        console.log(reason);
-    });
-
-    // INITIALIZATION ONLY AFTER ALL EVENT LISTENERS HAVE BEEN ATTACHED!
-    const { first_name, last_name, university, userId } = socket.data
-    await syncAndSave(() => {
-        match.registerUser(userId, first_name, last_name, university)
-        match.setConnected(socket.data.userId)
-    })
-
-    // divert socket to a match room represented by the matchId
-    socket.join(socket.data.matchId);
 });
 
 const matchServer = server.listen(3030, async () => {
     await redisClient.connect();
+    await cleanupClient.connect();
+    await cleanupClient.pSubscribe("__keyevent@0__:expired", async (expiredKey: string, channel: string) => {
+        if (expiredKey.startsWith("match-session:")) {
+            await Match.syncExpiredSession(expiredKey, redisClient)
+            console.log("cleared: ", expiredKey)
+        }
+    });
     console.log("match-server listening on port 3030.");
 });
 
@@ -193,6 +130,7 @@ const matchServer = server.listen(3030, async () => {
 function shutdownCb() {
     matchServer.close(async () => {
         await redisClient.disconnect();
+        await cleanupClient.disconnect();
         process.exit(0);
     });
 }

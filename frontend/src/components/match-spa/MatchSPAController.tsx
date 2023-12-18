@@ -10,12 +10,12 @@ import { LobbyUserDetails, MatchSPAControllerStates, MatchSPALobbyProps, MatchSP
 import ErrorPage from "./ErrorPage";
 import ConnectingPage from "./ConnectingPage";
 import LobbyPage from "./LobbyPage";
-import { LiveMatch } from "@/lib/types";
+import { RedisMatch } from "@/lib/types";
 import { useUserContext } from "@/lib/contexts/ServerToClientUserContextProvider";
 
 export default function MatchSPAController() {
     const [matchSPAState, setMatchSPAState] = useState<MatchSPAControllerStates<MatchSPAState>>({ pageState: "connecting", pageProps: undefined });
-    const [matchMetadata, setMatchMetadata] = useState<LiveMatch | null>(null);
+    const [matchMetadata, setMatchMetadata] = useState<RedisMatch | null>(null);
     const router = useRouter();
     const userContext = useUserContext();
 
@@ -29,7 +29,7 @@ export default function MatchSPAController() {
 
     useEffect(() => {
         const onConnect = () => {
-            clientSocket.emit("client:request-init", (matchData: { lobbyPayload: MatchSPALobbyProps; matchDetails: LiveMatch }) => {
+            clientSocket.emit("client:request-init", (matchData: { lobbyPayload: MatchSPALobbyProps; matchDetails: RedisMatch }) => {
                 setMatchMetadata(matchData.matchDetails);
                 setMatchSPAState({
                     pageState: "lobby",

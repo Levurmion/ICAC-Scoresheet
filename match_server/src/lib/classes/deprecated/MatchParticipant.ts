@@ -1,4 +1,4 @@
-import * as types from "../types";
+import * as types from "../../types";
 
 export default class MatchParticipant {
     readonly first_name: string;

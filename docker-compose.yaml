@@ -42,10 +42,10 @@ services:
     image: redis/redis-stack:latest
     ports:
       - "6379:6379"
-    command: "redis-server /redis/redis.conf"
     volumes:
-      - ./redis/redis.conf:/redis/redis.conf
-  
+      - ./redis.conf:/redis/redis.conf
+    command: "redis-server /redis/redis.conf"
+
   nginx:
     image: 'nginx'
     restart: unless-stopped

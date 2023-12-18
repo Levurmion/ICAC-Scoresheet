@@ -1,6 +1,6 @@
 import { RedisJSON } from "@redis/json/dist/commands";
 import { RedisClientType, createClient } from "redis";
-import * as types from "../types";
+import * as types from "../../types";
 import LiveMatch from "./LiveMatch";
 
 describe("LiveMatch Testing Suite Implementing Redis PubSub", () => {

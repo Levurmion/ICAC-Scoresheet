@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import useSupabaseClient from "./supabase/useSupabaseClient"
-import { LiveMatch, UserSignInCredentials, UserSignUpCredentials } from "./types"
+import { RedisMatch, UserSignInCredentials, UserSignUpCredentials } from "./types"
 import redisClient from "./redis/useRedisClient"
 
 export const userSignUp: UserSignUpCredentials = {
@@ -49,7 +49,7 @@ export async function getUserId(context: { req: Request, res: Response }) {
 
 export async function getRedisMatch(matchId: string) {
     const matchObject = await redisClient.json.GET(matchId)
-    if (matchObject !== null) return matchObject as unknown as LiveMatch
+    if (matchObject !== null) return matchObject as unknown as RedisMatch
     else return null
 }
 

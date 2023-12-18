@@ -1,354 +1,242 @@
-import * as types from "../types";
 import { RedisClientType } from "redis";
-import { User } from "@supabase/gotrue-js/src/lib/types";
-import MatchParticipant from "./MatchParticipant";
-import EventEmitter = require("events");
+import { MatchState, RedisMatch, UserSession } from "../types";
+import redisClient from "../redis/redisClient";
+import { RedisJSON } from "@redis/json/dist/commands";
+import { warn } from "console";
 
-export type MatchStateUpdateEvents = "server:lobby-update" | "server:waiting-submit" | "server:confirmation-update" | "server:finished-update" | "server:paused" | "server:unpause"
+export default class Match {
+    readonly userId: string;
+    readonly matchId: string;
+    readonly sessionId: string;
+    private redisClient: RedisClientType;
 
-export class LiveMatch extends EventEmitter {
-    // read only attributes
-    readonly id: string;
-    readonly name: string;
-    readonly round?: string;
-    readonly max_participants: number;
-    readonly arrows_per_end: number;
-    readonly num_ends: number;
-    readonly created_at: Date;
-    readonly host: string;
-    readonly whitelist?: {
-        [user_id: string]: types.MatchRole;
-    };
-
-    // private attributes
-    private current_end: number;
-    private current_state: types.MatchState;
-    private previous_state: types.MatchState;
-    private submission_map?: {
-        [scorer_id: string]: MatchParticipant;
-    };
-    private participants: {
-        [user_id: string]: MatchParticipant;
-    };
-
-    // extend the emit() method event types
-    emit<K extends MatchStateUpdateEvents>(eventName: K, payload?: any): boolean {
-        return super.emit(eventName, payload);
-    }
-    on<K extends MatchStateUpdateEvents>(eventName: K, listener: (payload?: any) => void): this {
-        return super.on(eventName, listener);
+    constructor (sessionId: string, matchId: string, userId: string, redisClient: RedisClientType) {
+        this.redisClient = redisClient;
+        this.matchId = matchId;
+        this.sessionId = sessionId;
+        this.userId = userId
     }
 
-    // ====================== CONSTRUCTOR ======================
-    constructor(id: string, liveMatch: types.LiveMatch) {
-        super();
-        this.id = id;
-        Object.assign(this, liveMatch);
+    // ======================= STATIC METHODS =======================
 
-        if (!liveMatch.current_state || !liveMatch.previous_state) {
-            this.current_state = "open";
-            this.previous_state = "open";
-        }
-
-        // initialize MatchParticipants into their class implementations
-        if (Object.keys(liveMatch.participants).length > 0) {
-            for (const [userId, participant] of Object.entries(liveMatch.participants)) {
-                this.participants[userId] = new MatchParticipant(participant);
-            }
-        }
-    }
-
-    // static method to initialize Match object by fetching from Redis
-    static async getLiveMatch(matchId: string, redisClient: RedisClientType) {
-        const match = (await redisClient.json.get(matchId)) as unknown as types.LiveMatch;
-
-        if (match === null) {
-            return null;
+    // MATCH INITIALIZER
+    static async initMatchForUser (userId: string, redisClient: RedisClientType) {
+        const sessionExists = await Match.getSession(userId, redisClient)
+        if (sessionExists) {
+            const sessionId = Match.createUserSessionId(userId)
+            const matchId = sessionExists.match_id
+            return new Match(sessionId, matchId, userId, redisClient)
         } else {
-            // convert strings to their appropriate types
-            match.arrows_per_end = Number(match.arrows_per_end);
-            match.created_at = match.created_at;
-            match.max_participants = Number(match.max_participants);
-            match.num_ends = Number(match.num_ends);
-            return new LiveMatch(matchId, match);
+            return null
         }
     }
 
-     // ====================== MATCH STATE UPDATE EVENT EMITTERS ======================
-    private emitLobbyUpdate () {
-        if (this.current_state === 'open' || this.current_state === 'full') {
-            const participantIds = Object.keys(this.participants)
-            const lobbyUpdatePayload = participantIds.map(id => {
-                const participant = this.participants[id]
-                return {
-                    id,
-                    first_name: participant.first_name,
-                    last_name: participant.last_name,
-                    university: participant.university,
-                    ready: participant.ready,
-                    connected: participant.connected
-                }
-            })
-            this.emit('server:lobby-update', lobbyUpdatePayload)
-        }
+    // SESSION CREATE, READ, DELETE OPERATIONS
+    static async getSession(userId: string, redisClient: RedisClientType) {
+        const sessionId = Match.createUserSessionId(userId)
+        return await redisClient.json.GET(sessionId) as unknown as UserSession | null
     }
 
-    private emitMatchPaused (reason: string, data: any) {
-        if (this.current_state === 'submit' || this.current_state === 'confirmation') {
-            this.setMatchState("paused")
-            this.emit('server:paused', {
-                reason,
-                data
-            })
-        }
-    }
-
-    private emitMatchUnpaused () {
-        if (this.current_state === 'paused') {
-            this.setMatchState(this.previous_state)
-            this.emit('server:unpause')
-        }
-    }
-
-    // ====================== INSTANCE METHODS ======================
-
-    // LIFECYCLE METHODS ============================================
-
-    /**
-     * Changes the state of a match and saves the current state as previous state and emits
-     * an event corresponding to the `newState`.
-     * @param nextState The state to move the match to.
-     */
-    private setMatchState(nextState: types.MatchState): void {
-        this.previous_state = this.current_state;
-        this.current_state = nextState;
-    }
-
-    /**
-     * Checks if the lobby is at capacity and updates the match state accordingly.
-     */
-    private updateLobbyCapacity(): void {
-        if (this.getNumParticipants() >= this.max_participants) {
-            this.setMatchState("full");
-        } else if (this.getNumParticipants() < this.max_participants) {
-            this.setMatchState("open");
-        }
-    }
-
-    /**
-     * If match is full and all participants are ready and connected, starts the match by moving into the `submit` state.
-     */
-    private checkAllParticipantsReady(): void {
-        if (this.current_state === "full") {
-            const participantIds = Object.keys(this.participants);
-            const participantReadyStates = participantIds.map((id: string) => this.participants[id].ready);
-            const participantConnectedStates = participantIds.map((id: string) => this.participants[id].connected);
-
-            if (participantReadyStates.every((ready) => ready) && participantConnectedStates.every(connected => connected)) {
-                this.setMatchState("submit");
-            }
-        }
-    }
-
-    /**
-     * Retrieves the current match state.
-     * @returns [current state, previous state]
-     */
-    public getMatchState(): [types.MatchState, types.MatchState] {
-        return [this.current_state, this.previous_state];
-    }
-
-    // REDIS SYNCHRONIZATION METHODS ========================================================
-
-    /**
-     * Saves the current state of the match to Redis.
-     * @param redisClient An initialized and connected instance of the Redis NodeJS client.
-     * @returns **true** if the operation was successful and **false** otherwise.
-     */
-    public async save(redisClient: RedisClientType): Promise<boolean> {
+    static async setSession (sessionPayload: UserSession, redisClient: RedisClientType) {
         try {
-            const matchCopy = JSON.parse(JSON.stringify(this))
-            delete matchCopy.id
-            await redisClient.json.SET(this.id, "$", matchCopy)
-            return true
-        } catch (err) {
-            console.log(err)
-            return false
+            const sessionId = Match.createUserSessionId(sessionPayload.user_id)
+            const matchId = sessionPayload.match_id
+
+            const matchExists = await redisClient.json.GET(matchId)
+            if (!matchExists) {
+                throw new Error('Match does not exist')
+            }
+
+            const sessionExists = await redisClient.json.GET(sessionId)
+            if (sessionExists) {
+                throw new Error('Session already exists')
+            }
+
+            const maxParticipants = await redisClient.json.GET(matchId, {
+                path: ['.max_participants']
+            }) as number
+            const participants = JSON.parse(await redisClient.HGET("match-participants", matchId) as string) as string[]
+
+            if (participants.length >= maxParticipants) {
+                throw new Error('Match is full')
+            }
+
+            // save new session in  "match-participants"
+            if (participants) {
+                const newParticipants = [...participants, sessionId]
+                const newParticipantsUnique = Array.from(new Set(newParticipants)) // make sure you can't double-register
+                await redisClient.HSET("match-participants", matchId, JSON.stringify(newParticipantsUnique))
+            } else {
+                await redisClient.HSET("match-participants", matchId, JSON.stringify([sessionId]))
+            }
+
+            // save the matchId a session is associated with in "active-sessions"
+            await redisClient.HSET("active-sessions", sessionId, matchId)
+            await redisClient.json.SET(sessionId, "$", sessionPayload as unknown as RedisJSON)
+
+            // update state to "full" if num participants === max_participants - 1
+            if (participants.length === maxParticipants - 1) {
+                await Match.setState(matchId, "full", redisClient)
+            }
+
+            return sessionId
+        } catch (error: any) {
+            throw new Error(`Cannot set a new session: ${error.message}.`)
         }
     }
 
-    /**
-     * Synchronizes the current state of the match with Redis.
-     * @param redisClient An initialized and connected instance of the Redis NodeJS client.
-     * @returns **true** if the operation was successful and **false** otherwise.
-     */
-    public async sync(redisClient: RedisClientType): Promise<boolean> {
+    static async deleteSession (userId: string, redisClient: RedisClientType) {
+        const sessionId = Match.createUserSessionId(userId)
+        const matchId = await redisClient.HGET("active-sessions", sessionId) as string
+
+        // remove participant
+        const matchParticipants = JSON.parse(await redisClient.HGET("match-participants", matchId) as string) as string[]
+        const newMatchParticipants = matchParticipants.filter(currSessionId => currSessionId !== sessionId)
+
+        await redisClient.multi()
+        .HSET("match-participants", matchId, JSON.stringify(newMatchParticipants))
+        // remove session from "active-sessions"
+        .HDEL("active-sessions", sessionId)
+        // delete session
+        .json.DEL(sessionId).exec()
+
+        // removing participants can only ever lead to an open match
+        await Match.setState(matchId, "open", redisClient)
+    }
+
+    // MATCH CREATE, READ, DELETE METHODS
+    static async createRedisMatch (matchId: string, matchDetails: RedisMatch, redisClient: RedisClientType) {
+        await redisClient.HSET("match-participants", matchId, JSON.stringify([]))
+        await redisClient.json.SET(matchId, "$", matchDetails as unknown as RedisJSON)
+    }
+
+    static async getRedisMatch (matchId: string, redisClient: RedisClientType) {
+        return await redisClient.json.GET(matchId) as unknown as RedisMatch
+    }
+
+    static async deleteRedisMatch (matchId: string, redisClient: RedisClientType) {
+        const participants = JSON.parse(await redisClient.HGET("match-participants", matchId) as string) as string[] | null
+        // if there are participants
+        if (participants) {
+            for (const sessionId of participants) {
+                await redisClient.HDEL("active-sessions", sessionId)
+                await redisClient.json.DEL(sessionId)
+            }
+        }
+        await redisClient.HDEL("match-participants", matchId)
+        await redisClient.json.DEL(matchId)
+    }
+
+    // GET SPECIFIC MATCH INFO
+    static async getNumParticipants (matchId: string, redisClient: RedisClientType) {
+        const participants = JSON.parse(await redisClient.HGET("match-participants", matchId) as string) as string[]
+        return participants.length
+    }
+
+    static async getParticipants (matchId: string, redisClient: RedisClientType) {
+        const participantSessions = JSON.parse(await redisClient.HGET("match-participants", matchId) as string) as string[]
+        return await redisClient.json.MGET(participantSessions, ".") as unknown as UserSession[]
+    }
+
+    static async getState (matchId: string, redisClient: RedisClientType) {
+        const state = await redisClient.json.GET(matchId, {
+            path: [ '$.["current_state", "previous_state"]' ]
+        }) as MatchState[]
+        return {
+            current_state: state[0],
+            previous_state: state[1]
+        }
+    }
+
+    // REDIS SYNCHRONIZATION METHODS
+    static async syncExpiredSession (sessionId: string, redisClient: RedisClientType) {
+        const userSession = await redisClient.json.GET(sessionId)
         try {
-            const latestLiveMatch = await LiveMatch.getLiveMatch(this.id, redisClient)
-            if (latestLiveMatch === null) {
-                throw new Error('live match somehow does not exist')
+            if (userSession) {
+                throw new Error('Session still exists')
             } else {
-                // DO NOT PERFORM Object.assign() as this overwrites EventListeners!
-                this.participants = latestLiveMatch.participants
-                this.submission_map = latestLiveMatch.submission_map
-                this.current_end = latestLiveMatch.current_end
-                this.current_state = latestLiveMatch.current_state
-                this.previous_state = latestLiveMatch.previous_state
-                return true
+                const matchId = await redisClient.HGET("active-sessions", sessionId) as string
+
+                // remove participant
+                const matchParticipants = JSON.parse(await redisClient.HGET("match-participants", matchId) as string) as string[]
+                const newMatchParticipants = matchParticipants.filter(currSessionId => currSessionId !== sessionId)
+                await redisClient.HSET("match-participants", matchId, JSON.stringify(newMatchParticipants))
+
+                // remove session from "active-sessions"
+                await redisClient.HDEL("active-sessions", sessionId)
             }
-        } catch (err) {
-            console.log(err)
-            return false
+        } catch (error: any) {
+            throw new Error(`Cannot sync expired session: ${error.message}.`)
         }
     }
 
-    // LOBBY METHODS ==============================================
+    // PRIVATE UTILITIES
+    private static async setState (matchId: string, nextState: MatchState, redisClient: RedisClientType) {
+        const currentState = await redisClient.json.GET(matchId, {
+            path: [ ".current_state" ]
+        })
+        // set the new state atomically
+        if (nextState !== currentState) {
+            await redisClient.multi()
+            .json.SET(matchId, "$.current_state", nextState)
+            .json.SET(matchId, "$.previous_state", currentState)
+            .exec()
+        }
+    }
 
-    /**
-     * Method to register new user into the match. The method returns **true** if registration was successful and **false** otherwise.
-     *
-     * For a user to be registered, the following conditions must be met:
-     *
-     * - The current capacity (number of participants) must be less than the `max_capacity` of this match.
-     * - The user must not already been registered.
-     * - If the match has a `whitelist`, it implies a restricted match. Users must then additionally be in this `whitelist`.
-     *
-     * The following pieces of information for the parameters can be obtained from the users' authentication tokens.
-     * @param userId The `id` of the user to be registered.
-     * @param firstName The `first_name` for the user to be registered.
-     * @param lastName The `last_name` of the user to be registered.
-     * @returns `boolean`
-     */
-    public registerUser(userId: string, firstName: string, lastName: string, university: string): boolean {
-        
-        const newParticipant: types.MatchParticipant<types.MatchRole> = {
-            first_name: firstName,
-            last_name: lastName,
-            university: university,
-            ready: false,
-            scores: [],
-            ends_confirmed: new Array(this.num_ends).fill(false),
-            role: "archer",
-        };
+    private static createUserSessionId(userId: string) {
+        return `match-session:${userId}`
+    }
 
-        if (this.getNumParticipants() >= this.max_participants || this.participants[userId]) {
-            return false;
-        } else if (this.whitelist) {
-            const role = this.whitelist[userId];
-            newParticipant.role = role;
+    // ======================= INSTANCE METHODS =======================
+    public async getRedisMatch () {
+        return await Match.getRedisMatch(this.matchId, this.redisClient)
+    }
 
-            if (role) {
-                this.participants[userId] = new MatchParticipant(newParticipant);
-                this.updateLobbyCapacity();
-                this.emitLobbyUpdate()
-                return true;
-            } else {
-                return false;
+    public async getSession () {
+        return await Match.getSession(this.userId, this.redisClient)
+    }
+
+    public async getNumParticipants () {
+        return await Match.getNumParticipants(this.matchId, this.redisClient)
+    }
+
+    public async getParticipants () {
+        return await Match.getParticipants(this.matchId, this.redisClient)
+    }
+
+    public async getState () {
+        return await Match.getState(this.matchId, this.redisClient)
+    }
+
+    public async leaveMatch () {
+        await Match.deleteSession(this.userId, this.redisClient)
+        Object.assign(this, {
+            userId: undefined,
+            sessionId: undefined,
+            matchId: undefined,
+            redisClient: undefined
+        })
+    }
+
+    public async setReady () {
+        await this.redisClient.json.SET(this.sessionId, "$.ready", true)
+        const matchState = await this.getState()
+        if (matchState.current_state === "full") {
+            const participants = await this.getParticipants()
+            if (participants.every(participant => participant.ready)) {
+                await this.setState("submit")
             }
-        } else {
-            this.participants[userId] = new MatchParticipant(newParticipant);
-            this.updateLobbyCapacity();
-            this.emitLobbyUpdate()
-            return true;
         }
     }
 
-    /**
-     * Method to remove a currently registered user. Returns **true** if user was in the `participants` list and **flase** otherwise.
-     * @param userId The `id` of the user to be removed from the match.
-     */
-    public removeUser(userId: string): boolean {
-        if (this.participants[userId]) {
-            delete this.participants[userId];
-            this.updateLobbyCapacity();
-            this.emitLobbyUpdate()
-            return true;
-        } else {
-            return false;
-        }
+    public async setUnready () {
+        await this.redisClient.json.SET(this.sessionId, "$.ready", false)
     }
 
-    /**
-     * Set a user to get **ready** for the match.
-     * @param userId The `id` of the user to **ready** for the match.
-     * @returns A deep copy of the current match's participants serializable properties or `null` if the user is not registered.
-     */
-    public setReady(userId: string): boolean {
-        if (this.participants[userId]) {
-            this.participants[userId].ready = true;
-            this.checkAllParticipantsReady();
-            this.emitLobbyUpdate()
-            return true;
-        } else {
-            return false;
-        }
+    // PRIVATE UTILITIES
+    private async setState (nextState: MatchState) {
+        await Match.setState(this.matchId, nextState, this.redisClient)
     }
 
-    /**
-     * Set a user to **unready** from the match.
-     * @param userId The `id` of the user to **unready** from the match.
-     * @returns A deep copy of the current match's participants serializable properties or `null` if the user is not registered.
-     */
-    public setUnready(userId: string): boolean {
-        if (this.participants[userId]) {
-            this.participants[userId].ready = false;
-            this.emitLobbyUpdate()
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    // PARTICIPANT METHODS ================================================================
-
-    /**
-     * Method to retrieve the current participants of this match. This returns a deep copy of the object to prevent modifying the private `participants` property.
-     * @returns A deep copy of the current match's participants serializable properties.
-     */
-    public getParticipants(): { [userId: string]: types.MatchParticipant<types.MatchRole> } {
-        return JSON.parse(JSON.stringify(this.participants));
-    }
-
-    /**
-     * Get the number of currently registered participants.
-     * @returns Number of currently registered match participants.
-     */
-    public getNumParticipants(): number {
-        return Object.keys(this.participants).length;
-    }
-
-    /**
-     * When a user disconnects, set their connected state to **false**.
-     * @param userId The ID of the disconnected user.
-     * @returns **true** if the operation succeeded and **false** otherwise.
-     */
-    public setDisconnected(userId: string): boolean {
-        if (this.participants[userId]) {
-            this.participants[userId].connected = false
-            console.log(this.participants[userId])
-            this.emitLobbyUpdate()
-            this.emitMatchPaused('user disconnected', {
-                ...this.participants[userId]
-            })
-            return true
-        } else {
-            return false
-        }
-    }
-
-    /**
-     * When a user reconnects, set their connected state to **true**.
-     * @param userId The ID of the disconnected user.
-     * @returns **true** if the operation succeeded and **false** otherwise.
-     */
-    public setConnected(userId: string): boolean {
-        if (this.participants[userId]) {
-            this.participants[userId].connected = true
-            this.emitLobbyUpdate()
-            this.emitMatchUnpaused()
-            return true
-        } else {
-            return false
-        }
-    }
 }

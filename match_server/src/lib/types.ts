@@ -33,9 +33,10 @@ export type MatchTokenPayload = {
     role: MatchRole,
 }
 
-export interface MatchParticipant<R extends MatchRole> {
+export interface UserSession<R extends MatchRole=MatchRole> {
     // first and last names to be derived from token
-    session: string;
+    match_id: string;
+    user_id: string;
     first_name: string;
     last_name: string;
     ready: boolean;
@@ -54,26 +55,23 @@ export interface MatchParams {
     num_ends: number;
 }
 
-export interface LiveMatch extends MatchParams {
+export interface RedisMatch extends MatchParams {
     created_at: string;
     current_end: number;
     host: string;
-    participants: {
-        [user_uuid: string]: MatchParticipant<MatchRole>
-    };
     submission_map?: {
-        [submitter_id: string]: MatchParticipant<"archer">
+        [submitter_id: string]: string // sessionId
     }
     whitelist?: {
         [user_id: string]: MatchRole
     }
-    current_state?: MatchState;
-    previous_state?: MatchState;
+    current_state: MatchState;
+    previous_state: MatchState;
 }
 
 export type LiveMatchRedisType = {
     id: string,
-    value: LiveMatch
+    value: RedisMatch
 }
 
 export interface CompletedMatch {
