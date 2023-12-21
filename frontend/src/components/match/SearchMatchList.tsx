@@ -32,6 +32,8 @@ export default function SearchMatchList() {
         } else {
             return [] as LiveMatchRedisType[];
         }
+    }, {
+        refreshInterval: 2000
     });
 
     // event handlers
@@ -48,7 +50,7 @@ export default function SearchMatchList() {
                 if (joinMatchRes.status === 200) {
                     setRequestingJoin('success')
                     setTimeout(() => {
-                        router.push(`/match/live/${encodeURI(selectedMatch?.value.name as string)}`)
+                        router.push(`/user/match/live/${encodeURI(selectedMatch?.value.name as string)}`)
                     }, 1000)
                 } else if (joinMatchRes.status === 403) {
                     alert(joinMatchRes.data)

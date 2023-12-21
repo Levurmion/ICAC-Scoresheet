@@ -1,65 +1,130 @@
-'use client'
+"use client";
 
-import useSocketIOClient from "@/lib/useSocketIoClient"
-import { useEffect, useState } from "react"
-import ClientInput from "../input/ClientInput"
-import ClientButton from "../input/ClientButton"
-import { Socket } from "socket.io-client"
+import useSocketIOClient from "@/lib/useSocketIOClient";
+import { useEffect, useState } from "react";
+import ClientInput from "../input/ClientInput";
+import ClientButton from "../input/ClientButton";
+import clientSocket from "@/lib/useSocketIOClient";
+import { useRouter } from "next/navigation";
+import { LobbyUserDetails, MatchSPAControllerStates, MatchSPALobbyProps, MatchSPAState, MatchSPAStateProps } from "./MatchSPAControllerTypes";
+import ErrorPage from "./ErrorPage";
+import ConnectingPage from "./ConnectingPage";
+import LobbyPage from "./LobbyPage";
+import { RedisMatch } from "@/lib/types";
+import { useUserContext } from "@/lib/contexts/ServerToClientUserContextProvider";
 
-const socket = useSocketIOClient()
+export default function MatchSPAController() {
+    const [matchSPAState, setMatchSPAState] = useState<MatchSPAControllerStates<MatchSPAState>>({ pageState: "connecting", pageProps: undefined });
+    const [matchMetadata, setMatchMetadata] = useState<RedisMatch | null>(null);
+    const router = useRouter();
+    const userContext = useUserContext();
 
-export default function MatchSPAController () {
-    const [isConnected, setIsConnected] = useState(false)
-    const [count, setCount] = useState(0)
-    const [message, setMessage] = useState<null | string>(null)
-    const [newMessage, setNewMessage] = useState("no new messages")
-    
-
-    const handleSendMessage = () => {
-        if (message) {
-            socket.emit('msg', message)
-            setMessage(null)
+    const handleLeaveMatch = () => {
+        if (matchSPAState.pageState === "connect error") {
+            router.push("/user");
+        } else {
+            clientSocket.emit("client:leave");
         }
-    }
+    };
 
     useEffect(() => {
-
-        socket.connect()
-
         const onConnect = () => {
-            setIsConnected(true)
-        }
+            clientSocket.emit("client:request-init", (matchData: { lobbyPayload: MatchSPALobbyProps; matchDetails: RedisMatch }) => {
+                setMatchMetadata(matchData.matchDetails);
+                setMatchSPAState({
+                    pageState: "lobby",
+                    // force initialize because "server:lobby-update" frequently not received on connect
+                    pageProps: matchData.lobbyPayload,
+                });
+            });
+        };
 
-        const onInterval = (count: number) => {
-            setCount(count)
-        }
+        const onConnectError = (error: any) => {
+            setMatchSPAState({
+                pageState: "connect error",
+                pageProps: {
+                    clientSocket,
+                    errorMessage: error.message,
+                },
+            } as MatchSPAControllerStates<"connect error">);
+        };
 
-        const onMessage = (message: string) => {
-            console.log(message)
-            setNewMessage(message)
-        }
+        const onDisconnect = (reason: any) => {
+            if (reason === "io server disconnect") {
+                router.push("/user");
+            } else {
+                alert(reason);
+                setMatchSPAState({
+                    pageState: "connecting",
+                    pageProps: undefined,
+                });
+            }
+        };
 
-        socket.on('connect', onConnect)
-        socket.on('interval', onInterval)
-        socket.on('message', onMessage)
+        const onLobbyUpdate = (payload: { registeredUsers: LobbyUserDetails[]; isOpen: boolean }) => {
+            setMatchSPAState({
+                pageState: "lobby", // "open" | "full" does the same thing
+                pageProps: payload,
+            } as MatchSPAControllerStates<"lobby">);
+        };
+
+        clientSocket.connect();
+
+        clientSocket.on("connect", onConnect);
+        clientSocket.on("connect_error", onConnectError);
+        clientSocket.on("disconnect", onDisconnect);
+        clientSocket.on("server:lobby-update", onLobbyUpdate);
 
         return () => {
-            socket.off('connect', onConnect)
-            socket.off('interval', onInterval)
-            socket.off('message', onMessage)
-        }
+            clientSocket.off("connect", onConnect);
+            clientSocket.off("connect_error", onConnectError);
+            clientSocket.off("disconnect", onDisconnect);
+            clientSocket.off("server:lobby-update", onLobbyUpdate);
+        };
+    }, []);
 
-    }, [])
+    const renderMatchSPA = () => {
+        switch (matchSPAState.pageState) {
+            case "connecting":
+                return <ConnectingPage clientSocket={clientSocket} />;
+            case "connect error":
+                return <ErrorPage clientSocket={clientSocket} {...(matchSPAState as MatchSPAControllerStates<"connect error">).pageProps} />;
+            case "lobby":
+                return <LobbyPage clientSocket={clientSocket} {...(matchSPAState as MatchSPAControllerStates<"lobby">).pageProps} />;
+        }
+    };
+
+    const renderMatchHeaders = () => {
+        if (matchSPAState.pageState !== "connect error" && matchSPAState.pageState !== "connecting" && matchMetadata !== null) {
+            const { round, num_ends, arrows_per_end, name } = matchMetadata;
+
+            return (
+                <section className='w-full h-fit flex flex-col gap-2'>
+                    <h1 className='font-bold text-black'>{name}</h1>
+                    <div>
+                        {round && <p className='font-bold text-black -mb-1 text-responsive__xx-large'>{matchMetadata?.round}</p>}
+                        <p className='font-medium text-beige-900 text-responsive__xx-large'>
+                            {num_ends} ends of {arrows_per_end} arrows
+                        </p>
+                    </div>
+                </section>
+            );
+        }
+    };
+
+    useEffect(() => {
+        console.log(matchSPAState);
+    }, [matchSPAState]);
 
     return (
-        <div className="w-full h-full flex flex-col gap-2">
-            <h1>{isConnected ? 'Connected': 'Disconnected'}</h1>
-            <h2>{count}</h2>
-            <h2>{newMessage}</h2>
-            <ClientInput onChangeCb={(e) => {setMessage(e.target.value)}}/>
-            <ClientButton onClickHandler={handleSendMessage}>
-                <span className="block text-responsive__large p-2 font-semibold">Send Message</span>
-            </ClientButton>
+        <div className='w-full h-full flex flex-col gap-2 justify-between'>
+            {renderMatchHeaders()}
+            {renderMatchSPA()}
+            <div className='w-full h-fit'>
+                <ClientButton onClickHandler={handleLeaveMatch}>
+                    <span className='block text-responsive__large p-2 font-semibold'>Leave Match</span>
+                </ClientButton>
+            </div>
         </div>
-    )
+    );
 }

@@ -18,6 +18,8 @@ export default function HostedMatchList() {
         } else if (res.status === 204) {
             return [];
         }
+    }, {
+        refreshInterval: 2000
     });
 
     const [requestDeleteMatch, setRequestDeleteMatch] = useState<Array<boolean | "in progress">>([]);

@@ -14,7 +14,7 @@ export interface UserSignUpCredentials extends UserSignInCredentials {
     disability?: string;
 }
 
-export type MatchState = "open" | "full" | "submit" | "waiting submit" | "confirmation" | "waiting confirmation" | "finished" | "paused"
+export type MatchState = "open" | "full" | "submit" | "confirmation" | "finished" | "reported" | "paused"
 
 export type MatchRole = "archer" | "judge"
 
@@ -22,8 +22,9 @@ export type Score = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | "X"
 
 export type Arrow = {
     score: Score,
-    previous_score: Score,
-    judge_uuid: string | null
+    previous_score?: Score,
+    submitted_by: string,
+    judge_id?: string
 }
 
 export type MatchTokenPayload = {
@@ -32,43 +33,87 @@ export type MatchTokenPayload = {
     role: MatchRole,
 }
 
-export type MatchParticipant<R extends MatchRole> = {
-    ready: boolean,
-    role: R,
-    scores: R extends "judge" ? undefined : Arrow[],
-    ends_confirmed?: boolean[];
+export interface UserSession<R extends MatchRole=MatchRole> {
+    // first and last names to be derived from token
+    match_id: string;
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    ready: boolean;
+    university: string;
+    role: R;
+    scores: R extends "judge" ? undefined : Arrow[];
+    ends_confirmed: R extends "judge" ? undefined : boolean[];
+    connected: boolean
 }
 
 export interface MatchParams {
     name: string;
     round?: string;
+    competition?: string;
+    bow?: string | { [user_id: string]: string };
+    whitelist?: {
+        [user_id: string]: MatchRole
+    }
     max_participants: number;
     arrows_per_end: number;
     num_ends: number;
 }
 
-export interface PublicMatch extends MatchParams {
-    created_at: Date;
+export interface RedisMatch extends MatchParams {
+    created_at: string;
+    started_at?: string;
     current_end: number;
+    host: string;
+    submission_map?: {
+        [submitter_id: string]: string // sessionId
+    }
     current_state: MatchState;
     previous_state: MatchState;
-    host: string;
-    participants: {
-        [user_uuid: string]: MatchParticipant<MatchRole>
+}
+
+export interface EndSubmissionForm {
+    for: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        university: string;
     };
+    current_end: number;
+    arrows: Array<null | Arrow>
 }
 
-export interface RestrictedMatch extends PublicMatch {
-    whitelist: {
-        [user_id: string]: MatchRole
-    }
+export interface UserEndTotal {
+    id: string;
+    first_name: string;
+    last_name: string;
+    university: string;
+    end_arrows: Array<Arrow>;
+    end_total: number;
+    running_total: number;
 }
 
-export type LiveMatch = RestrictedMatch | PublicMatch
+export interface EndTotals {
+    current_end: number;
+    arrows_shot: number;
+    end_totals: UserEndTotal[]
+}
 
-export type LiveMatchRedisType = {
+export interface EndResubmissionForm extends EndSubmissionForm {
+    receipient: string;
+    arrows: Arrow[]
+}
+
+export interface EndResetResponse {
+    action: "reset";
+    resetPayload: EndResubmissionForm[]
+}
+export type EndRejectionResponses = "waiting" | EndResetResponse
+export type EndConfirmationResponses = EndRejectionResponses | "proceed"
+
+export type RedisMatchReturnType = {
     id: string,
-    value: LiveMatch
+    value: RedisMatch
 }
 
 export interface CompletedMatch {
@@ -80,15 +125,26 @@ export interface CompletedMatch {
     competition?: string;
 }
 
-export interface Scoresheet {
-    id: string;
+export interface MatchReport {
+    host: string;
+    name: string;
+    started_at: string;
+    finished_at: string;
     competition?: string;
-    user_id: string;
+    scoresheets: Scoresheet[]
+}
+
+export interface Scoresheet {
+    // SQL relations
+    id?: string;
+    match_id?: string;
+    // Scoresheet attributes
     round?: string;
+    bow?: string;
+    user_id: string;
     arrows_shot: number;
     arrows_per_end: number;
-    bow?: string;
-    created_at: Date;
-    match_id: string;
+    num_ends: number;
+    created_at: string;
     scoresheet: Arrow[];
 }

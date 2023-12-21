@@ -2,7 +2,7 @@ export default function LoadingSpinner() {
     return (
         <svg
             aria-hidden='true'
-            className='w-full h-full text-gray-200 animate-spin dark:text-gray-400 fill-white opacity-65'
+            className='w-full h-full text-gray-200 animate-spin dark:text-beige-300 fill-beige-500'
             viewBox='0 0 100 101'
             fill='none'
             xmlns='http://www.w3.org/2000/svg'>

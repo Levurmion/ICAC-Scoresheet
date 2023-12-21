@@ -1,0 +1,1246 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for LiveMatch.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="prettify.css" />
+    <link rel="stylesheet" href="base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="index.html">All files</a> LiveMatch.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">73.84% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>96/130</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">73.52% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>25/34</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">95.45% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>21/22</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">72.35% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>89/123</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input oninput="onInput()" type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line medium'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a>
+<a name='L322'></a><a href='#L322'>322</a>
+<a name='L323'></a><a href='#L323'>323</a>
+<a name='L324'></a><a href='#L324'>324</a>
+<a name='L325'></a><a href='#L325'>325</a>
+<a name='L326'></a><a href='#L326'>326</a>
+<a name='L327'></a><a href='#L327'>327</a>
+<a name='L328'></a><a href='#L328'>328</a>
+<a name='L329'></a><a href='#L329'>329</a>
+<a name='L330'></a><a href='#L330'>330</a>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a>
+<a name='L333'></a><a href='#L333'>333</a>
+<a name='L334'></a><a href='#L334'>334</a>
+<a name='L335'></a><a href='#L335'>335</a>
+<a name='L336'></a><a href='#L336'>336</a>
+<a name='L337'></a><a href='#L337'>337</a>
+<a name='L338'></a><a href='#L338'>338</a>
+<a name='L339'></a><a href='#L339'>339</a>
+<a name='L340'></a><a href='#L340'>340</a>
+<a name='L341'></a><a href='#L341'>341</a>
+<a name='L342'></a><a href='#L342'>342</a>
+<a name='L343'></a><a href='#L343'>343</a>
+<a name='L344'></a><a href='#L344'>344</a>
+<a name='L345'></a><a href='#L345'>345</a>
+<a name='L346'></a><a href='#L346'>346</a>
+<a name='L347'></a><a href='#L347'>347</a>
+<a name='L348'></a><a href='#L348'>348</a>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a>
+<a name='L362'></a><a href='#L362'>362</a>
+<a name='L363'></a><a href='#L363'>363</a>
+<a name='L364'></a><a href='#L364'>364</a>
+<a name='L365'></a><a href='#L365'>365</a>
+<a name='L366'></a><a href='#L366'>366</a>
+<a name='L367'></a><a href='#L367'>367</a>
+<a name='L368'></a><a href='#L368'>368</a>
+<a name='L369'></a><a href='#L369'>369</a>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a>
+<a name='L372'></a><a href='#L372'>372</a>
+<a name='L373'></a><a href='#L373'>373</a>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a>
+<a name='L377'></a><a href='#L377'>377</a>
+<a name='L378'></a><a href='#L378'>378</a>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-yes">13x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">import { RedisClientOptions, RedisClientType, createClient } from "redis";
+import { EventEmitter } from "stream";
+import * as types from "../types";
+import { RedisJSON } from "@redis/json/dist/commands";
+&nbsp;
+export type LiveMatchInfoFields =
+    | "name"
+    | "round"
+    | "max_participants"
+    | "arrows_per_end"
+    | "num_ends"
+    | "host"
+    | "created_at"
+    | "current_end"
+    | "current_state"
+    | "previous_state";
+&nbsp;
+export type ParticipantInfoFields = "session" | "first_name" | "last_name" | "university" | "role" | "connected" | "ready" | "ends_confirmed" | "scores";
+&nbsp;
+export type LiveMatchInfoDtypes = {
+    name: string;
+    round: string;
+    host: string;
+    created_at: string;
+    current_state: types.MatchState;
+    previous_state: types.MatchState;
+    max_participants: number;
+    current_end: number;
+    arrows_per_end: number;
+    num_ends: number;
+};
+&nbsp;
+export type ParticipantInfoDtypes&lt;R extends types.MatchRole = types.MatchRole&gt; = {
+    session: string;
+    first_name: string;
+    last_name: string;
+    university: string;
+    role: types.MatchRole;
+    connected: boolean;
+    ready: boolean;
+    ends_confirmed: R extends "judge" ? undefined : boolean[];
+    scores: R extends "judge" ? undefined : types.Arrow[];
+};
+&nbsp;
+export default class LiveMatch extends EventEmitter {
+    readonly matchId: string;
+&nbsp;
+    private redisClient: RedisClientType;
+&nbsp;
+    constructor(matchId: string, redisClient: RedisClientType) {
+        super();
+&nbsp;
+        // initialize
+        this.matchId = matchId;
+        this.redisClient = redisClient;
+    }
+&nbsp;
+    // ========================= PUBLIC METHODS ==============================
+&nbsp;
+    /**
+     * @returns Javascript object representation of the Match.
+     */
+    public async getLiveMatch() {
+        return await this.redisClient.json.GET(this.matchId);
+    }
+&nbsp;
+    /**
+     * Retrieves information fields about the match from Redis.
+     * @param fields The fields to be retrieved:
+     * - name
+     * - round
+     * - max_participants
+     * - arrows_per_end
+     * - num_ends
+     * - host
+     * - created_at
+     * - current_end
+     * - current_state
+     * - previous_state
+     * @returns A `string` if only a single field was queried and an object of `{ field: value }` if multiple fields was queried. Returns `false` if there was an error.
+     */
+    public async getMatchInfoFields&lt;F extends LiveMatchInfoFields&gt;(...fields: F[]) {
+        try {
+            const fieldValues = await this.redisClient.json.GET(this.matchId, {
+                path: fields,
+            });
+&nbsp;
+            if (fields.length === 1) {
+                return fieldValues as LiveMatchInfoDtypes[F];
+            } else {
+                return fieldValues as { [field: string]: LiveMatchInfoDtypes[F] };
+            }
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_94_12_94_80_4`,"LiveMatch.getMatchInfoFields() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    /**
+     * Retrieves information fields about a user from Redis.
+     * @param fields The fields to be retrieved:
+     * - name
+     * - first_name
+     * - last_name
+     * - university
+     * - role
+     * - connected
+     * - ready
+     * - ends_confirmed
+     * - score
+     * @returns A `string` if only a single field was queried and an object of `{ field: value }` if multiple fields was queried. Returns `false` if there was an error.
+     */
+    public async getParticipantFields&lt;F extends ParticipantInfoFields&gt;(userId: string, ...fields: F[]) {
+        try {
+            const participantFields = `["${fields.join('", "')}"]`;
+            const fieldValues = (await this.redisClient.json.GET(this.matchId, {
+                path: `$.participants.${userId}${participantFields}`,
+            })) as unknown as Array&lt;ParticipantInfoDtypes[F]&gt;;
+&nbsp;
+            if (fields.length === 1) {
+                return fieldValues[0] as ParticipantInfoDtypes[F];
+            } else {
+                const fieldValuesAsObject = {} as { [field: string]: ParticipantInfoDtypes[F] };
+                fields.forEach((field, idx) =&gt; (fieldValuesAsObject[field] = fieldValues[idx]));
+                return fieldValuesAsObject;
+            }
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_128_12_128_82_4`,"LiveMatch.getParticipantFields() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    /**
+     * Registers a user into `LiveMatch` for as long as the number of participants &lt; `max_participants`.
+     * @param userId
+     * @param user The user to be registered as a `MatchParticipant`.
+     * @returns **true** for a successful registration and **false** otherwise.
+     */
+    public async registerUser(userId: string, user: types.MatchParticipant&lt;types.MatchRole&gt;) {
+        try {
+            const maxParticipants = (await this.getMatchInfoFields("max_participants")) as number;
+            const numParticipants = (await this.getNumParticipants()) as number;
+            const sessionMatchId = await this.redisClient.GET(user.session)
+&nbsp;
+            if (numParticipants &lt; maxParticipants &amp;&amp; sessionMatchId === this.matchId) {
+                await this.redisClient.json.SET(this.matchId, `.participants.${userId}`, user as unknown as RedisJSON);
+                if (numParticipants === maxParticipants - 1) {
+                    await this.setState("full");
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_155_12_155_74_4`,"LiveMatch.registerUser() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+    /**
+     * Gets a registered user in the current `LiveMatch`.
+     * @param userId
+     * @returns The registered user as a `MatchParticipant`. `null` if the user is not registered.
+     */
+    public async getUser(userId: string) {
+        try {
+            const participant = await this.redisClient.json.GET(this.matchId, {
+                path: [`.participants.${userId}`],
+            });
+            return participant;
+        } catch (error: any) {
+            /* eslint-disable */console.log(...oo_oo(`3680848733_171_12_171_69_4`,"LiveMatch.getUser() Error: ", error.message));
+            return null;
+        }
+    }
+&nbsp;
+    /**
+     * Deletes a registered user from the current `LiveMatch`.
+     * @param userId
+     * @returns **true** if user was successfully deleted and **false** otherwise.
+     */
+    public async deleteUser(userId: string) {
+        try {
+            await this.removeUserSession(userId);
+            await this.redisClient.json.DEL(this.matchId, `.participants.${userId}`);
+            await this.setState("open");
+            return true;
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_188_12_188_70_4`,"LiveMatch.deleteUser Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    /**
+     * Counts the number of participants currently registered in the `LiveMatch`.
+     * @returns the number of participants currently registered in the `LiveMatch`.
+     */
+    public async getNumParticipants() {
+        try {
+            const numParticipants = await this.redisClient.json.OBJLEN(this.matchId, ".participants");
+            return numParticipants as number;
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_202_12_202_80_4`,"LiveMatch.getNumParticipants() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    /**
+     * Retrieve all currently registered users as an array of `MatchParticipant` objects.
+     * @returns an array of currently registered users as `MatchParticipant` objects and **false** if the operation was unsuccessful.
+     */
+    public async getParticipants() {
+        try {
+            const participants = await this.redisClient.json.GET(this.matchId, {
+                path: [".participants"],
+            });
+            <span class="missing-if-branch" title="if path not taken" >I</span>if (Object.keys(participants as object).length === 0) {
+<span class="cstat-no" title="statement not covered" >                return [];</span>
+            } else {
+                const participantList = Object.entries(participants as object).map(([id, user]) =&gt; {
+                    return { id, user } as { id: string; user: types.MatchParticipant&lt;types.MatchRole&gt; };
+                });
+                return participantList;
+            }
+        } catch (error: any) {
+<span class="cstat-no" title="statement not covered" >            throw new Error(`LiveMatch.getParticipants() Error: ${error.message}`);</span>
+        }
+    }
+&nbsp;
+    /**
+     * Set a user `ready` state to **true**
+     * @param userId
+     * @returns **true** if the operations was successful and **false** otherwise.
+     */
+    public async setReady(userId: string) {
+        try {
+            const setReady = await this.redisClient.json.SET(this.matchId, `.participants.${userId}.ready`, true);
+&nbsp;
+            if (setReady === "OK") {
+                await this.shouldMoveToSubmit();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_245_12_245_70_4`,"LiveMatch.setReady() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    /**
+     * Set a user `ready` state to **false**
+     * @param userId
+     * @returns **true** if the operations was successful and **false** otherwise.
+     */
+    public async setUnready(userId: string) {
+        try {
+            const setUnready = await this.redisClient.json.SET(this.matchId, `.participants.${userId}.ready`, false);
+&nbsp;
+            if (setUnready === "OK") {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_265_12_265_72_4`,"LiveMatch.setUnready() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    /**
+     * Set a user `connected` state to **true**
+     * @param userId
+     * @returns **true** if the operations was successful and **false** otherwise.
+     */
+    public async setConnected(userId: string) {
+        try {
+            const setConnected = await this.redisClient.json.SET(this.matchId, `.participants.${userId}.connected`, true);
+&nbsp;
+            if (setConnected === "OK") {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_285_12_285_74_4`,"LiveMatch.setConnected() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    /**
+     * Set a user `connected` state to **false**
+     * @param userId
+     * @returns **true** if the operations was successful and **false** otherwise.
+     */
+    public async setDisconnected(userId: string) {
+        try {
+            const setDisconnected = await this.redisClient.json.SET(this.matchId, `.participants.${userId}.connected`, false);
+&nbsp;
+            if (setDisconnected === "OK") {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_305_12_305_77_4`,"LiveMatch.setDisconnected() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    // ========================= PRIVATE METHODS ==============================
+&nbsp;
+    /**
+     * Retrieve the current state of the `LiveMatch`.
+     * @returns an object of `{ current_state: MatchState, previous_state: MatchState }`.
+     */
+    public async getState() {
+        try {
+            const matchState = await this.getMatchInfoFields("current_state", "previous_state");
+            return matchState;
+        } catch (error: any) {
+            /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_321_12_321_70_4`,"LiveMatch.getState() Error: ", error.message));</span>
+<span class="cstat-no" title="statement not covered" >            return false;</span>
+        }
+    }
+&nbsp;
+    private async setState(nextState: types.MatchState) {
+        try {
+            const currentState = await this.getMatchInfoFields("current_state");
+            await this.redisClient.json.SET(this.matchId, ".current_state", nextState);
+            await this.redisClient.json.SET(this.matchId, ".previous_state", currentState);
+            return true;
+        } catch (error: any) {
+<span class="cstat-no" title="statement not covered" >            throw new Error(`LiveMatch.setState() Error: ${error.message}`);</span>
+        }
+    }
+&nbsp;
+    private async shouldMoveToSubmit() {
+        try {
+            const maxParticipants = (await this.getMatchInfoFields("max_participants")) as number;
+            const numParticipants = (await this.getNumParticipants()) as number;
+            <span class="missing-if-branch" title="else path not taken" >E</span>if (numParticipants === maxParticipants) {
+                const participants = await this.getParticipants();
+                const allUsersReady = participants.every((participant) =&gt; participant.user.ready);
+                if (allUsersReady) {
+                    await this.setState("submit");
+                }
+            }
+        } catch (error: any) {
+<span class="cstat-no" title="statement not covered" >            throw new Error(`LiveMatch.shouldMoveToSubmit() Error: ${error.message}`);</span>
+        }
+    }
+&nbsp;
+    private async removeUserSession(userId: string) {
+        try {
+            const userSession = (await this.getParticipantFields(userId, "session")) as string;
+            const sessionMatchId = await this.redisClient.GET(userSession)
+            if (sessionMatchId === this.matchId) {
+                await this.redisClient.DEL(userSession);
+            } else <span class="missing-if-branch" title="else path not taken" >E</span>{
+<span class="cstat-no" title="statement not covered" >                throw new Error("session not found for this match");</span>
+            }
+        } catch (error: any) {
+<span class="cstat-no" title="statement not covered" >            throw new Error(`LiveMatch.removeUserSession() Error: ${error.message}`);</span>
+        }
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    pr</span>ivate async removeUserWithNoSession(userId: string) {
+<span class="cstat-no" title="statement not covered" >        try {</span>
+            const userSession = <span class="cstat-no" title="statement not covered" >(await this.getParticipantFields(userId, "session")) as string</span>
+<span class="cstat-no" title="statement not covered" >            if (userSession) {</span>
+                const sessionMatchId = <span class="cstat-no" title="statement not covered" >await this.redisClient.GET(userSession)</span>
+                /* eslint-disable */<span class="cstat-no" title="statement not covered" >console.log(...oo_oo(`3680848733_372_16_372_43_4`,sessionMatchId))</span>
+<span class="cstat-no" title="statement not covered" >                if (sessionMatchId !== this.matchId || sessionMatchId === null) {</span>
+<span class="cstat-no" title="statement not covered" >                    await this.deleteUser(userId)</span>
+                }
+            }
+        } catch (error: any) {
+<span class="cstat-no" title="statement not covered" >            throw new Error(`LiveMatch.removeUserWithNoSession() Error: ${error.message}`);</span>
+        }
+    }
+}
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;
+/* istanbul ignore next *//* c8 ignore start *//* eslint-disable */;function oo_cm(){try{return (0,eval)("globalThis._console_ninja") || (0,eval)("/* https://github.com/wallabyjs/console-ninja#how-does-it-work */'use strict';var _0x4bc600=_0x1efc;function _0x1efc(_0x2370e1,_0x451e57){var _0x2b498d=_0x2b49();return _0x1efc=function(_0x1efca3,_0x5675d1){_0x1efca3=_0x1efca3-0x1cc;var _0x2eb2bd=_0x2b498d[_0x1efca3];return _0x2eb2bd;},_0x1efc(_0x2370e1,_0x451e57);}(function(_0x39db2b,_0xe46cf4){var _0x5a822b=_0x1efc,_0x4a3321=_0x39db2b();while(!![]){try{var _0x27743b=parseInt(_0x5a822b(0x278))/0x1+parseInt(_0x5a822b(0x203))/0x2+-parseInt(_0x5a822b(0x218))/0x3*(parseInt(_0x5a822b(0x25d))/0x4)+-parseInt(_0x5a822b(0x28f))/0x5+parseInt(_0x5a822b(0x233))/0x6+-parseInt(_0x5a822b(0x26a))/0x7+parseInt(_0x5a822b(0x21c))/0x8;if(_0x27743b===_0xe46cf4)break;else _0x4a3321['push'](_0x4a3321['shift']());}catch(_0x160deb){_0x4a3321['push'](_0x4a3321['shift']());}}}(_0x2b49,0x63428));var j=Object[_0x4bc600(0x1e9)],H=Object[_0x4bc600(0x286)],G=Object[_0x4bc600(0x2b1)],ee=Object['getOwnPropertyNames'],te=Object['getPrototypeOf'],ne=Object[_0x4bc600(0x214)][_0x4bc600(0x20c)],re=(_0x24307b,_0x223c73,_0xcbd663,_0x6af7f3)=&gt;{var _0x190589=_0x4bc600;if(_0x223c73&amp;&amp;typeof _0x223c73==_0x190589(0x20a)||typeof _0x223c73==_0x190589(0x232)){for(let _0x292a22 of ee(_0x223c73))!ne[_0x190589(0x20e)](_0x24307b,_0x292a22)&amp;&amp;_0x292a22!==_0xcbd663&amp;&amp;H(_0x24307b,_0x292a22,{'get':()=&gt;_0x223c73[_0x292a22],'enumerable':!(_0x6af7f3=G(_0x223c73,_0x292a22))||_0x6af7f3[_0x190589(0x29f)]});}return _0x24307b;},x=(_0x509057,_0x1a8f0d,_0x5c2be2)=&gt;(_0x5c2be2=_0x509057!=null?j(te(_0x509057)):{},re(_0x1a8f0d||!_0x509057||!_0x509057[_0x4bc600(0x2a0)]?H(_0x5c2be2,_0x4bc600(0x264),{'value':_0x509057,'enumerable':!0x0}):_0x5c2be2,_0x509057)),X=class{constructor(_0x440036,_0x195e06,_0x39aca1,_0x490055,_0x557d7d){var _0x1f86c9=_0x4bc600;this['global']=_0x440036,this[_0x1f86c9(0x25c)]=_0x195e06,this[_0x1f86c9(0x237)]=_0x39aca1,this['nodeModules']=_0x490055,this[_0x1f86c9(0x24b)]=_0x557d7d,this['_allowedToSend']=!0x0,this[_0x1f86c9(0x1ce)]=!0x0,this[_0x1f86c9(0x1f2)]=!0x1,this[_0x1f86c9(0x262)]=!0x1,this[_0x1f86c9(0x271)]=_0x440036[_0x1f86c9(0x254)]?.[_0x1f86c9(0x23e)]?.[_0x1f86c9(0x2a3)]===_0x1f86c9(0x204),this['_inBrowser']=!this[_0x1f86c9(0x215)]['process']?.[_0x1f86c9(0x1ea)]?.[_0x1f86c9(0x29c)]&amp;&amp;!this[_0x1f86c9(0x271)],this[_0x1f86c9(0x260)]=null,this[_0x1f86c9(0x28e)]=0x0,this[_0x1f86c9(0x1dc)]=0x14,this['_webSocketErrorDocsLink']=_0x1f86c9(0x288),this[_0x1f86c9(0x28a)]=(this[_0x1f86c9(0x1d1)]?_0x1f86c9(0x223):_0x1f86c9(0x2b3))+this[_0x1f86c9(0x248)];}async[_0x4bc600(0x24e)](){var _0x32d658=_0x4bc600;if(this['_WebSocketClass'])return this[_0x32d658(0x260)];let _0x3a5920;if(this[_0x32d658(0x1d1)]||this[_0x32d658(0x271)])_0x3a5920=this[_0x32d658(0x215)][_0x32d658(0x253)];else{if(this['global']['process']?.[_0x32d658(0x1e5)])_0x3a5920=this[_0x32d658(0x215)][_0x32d658(0x254)]?.[_0x32d658(0x1e5)];else try{let _0x5d66c0=await import(_0x32d658(0x24f));_0x3a5920=(await import((await import(_0x32d658(0x1fc)))[_0x32d658(0x291)](_0x5d66c0['join'](this[_0x32d658(0x26f)],_0x32d658(0x27d)))[_0x32d658(0x1da)]()))['default'];}catch{try{_0x3a5920=require(require(_0x32d658(0x24f))[_0x32d658(0x1e7)](this[_0x32d658(0x26f)],'ws'));}catch{throw new Error(_0x32d658(0x230));}}}return this[_0x32d658(0x260)]=_0x3a5920,_0x3a5920;}[_0x4bc600(0x1e0)](){var _0x24425c=_0x4bc600;this[_0x24425c(0x262)]||this[_0x24425c(0x1f2)]||this['_connectAttemptCount']&gt;=this[_0x24425c(0x1dc)]||(this['_allowedToConnectOnSend']=!0x1,this[_0x24425c(0x262)]=!0x0,this[_0x24425c(0x28e)]++,this[_0x24425c(0x23b)]=new Promise((_0x2637b8,_0x4e222c)=&gt;{var _0x138aa2=_0x24425c;this[_0x138aa2(0x24e)]()[_0x138aa2(0x294)](_0x23eced=&gt;{var _0x330dae=_0x138aa2;let _0x306c11=new _0x23eced('ws://'+(!this[_0x330dae(0x1d1)]&amp;&amp;this[_0x330dae(0x24b)]?'gateway.docker.internal':this['host'])+':'+this[_0x330dae(0x237)]);_0x306c11[_0x330dae(0x22c)]=()=&gt;{var _0x145abf=_0x330dae;this['_allowedToSend']=!0x1,this[_0x145abf(0x27b)](_0x306c11),this[_0x145abf(0x20d)](),_0x4e222c(new Error(_0x145abf(0x2b0)));},_0x306c11[_0x330dae(0x1cf)]=()=&gt;{var _0x49e2c7=_0x330dae;this['_inBrowser']||_0x306c11[_0x49e2c7(0x22e)]&amp;&amp;_0x306c11[_0x49e2c7(0x22e)][_0x49e2c7(0x243)]&amp;&amp;_0x306c11['_socket'][_0x49e2c7(0x243)](),_0x2637b8(_0x306c11);},_0x306c11[_0x330dae(0x1f5)]=()=&gt;{var _0x11cc74=_0x330dae;this[_0x11cc74(0x1ce)]=!0x0,this[_0x11cc74(0x27b)](_0x306c11),this['_attemptToReconnectShortly']();},_0x306c11['onmessage']=_0x47d0dc=&gt;{var _0x467f25=_0x330dae;try{_0x47d0dc&amp;&amp;_0x47d0dc[_0x467f25(0x29d)]&amp;&amp;this[_0x467f25(0x1d1)]&amp;&amp;JSON[_0x467f25(0x21d)](_0x47d0dc[_0x467f25(0x29d)])[_0x467f25(0x2a2)]==='reload'&amp;&amp;this[_0x467f25(0x215)][_0x467f25(0x1d9)][_0x467f25(0x25a)]();}catch{}};})[_0x138aa2(0x294)](_0x1aaf0b=&gt;(this['_connected']=!0x0,this[_0x138aa2(0x262)]=!0x1,this['_allowedToConnectOnSend']=!0x1,this[_0x138aa2(0x1fa)]=!0x0,this[_0x138aa2(0x28e)]=0x0,_0x1aaf0b))[_0x138aa2(0x25f)](_0x5881ea=&gt;(this[_0x138aa2(0x1f2)]=!0x1,this[_0x138aa2(0x262)]=!0x1,console[_0x138aa2(0x1f7)](_0x138aa2(0x1df)+this[_0x138aa2(0x248)]),_0x4e222c(new Error('failed\\x20to\\x20connect\\x20to\\x20host:\\x20'+(_0x5881ea&amp;&amp;_0x5881ea[_0x138aa2(0x280)])))));}));}[_0x4bc600(0x27b)](_0x2f73b2){var _0x47bf8e=_0x4bc600;this['_connected']=!0x1,this[_0x47bf8e(0x262)]=!0x1;try{_0x2f73b2['onclose']=null,_0x2f73b2['onerror']=null,_0x2f73b2[_0x47bf8e(0x1cf)]=null;}catch{}try{_0x2f73b2[_0x47bf8e(0x277)]&lt;0x2&amp;&amp;_0x2f73b2[_0x47bf8e(0x267)]();}catch{}}[_0x4bc600(0x20d)](){var _0x11f902=_0x4bc600;clearTimeout(this[_0x11f902(0x289)]),!(this[_0x11f902(0x28e)]&gt;=this[_0x11f902(0x1dc)])&amp;&amp;(this[_0x11f902(0x289)]=setTimeout(()=&gt;{var _0x480af4=_0x11f902;this[_0x480af4(0x1f2)]||this[_0x480af4(0x262)]||(this[_0x480af4(0x1e0)](),this[_0x480af4(0x23b)]?.[_0x480af4(0x25f)](()=&gt;this['_attemptToReconnectShortly']()));},0x1f4),this[_0x11f902(0x289)]['unref']&amp;&amp;this[_0x11f902(0x289)][_0x11f902(0x243)]());}async[_0x4bc600(0x1eb)](_0x1801e0){var _0x447b07=_0x4bc600;try{if(!this['_allowedToSend'])return;this[_0x447b07(0x1ce)]&amp;&amp;this['_connectToHostNow'](),(await this[_0x447b07(0x23b)])[_0x447b07(0x1eb)](JSON[_0x447b07(0x279)](_0x1801e0));}catch(_0xad1f4f){console[_0x447b07(0x1f7)](this[_0x447b07(0x28a)]+':\\x20'+(_0xad1f4f&amp;&amp;_0xad1f4f['message'])),this[_0x447b07(0x1fa)]=!0x1,this[_0x447b07(0x20d)]();}}};function b(_0x434690,_0x1479c6,_0x1d49ff,_0x2e53da,_0x39ed21,_0x58f9bc){var _0xa02c82=_0x4bc600;let _0x479548=_0x1d49ff[_0xa02c82(0x205)](',')[_0xa02c82(0x28c)](_0x50d81a=&gt;{var _0x44d92a=_0xa02c82;try{_0x434690[_0x44d92a(0x2a5)]||((_0x39ed21==='next.js'||_0x39ed21===_0x44d92a(0x242)||_0x39ed21===_0x44d92a(0x22f)||_0x39ed21==='angular')&amp;&amp;(_0x39ed21+=!_0x434690[_0x44d92a(0x254)]?.[_0x44d92a(0x1ea)]?.['node']&amp;&amp;_0x434690[_0x44d92a(0x254)]?.[_0x44d92a(0x23e)]?.[_0x44d92a(0x2a3)]!==_0x44d92a(0x204)?_0x44d92a(0x229):_0x44d92a(0x285)),_0x434690['_console_ninja_session']={'id':+new Date(),'tool':_0x39ed21});let _0x13ade6=new X(_0x434690,_0x1479c6,_0x50d81a,_0x2e53da,_0x58f9bc);return _0x13ade6[_0x44d92a(0x1eb)][_0x44d92a(0x1ee)](_0x13ade6);}catch(_0x44fe2c){return console['warn'](_0x44d92a(0x26c),_0x44fe2c&amp;&amp;_0x44fe2c[_0x44d92a(0x280)]),()=&gt;{};}});return _0xeee6ff=&gt;_0x479548[_0xa02c82(0x200)](_0x47beab=&gt;_0x47beab(_0xeee6ff));}function W(_0x40162f){var _0x3b0664=_0x4bc600;let _0x29142f=function(_0x1acee4,_0x44c01c){return _0x44c01c-_0x1acee4;},_0x371dbc;if(_0x40162f[_0x3b0664(0x27f)])_0x371dbc=function(){var _0x370f52=_0x3b0664;return _0x40162f[_0x370f52(0x27f)]['now']();};else{if(_0x40162f['process']&amp;&amp;_0x40162f[_0x3b0664(0x254)][_0x3b0664(0x2ac)]&amp;&amp;_0x40162f['process']?.[_0x3b0664(0x23e)]?.[_0x3b0664(0x2a3)]!==_0x3b0664(0x204))_0x371dbc=function(){var _0x3213ce=_0x3b0664;return _0x40162f[_0x3213ce(0x254)]['hrtime']();},_0x29142f=function(_0x51c892,_0x17b41d){return 0x3e8*(_0x17b41d[0x0]-_0x51c892[0x0])+(_0x17b41d[0x1]-_0x51c892[0x1])/0xf4240;};else try{let {performance:_0x43929a}=require(_0x3b0664(0x23c));_0x371dbc=function(){var _0x504583=_0x3b0664;return _0x43929a[_0x504583(0x247)]();};}catch{_0x371dbc=function(){return+new Date();};}}return{'elapsed':_0x29142f,'timeStamp':_0x371dbc,'now':()=&gt;Date[_0x3b0664(0x247)]()};}function J(_0x3d478a,_0xdcd06d,_0x4f5bb1){var _0xee1357=_0x4bc600;if(_0x3d478a[_0xee1357(0x209)]!==void 0x0)return _0x3d478a[_0xee1357(0x209)];let _0x5ad23c=_0x3d478a[_0xee1357(0x254)]?.[_0xee1357(0x1ea)]?.['node']||_0x3d478a[_0xee1357(0x254)]?.[_0xee1357(0x23e)]?.[_0xee1357(0x2a3)]===_0xee1357(0x204);return _0x5ad23c&amp;&amp;_0x4f5bb1===_0xee1357(0x297)?_0x3d478a[_0xee1357(0x209)]=!0x1:_0x3d478a[_0xee1357(0x209)]=_0x5ad23c||!_0xdcd06d||_0x3d478a[_0xee1357(0x1d9)]?.['hostname']&amp;&amp;_0xdcd06d[_0xee1357(0x256)](_0x3d478a[_0xee1357(0x1d9)][_0xee1357(0x1ef)]),_0x3d478a[_0xee1357(0x209)];}function Y(_0x3bde4c,_0x110256,_0xa26422,_0x582bd){var _0x1cbe52=_0x4bc600;_0x3bde4c=_0x3bde4c,_0x110256=_0x110256,_0xa26422=_0xa26422,_0x582bd=_0x582bd;let _0x243193=W(_0x3bde4c),_0x428c5e=_0x243193['elapsed'],_0x5b4fd4=_0x243193[_0x1cbe52(0x292)];class _0x849a7a{constructor(){var _0x297194=_0x1cbe52;this['_keyStrRegExp']=/^(?!(?:do|if|in|for|let|new|try|var|case|else|enum|eval|false|null|this|true|void|with|break|catch|class|const|super|throw|while|yield|delete|export|import|public|return|static|switch|typeof|default|extends|finally|package|private|continue|debugger|function|arguments|interface|protected|implements|instanceof)$)[_$a-zA-Z\\xA0-\\uFFFF][_$a-zA-Z0-9\\xA0-\\uFFFF]*$/,this[_0x297194(0x2a9)]=/^(0|[1-9][0-9]*)$/,this['_quotedRegExp']=/'([^\\\\']|\\\\')*'/,this[_0x297194(0x235)]=_0x3bde4c[_0x297194(0x1f3)],this[_0x297194(0x240)]=_0x3bde4c[_0x297194(0x213)],this[_0x297194(0x241)]=Object[_0x297194(0x2b1)],this[_0x297194(0x231)]=Object[_0x297194(0x2ae)],this['_Symbol']=_0x3bde4c[_0x297194(0x1f9)],this[_0x297194(0x1e8)]=RegExp['prototype'][_0x297194(0x1da)],this['_dateToString']=Date[_0x297194(0x214)]['toString'];}[_0x1cbe52(0x226)](_0x28dcef,_0x2dea67,_0x26b79c,_0x386b68){var _0x5c337d=_0x1cbe52,_0x411f2e=this,_0x25ff55=_0x26b79c[_0x5c337d(0x2a8)];function _0x1dceed(_0x5b301b,_0x1cd106,_0x45e14e){var _0x126dfd=_0x5c337d;_0x1cd106[_0x126dfd(0x26d)]='unknown',_0x1cd106[_0x126dfd(0x257)]=_0x5b301b[_0x126dfd(0x280)],_0x2cc4ef=_0x45e14e[_0x126dfd(0x29c)][_0x126dfd(0x295)],_0x45e14e[_0x126dfd(0x29c)][_0x126dfd(0x295)]=_0x1cd106,_0x411f2e[_0x126dfd(0x219)](_0x1cd106,_0x45e14e);}try{_0x26b79c[_0x5c337d(0x296)]++,_0x26b79c[_0x5c337d(0x2a8)]&amp;&amp;_0x26b79c[_0x5c337d(0x236)][_0x5c337d(0x282)](_0x2dea67);var _0x1a0919,_0x12e69c,_0x31c21d,_0x58fc06,_0x33bd61=[],_0x3e80f1=[],_0x3478d7,_0x1e7f3b=this[_0x5c337d(0x1fe)](_0x2dea67),_0x1e8e17=_0x1e7f3b===_0x5c337d(0x274),_0x1f8788=!0x1,_0x29246f=_0x1e7f3b==='function',_0x2766f6=this['_isPrimitiveType'](_0x1e7f3b),_0x8d583d=this[_0x5c337d(0x2ad)](_0x1e7f3b),_0x382c09=_0x2766f6||_0x8d583d,_0x1287a6={},_0x4c1e07=0x0,_0x1f2b52=!0x1,_0x2cc4ef,_0x5e8b20=/^(([1-9]{1}[0-9]*)|0)$/;if(_0x26b79c['depth']){if(_0x1e8e17){if(_0x12e69c=_0x2dea67[_0x5c337d(0x2b4)],_0x12e69c&gt;_0x26b79c['elements']){for(_0x31c21d=0x0,_0x58fc06=_0x26b79c['elements'],_0x1a0919=_0x31c21d;_0x1a0919&lt;_0x58fc06;_0x1a0919++)_0x3e80f1[_0x5c337d(0x282)](_0x411f2e[_0x5c337d(0x22b)](_0x33bd61,_0x2dea67,_0x1e7f3b,_0x1a0919,_0x26b79c));_0x28dcef['cappedElements']=!0x0;}else{for(_0x31c21d=0x0,_0x58fc06=_0x12e69c,_0x1a0919=_0x31c21d;_0x1a0919&lt;_0x58fc06;_0x1a0919++)_0x3e80f1['push'](_0x411f2e[_0x5c337d(0x22b)](_0x33bd61,_0x2dea67,_0x1e7f3b,_0x1a0919,_0x26b79c));}_0x26b79c['autoExpandPropertyCount']+=_0x3e80f1[_0x5c337d(0x2b4)];}if(!(_0x1e7f3b===_0x5c337d(0x1d0)||_0x1e7f3b==='undefined')&amp;&amp;!_0x2766f6&amp;&amp;_0x1e7f3b!==_0x5c337d(0x1f0)&amp;&amp;_0x1e7f3b!==_0x5c337d(0x2b7)&amp;&amp;_0x1e7f3b!==_0x5c337d(0x298)){var _0x5ddb6a=_0x386b68[_0x5c337d(0x225)]||_0x26b79c[_0x5c337d(0x225)];if(this['_isSet'](_0x2dea67)?(_0x1a0919=0x0,_0x2dea67[_0x5c337d(0x200)](function(_0x40c0cb){var _0x74f4c4=_0x5c337d;if(_0x4c1e07++,_0x26b79c[_0x74f4c4(0x21e)]++,_0x4c1e07&gt;_0x5ddb6a){_0x1f2b52=!0x0;return;}if(!_0x26b79c[_0x74f4c4(0x22a)]&amp;&amp;_0x26b79c[_0x74f4c4(0x2a8)]&amp;&amp;_0x26b79c[_0x74f4c4(0x21e)]&gt;_0x26b79c[_0x74f4c4(0x245)]){_0x1f2b52=!0x0;return;}_0x3e80f1[_0x74f4c4(0x282)](_0x411f2e[_0x74f4c4(0x22b)](_0x33bd61,_0x2dea67,_0x74f4c4(0x1e4),_0x1a0919++,_0x26b79c,function(_0x14f7cc){return function(){return _0x14f7cc;};}(_0x40c0cb)));})):this[_0x5c337d(0x27e)](_0x2dea67)&amp;&amp;_0x2dea67[_0x5c337d(0x200)](function(_0x116057,_0x47d61f){var _0x28fa14=_0x5c337d;if(_0x4c1e07++,_0x26b79c['autoExpandPropertyCount']++,_0x4c1e07&gt;_0x5ddb6a){_0x1f2b52=!0x0;return;}if(!_0x26b79c['isExpressionToEvaluate']&amp;&amp;_0x26b79c[_0x28fa14(0x2a8)]&amp;&amp;_0x26b79c[_0x28fa14(0x21e)]&gt;_0x26b79c[_0x28fa14(0x245)]){_0x1f2b52=!0x0;return;}var _0x48b8b3=_0x47d61f[_0x28fa14(0x1da)]();_0x48b8b3[_0x28fa14(0x2b4)]&gt;0x64&amp;&amp;(_0x48b8b3=_0x48b8b3['slice'](0x0,0x64)+_0x28fa14(0x206)),_0x3e80f1['push'](_0x411f2e[_0x28fa14(0x22b)](_0x33bd61,_0x2dea67,_0x28fa14(0x224),_0x48b8b3,_0x26b79c,function(_0x3e5c67){return function(){return _0x3e5c67;};}(_0x116057)));}),!_0x1f8788){try{for(_0x3478d7 in _0x2dea67)if(!(_0x1e8e17&amp;&amp;_0x5e8b20[_0x5c337d(0x2ab)](_0x3478d7))&amp;&amp;!this['_blacklistedProperty'](_0x2dea67,_0x3478d7,_0x26b79c)){if(_0x4c1e07++,_0x26b79c[_0x5c337d(0x21e)]++,_0x4c1e07&gt;_0x5ddb6a){_0x1f2b52=!0x0;break;}if(!_0x26b79c[_0x5c337d(0x22a)]&amp;&amp;_0x26b79c[_0x5c337d(0x2a8)]&amp;&amp;_0x26b79c[_0x5c337d(0x21e)]&gt;_0x26b79c[_0x5c337d(0x245)]){_0x1f2b52=!0x0;break;}_0x3e80f1['push'](_0x411f2e['_addObjectProperty'](_0x33bd61,_0x1287a6,_0x2dea67,_0x1e7f3b,_0x3478d7,_0x26b79c));}}catch{}if(_0x1287a6['_p_length']=!0x0,_0x29246f&amp;&amp;(_0x1287a6[_0x5c337d(0x222)]=!0x0),!_0x1f2b52){var _0x46262a=[][_0x5c337d(0x272)](this[_0x5c337d(0x231)](_0x2dea67))[_0x5c337d(0x272)](this['_getOwnPropertySymbols'](_0x2dea67));for(_0x1a0919=0x0,_0x12e69c=_0x46262a[_0x5c337d(0x2b4)];_0x1a0919&lt;_0x12e69c;_0x1a0919++)if(_0x3478d7=_0x46262a[_0x1a0919],!(_0x1e8e17&amp;&amp;_0x5e8b20[_0x5c337d(0x2ab)](_0x3478d7[_0x5c337d(0x1da)]()))&amp;&amp;!this['_blacklistedProperty'](_0x2dea67,_0x3478d7,_0x26b79c)&amp;&amp;!_0x1287a6[_0x5c337d(0x250)+_0x3478d7[_0x5c337d(0x1da)]()]){if(_0x4c1e07++,_0x26b79c['autoExpandPropertyCount']++,_0x4c1e07&gt;_0x5ddb6a){_0x1f2b52=!0x0;break;}if(!_0x26b79c[_0x5c337d(0x22a)]&amp;&amp;_0x26b79c[_0x5c337d(0x2a8)]&amp;&amp;_0x26b79c['autoExpandPropertyCount']&gt;_0x26b79c[_0x5c337d(0x245)]){_0x1f2b52=!0x0;break;}_0x3e80f1[_0x5c337d(0x282)](_0x411f2e[_0x5c337d(0x27a)](_0x33bd61,_0x1287a6,_0x2dea67,_0x1e7f3b,_0x3478d7,_0x26b79c));}}}}}if(_0x28dcef['type']=_0x1e7f3b,_0x382c09?(_0x28dcef[_0x5c337d(0x21a)]=_0x2dea67[_0x5c337d(0x263)](),this[_0x5c337d(0x244)](_0x1e7f3b,_0x28dcef,_0x26b79c,_0x386b68)):_0x1e7f3b===_0x5c337d(0x2b2)?_0x28dcef[_0x5c337d(0x21a)]=this['_dateToString']['call'](_0x2dea67):_0x1e7f3b===_0x5c337d(0x298)?_0x28dcef[_0x5c337d(0x21a)]=_0x2dea67[_0x5c337d(0x1da)]():_0x1e7f3b===_0x5c337d(0x1de)?_0x28dcef[_0x5c337d(0x21a)]=this['_regExpToString'][_0x5c337d(0x20e)](_0x2dea67):_0x1e7f3b===_0x5c337d(0x26e)&amp;&amp;this['_Symbol']?_0x28dcef[_0x5c337d(0x21a)]=this['_Symbol']['prototype'][_0x5c337d(0x1da)]['call'](_0x2dea67):!_0x26b79c[_0x5c337d(0x1e6)]&amp;&amp;!(_0x1e7f3b==='null'||_0x1e7f3b===_0x5c337d(0x1f3))&amp;&amp;(delete _0x28dcef[_0x5c337d(0x21a)],_0x28dcef[_0x5c337d(0x2b6)]=!0x0),_0x1f2b52&amp;&amp;(_0x28dcef[_0x5c337d(0x28d)]=!0x0),_0x2cc4ef=_0x26b79c[_0x5c337d(0x29c)][_0x5c337d(0x295)],_0x26b79c['node'][_0x5c337d(0x295)]=_0x28dcef,this[_0x5c337d(0x219)](_0x28dcef,_0x26b79c),_0x3e80f1[_0x5c337d(0x2b4)]){for(_0x1a0919=0x0,_0x12e69c=_0x3e80f1[_0x5c337d(0x2b4)];_0x1a0919&lt;_0x12e69c;_0x1a0919++)_0x3e80f1[_0x1a0919](_0x1a0919);}_0x33bd61[_0x5c337d(0x2b4)]&amp;&amp;(_0x28dcef[_0x5c337d(0x225)]=_0x33bd61);}catch(_0x548461){_0x1dceed(_0x548461,_0x28dcef,_0x26b79c);}return this[_0x5c337d(0x211)](_0x2dea67,_0x28dcef),this[_0x5c337d(0x251)](_0x28dcef,_0x26b79c),_0x26b79c[_0x5c337d(0x29c)][_0x5c337d(0x295)]=_0x2cc4ef,_0x26b79c[_0x5c337d(0x296)]--,_0x26b79c[_0x5c337d(0x2a8)]=_0x25ff55,_0x26b79c[_0x5c337d(0x2a8)]&amp;&amp;_0x26b79c['autoExpandPreviousObjects'][_0x5c337d(0x29e)](),_0x28dcef;}[_0x1cbe52(0x21f)](_0x39ee7d){var _0x40a00c=_0x1cbe52;return Object[_0x40a00c(0x29b)]?Object[_0x40a00c(0x29b)](_0x39ee7d):[];}[_0x1cbe52(0x1d7)](_0x3f34ea){var _0x36a3ff=_0x1cbe52;return!!(_0x3f34ea&amp;&amp;_0x3bde4c[_0x36a3ff(0x1e4)]&amp;&amp;this[_0x36a3ff(0x1f1)](_0x3f34ea)===_0x36a3ff(0x20f)&amp;&amp;_0x3f34ea[_0x36a3ff(0x200)]);}['_blacklistedProperty'](_0x5415fe,_0xed0dde,_0x42676b){return _0x42676b['noFunctions']?typeof _0x5415fe[_0xed0dde]=='function':!0x1;}[_0x1cbe52(0x1fe)](_0x525858){var _0x1a36bc=_0x1cbe52,_0x47ec0e='';return _0x47ec0e=typeof _0x525858,_0x47ec0e===_0x1a36bc(0x20a)?this[_0x1a36bc(0x1f1)](_0x525858)===_0x1a36bc(0x275)?_0x47ec0e='array':this[_0x1a36bc(0x1f1)](_0x525858)===_0x1a36bc(0x28b)?_0x47ec0e=_0x1a36bc(0x2b2):this[_0x1a36bc(0x1f1)](_0x525858)==='[object\\x20BigInt]'?_0x47ec0e=_0x1a36bc(0x298):_0x525858===null?_0x47ec0e=_0x1a36bc(0x1d0):_0x525858[_0x1a36bc(0x1d8)]&amp;&amp;(_0x47ec0e=_0x525858[_0x1a36bc(0x1d8)][_0x1a36bc(0x1e2)]||_0x47ec0e):_0x47ec0e===_0x1a36bc(0x1f3)&amp;&amp;this[_0x1a36bc(0x240)]&amp;&amp;_0x525858 instanceof this[_0x1a36bc(0x240)]&amp;&amp;(_0x47ec0e=_0x1a36bc(0x213)),_0x47ec0e;}[_0x1cbe52(0x1f1)](_0x2629db){var _0x10a3eb=_0x1cbe52;return Object[_0x10a3eb(0x214)][_0x10a3eb(0x1da)]['call'](_0x2629db);}[_0x1cbe52(0x290)](_0x247260){var _0x292f72=_0x1cbe52;return _0x247260==='boolean'||_0x247260===_0x292f72(0x238)||_0x247260===_0x292f72(0x201);}[_0x1cbe52(0x2ad)](_0x30d6ea){var _0x3a44a3=_0x1cbe52;return _0x30d6ea==='Boolean'||_0x30d6ea===_0x3a44a3(0x1f0)||_0x30d6ea===_0x3a44a3(0x1dd);}[_0x1cbe52(0x22b)](_0x50d792,_0x585b77,_0x49529c,_0x40fef1,_0x5b6cd0,_0x38a4af){var _0x2d62df=this;return function(_0x124692){var _0x29e5f1=_0x1efc,_0x288f15=_0x5b6cd0[_0x29e5f1(0x29c)][_0x29e5f1(0x295)],_0x5173f2=_0x5b6cd0[_0x29e5f1(0x29c)][_0x29e5f1(0x1db)],_0x3ed228=_0x5b6cd0[_0x29e5f1(0x29c)][_0x29e5f1(0x299)];_0x5b6cd0[_0x29e5f1(0x29c)][_0x29e5f1(0x299)]=_0x288f15,_0x5b6cd0[_0x29e5f1(0x29c)][_0x29e5f1(0x1db)]=typeof _0x40fef1==_0x29e5f1(0x201)?_0x40fef1:_0x124692,_0x50d792[_0x29e5f1(0x282)](_0x2d62df['_property'](_0x585b77,_0x49529c,_0x40fef1,_0x5b6cd0,_0x38a4af)),_0x5b6cd0[_0x29e5f1(0x29c)][_0x29e5f1(0x299)]=_0x3ed228,_0x5b6cd0[_0x29e5f1(0x29c)][_0x29e5f1(0x1db)]=_0x5173f2;};}[_0x1cbe52(0x27a)](_0xfb2bf8,_0x284c73,_0x132306,_0x54b9d9,_0x570348,_0x38f344,_0x3564bf){var _0x19558c=_0x1cbe52,_0x59e369=this;return _0x284c73[_0x19558c(0x250)+_0x570348['toString']()]=!0x0,function(_0x4505e3){var _0x96a111=_0x19558c,_0x2f3623=_0x38f344['node'][_0x96a111(0x295)],_0x1bbd18=_0x38f344[_0x96a111(0x29c)][_0x96a111(0x1db)],_0x182eb6=_0x38f344[_0x96a111(0x29c)][_0x96a111(0x299)];_0x38f344[_0x96a111(0x29c)][_0x96a111(0x299)]=_0x2f3623,_0x38f344[_0x96a111(0x29c)][_0x96a111(0x1db)]=_0x4505e3,_0xfb2bf8[_0x96a111(0x282)](_0x59e369[_0x96a111(0x234)](_0x132306,_0x54b9d9,_0x570348,_0x38f344,_0x3564bf)),_0x38f344[_0x96a111(0x29c)][_0x96a111(0x299)]=_0x182eb6,_0x38f344['node'][_0x96a111(0x1db)]=_0x1bbd18;};}[_0x1cbe52(0x234)](_0x15cc7e,_0x41d45f,_0x144f0c,_0x46d226,_0x20af51){var _0x270834=_0x1cbe52,_0x2fd5ac=this;_0x20af51||(_0x20af51=function(_0x1fa001,_0x2d543d){return _0x1fa001[_0x2d543d];});var _0x177b83=_0x144f0c[_0x270834(0x1da)](),_0x364d1a=_0x46d226[_0x270834(0x255)]||{},_0x5044a5=_0x46d226[_0x270834(0x1e6)],_0xa42053=_0x46d226[_0x270834(0x22a)];try{var _0x14ada4=this[_0x270834(0x27e)](_0x15cc7e),_0x3f4e21=_0x177b83;_0x14ada4&amp;&amp;_0x3f4e21[0x0]==='\\x27'&amp;&amp;(_0x3f4e21=_0x3f4e21[_0x270834(0x1cc)](0x1,_0x3f4e21[_0x270834(0x2b4)]-0x2));var _0x21b1a5=_0x46d226[_0x270834(0x255)]=_0x364d1a[_0x270834(0x250)+_0x3f4e21];_0x21b1a5&amp;&amp;(_0x46d226[_0x270834(0x1e6)]=_0x46d226[_0x270834(0x1e6)]+0x1),_0x46d226['isExpressionToEvaluate']=!!_0x21b1a5;var _0xade386=typeof _0x144f0c==_0x270834(0x26e),_0x46b873={'name':_0xade386||_0x14ada4?_0x177b83:this[_0x270834(0x1cd)](_0x177b83)};if(_0xade386&amp;&amp;(_0x46b873[_0x270834(0x26e)]=!0x0),!(_0x41d45f===_0x270834(0x274)||_0x41d45f===_0x270834(0x266))){var _0x4b0244=this[_0x270834(0x241)](_0x15cc7e,_0x144f0c);if(_0x4b0244&amp;&amp;(_0x4b0244[_0x270834(0x227)]&amp;&amp;(_0x46b873[_0x270834(0x212)]=!0x0),_0x4b0244[_0x270834(0x2b5)]&amp;&amp;!_0x21b1a5&amp;&amp;!_0x46d226[_0x270834(0x2a4)]))return _0x46b873[_0x270834(0x287)]=!0x0,this[_0x270834(0x29a)](_0x46b873,_0x46d226),_0x46b873;}var _0x4cfb1f;try{_0x4cfb1f=_0x20af51(_0x15cc7e,_0x144f0c);}catch(_0x158073){return _0x46b873={'name':_0x177b83,'type':'unknown','error':_0x158073['message']},this[_0x270834(0x29a)](_0x46b873,_0x46d226),_0x46b873;}var _0xd6f8b6=this[_0x270834(0x1fe)](_0x4cfb1f),_0x45ae35=this[_0x270834(0x290)](_0xd6f8b6);if(_0x46b873[_0x270834(0x26d)]=_0xd6f8b6,_0x45ae35)this['_processTreeNodeResult'](_0x46b873,_0x46d226,_0x4cfb1f,function(){var _0x2a5e3f=_0x270834;_0x46b873[_0x2a5e3f(0x21a)]=_0x4cfb1f[_0x2a5e3f(0x263)](),!_0x21b1a5&amp;&amp;_0x2fd5ac['_capIfString'](_0xd6f8b6,_0x46b873,_0x46d226,{});});else{var _0x30235c=_0x46d226[_0x270834(0x2a8)]&amp;&amp;_0x46d226[_0x270834(0x296)]&lt;_0x46d226['autoExpandMaxDepth']&amp;&amp;_0x46d226['autoExpandPreviousObjects'][_0x270834(0x24d)](_0x4cfb1f)&lt;0x0&amp;&amp;_0xd6f8b6!==_0x270834(0x232)&amp;&amp;_0x46d226[_0x270834(0x21e)]&lt;_0x46d226[_0x270834(0x245)];_0x30235c||_0x46d226[_0x270834(0x296)]&lt;_0x5044a5||_0x21b1a5?(this[_0x270834(0x226)](_0x46b873,_0x4cfb1f,_0x46d226,_0x21b1a5||{}),this[_0x270834(0x211)](_0x4cfb1f,_0x46b873)):this['_processTreeNodeResult'](_0x46b873,_0x46d226,_0x4cfb1f,function(){var _0x16ab54=_0x270834;_0xd6f8b6===_0x16ab54(0x1d0)||_0xd6f8b6==='undefined'||(delete _0x46b873[_0x16ab54(0x21a)],_0x46b873['capped']=!0x0);});}return _0x46b873;}finally{_0x46d226[_0x270834(0x255)]=_0x364d1a,_0x46d226['depth']=_0x5044a5,_0x46d226[_0x270834(0x22a)]=_0xa42053;}}[_0x1cbe52(0x244)](_0x106748,_0x4c3bf5,_0x2d8976,_0x331db2){var _0x1cd478=_0x1cbe52,_0xe7c38b=_0x331db2[_0x1cd478(0x268)]||_0x2d8976[_0x1cd478(0x268)];if((_0x106748===_0x1cd478(0x238)||_0x106748===_0x1cd478(0x1f0))&amp;&amp;_0x4c3bf5[_0x1cd478(0x21a)]){let _0x301449=_0x4c3bf5[_0x1cd478(0x21a)]['length'];_0x2d8976[_0x1cd478(0x26b)]+=_0x301449,_0x2d8976[_0x1cd478(0x26b)]&gt;_0x2d8976[_0x1cd478(0x246)]?(_0x4c3bf5[_0x1cd478(0x2b6)]='',delete _0x4c3bf5[_0x1cd478(0x21a)]):_0x301449&gt;_0xe7c38b&amp;&amp;(_0x4c3bf5[_0x1cd478(0x2b6)]=_0x4c3bf5[_0x1cd478(0x21a)]['substr'](0x0,_0xe7c38b),delete _0x4c3bf5[_0x1cd478(0x21a)]);}}[_0x1cbe52(0x27e)](_0x13891b){var _0x4a677b=_0x1cbe52;return!!(_0x13891b&amp;&amp;_0x3bde4c[_0x4a677b(0x224)]&amp;&amp;this[_0x4a677b(0x1f1)](_0x13891b)===_0x4a677b(0x239)&amp;&amp;_0x13891b['forEach']);}['_propertyName'](_0x4f231b){var _0x26f412=_0x1cbe52;if(_0x4f231b[_0x26f412(0x228)](/^\\d+$/))return _0x4f231b;var _0x59893e;try{_0x59893e=JSON[_0x26f412(0x279)](''+_0x4f231b);}catch{_0x59893e='\\x22'+this[_0x26f412(0x1f1)](_0x4f231b)+'\\x22';}return _0x59893e[_0x26f412(0x228)](/^\"([a-zA-Z_][a-zA-Z_0-9]*)\"$/)?_0x59893e=_0x59893e['substr'](0x1,_0x59893e[_0x26f412(0x2b4)]-0x2):_0x59893e=_0x59893e[_0x26f412(0x24c)](/'/g,'\\x5c\\x27')[_0x26f412(0x24c)](/\\\\\"/g,'\\x22')[_0x26f412(0x24c)](/(^\"|\"$)/g,'\\x27'),_0x59893e;}['_processTreeNodeResult'](_0x54ff07,_0xb1de86,_0x3c7222,_0x35151d){var _0x188413=_0x1cbe52;this[_0x188413(0x219)](_0x54ff07,_0xb1de86),_0x35151d&amp;&amp;_0x35151d(),this[_0x188413(0x211)](_0x3c7222,_0x54ff07),this[_0x188413(0x251)](_0x54ff07,_0xb1de86);}[_0x1cbe52(0x219)](_0x238576,_0x55b01b){var _0x4acf31=_0x1cbe52;this['_setNodeId'](_0x238576,_0x55b01b),this[_0x4acf31(0x2aa)](_0x238576,_0x55b01b),this['_setNodeExpressionPath'](_0x238576,_0x55b01b),this[_0x4acf31(0x273)](_0x238576,_0x55b01b);}['_setNodeId'](_0x2af028,_0x54b59a){}[_0x1cbe52(0x2aa)](_0x2975bf,_0x296bf4){}[_0x1cbe52(0x259)](_0x3fa97e,_0x43d85f){}[_0x1cbe52(0x1d2)](_0x3a9f7f){var _0x500ec7=_0x1cbe52;return _0x3a9f7f===this[_0x500ec7(0x235)];}[_0x1cbe52(0x251)](_0x13bb25,_0x3a91bb){var _0x248adb=_0x1cbe52;this[_0x248adb(0x259)](_0x13bb25,_0x3a91bb),this[_0x248adb(0x283)](_0x13bb25),_0x3a91bb[_0x248adb(0x1ff)]&amp;&amp;this[_0x248adb(0x1fb)](_0x13bb25),this[_0x248adb(0x23f)](_0x13bb25,_0x3a91bb),this[_0x248adb(0x25e)](_0x13bb25,_0x3a91bb),this[_0x248adb(0x293)](_0x13bb25);}['_additionalMetadata'](_0x4fe28c,_0x3642a9){var _0x579c98=_0x1cbe52;let _0x36c4b6;try{_0x3bde4c[_0x579c98(0x21b)]&amp;&amp;(_0x36c4b6=_0x3bde4c[_0x579c98(0x21b)]['error'],_0x3bde4c[_0x579c98(0x21b)][_0x579c98(0x257)]=function(){}),_0x4fe28c&amp;&amp;typeof _0x4fe28c['length']=='number'&amp;&amp;(_0x3642a9[_0x579c98(0x2b4)]=_0x4fe28c['length']);}catch{}finally{_0x36c4b6&amp;&amp;(_0x3bde4c['console'][_0x579c98(0x257)]=_0x36c4b6);}if(_0x3642a9[_0x579c98(0x26d)]===_0x579c98(0x201)||_0x3642a9[_0x579c98(0x26d)]===_0x579c98(0x1dd)){if(isNaN(_0x3642a9['value']))_0x3642a9[_0x579c98(0x1f8)]=!0x0,delete _0x3642a9[_0x579c98(0x21a)];else switch(_0x3642a9[_0x579c98(0x21a)]){case Number[_0x579c98(0x1fd)]:_0x3642a9[_0x579c98(0x1ed)]=!0x0,delete _0x3642a9[_0x579c98(0x21a)];break;case Number[_0x579c98(0x249)]:_0x3642a9[_0x579c98(0x25b)]=!0x0,delete _0x3642a9[_0x579c98(0x21a)];break;case 0x0:this[_0x579c98(0x1d3)](_0x3642a9[_0x579c98(0x21a)])&amp;&amp;(_0x3642a9[_0x579c98(0x210)]=!0x0);break;}}else _0x3642a9['type']===_0x579c98(0x232)&amp;&amp;typeof _0x4fe28c['name']==_0x579c98(0x238)&amp;&amp;_0x4fe28c[_0x579c98(0x1e2)]&amp;&amp;_0x3642a9[_0x579c98(0x1e2)]&amp;&amp;_0x4fe28c[_0x579c98(0x1e2)]!==_0x3642a9[_0x579c98(0x1e2)]&amp;&amp;(_0x3642a9[_0x579c98(0x270)]=_0x4fe28c[_0x579c98(0x1e2)]);}[_0x1cbe52(0x1d3)](_0x3e02f1){var _0xb416bb=_0x1cbe52;return 0x1/_0x3e02f1===Number[_0xb416bb(0x249)];}[_0x1cbe52(0x1fb)](_0x4058e1){var _0xf067c6=_0x1cbe52;!_0x4058e1['props']||!_0x4058e1[_0xf067c6(0x225)][_0xf067c6(0x2b4)]||_0x4058e1[_0xf067c6(0x26d)]==='array'||_0x4058e1[_0xf067c6(0x26d)]===_0xf067c6(0x224)||_0x4058e1['type']===_0xf067c6(0x1e4)||_0x4058e1[_0xf067c6(0x225)]['sort'](function(_0x1720cc,_0x541554){var _0x268c30=_0xf067c6,_0xa986a7=_0x1720cc[_0x268c30(0x1e2)][_0x268c30(0x220)](),_0x486cef=_0x541554[_0x268c30(0x1e2)][_0x268c30(0x220)]();return _0xa986a7&lt;_0x486cef?-0x1:_0xa986a7&gt;_0x486cef?0x1:0x0;});}[_0x1cbe52(0x23f)](_0x585349,_0x145697){var _0xbf1f84=_0x1cbe52;if(!(_0x145697[_0xbf1f84(0x1d6)]||!_0x585349['props']||!_0x585349[_0xbf1f84(0x225)][_0xbf1f84(0x2b4)])){for(var _0x18f614=[],_0x3f4e45=[],_0x31f687=0x0,_0x2e665e=_0x585349[_0xbf1f84(0x225)][_0xbf1f84(0x2b4)];_0x31f687&lt;_0x2e665e;_0x31f687++){var _0x3b1953=_0x585349[_0xbf1f84(0x225)][_0x31f687];_0x3b1953[_0xbf1f84(0x26d)]===_0xbf1f84(0x232)?_0x18f614[_0xbf1f84(0x282)](_0x3b1953):_0x3f4e45[_0xbf1f84(0x282)](_0x3b1953);}if(!(!_0x3f4e45[_0xbf1f84(0x2b4)]||_0x18f614['length']&lt;=0x1)){_0x585349[_0xbf1f84(0x225)]=_0x3f4e45;var _0xc08550={'functionsNode':!0x0,'props':_0x18f614};this[_0xbf1f84(0x276)](_0xc08550,_0x145697),this[_0xbf1f84(0x259)](_0xc08550,_0x145697),this['_setNodeExpandableState'](_0xc08550),this[_0xbf1f84(0x273)](_0xc08550,_0x145697),_0xc08550['id']+='\\x20f',_0x585349[_0xbf1f84(0x225)]['unshift'](_0xc08550);}}}[_0x1cbe52(0x25e)](_0x2f11b5,_0x36d5d7){}['_setNodeExpandableState'](_0x1f8dd9){}[_0x1cbe52(0x207)](_0x48594d){var _0x58db91=_0x1cbe52;return Array[_0x58db91(0x2a7)](_0x48594d)||typeof _0x48594d==_0x58db91(0x20a)&amp;&amp;this[_0x58db91(0x1f1)](_0x48594d)===_0x58db91(0x275);}[_0x1cbe52(0x273)](_0x18e911,_0x43af21){}[_0x1cbe52(0x293)](_0x194812){var _0x2a3394=_0x1cbe52;delete _0x194812[_0x2a3394(0x202)],delete _0x194812[_0x2a3394(0x217)],delete _0x194812['_hasMapOnItsPath'];}[_0x1cbe52(0x23a)](_0x3bb79c,_0x343261){}}let _0xdd71a7=new _0x849a7a(),_0x33dde3={'props':0x64,'elements':0x64,'strLength':0x400*0x32,'totalStrLength':0x400*0x32,'autoExpandLimit':0x1388,'autoExpandMaxDepth':0xa},_0x5744f6={'props':0x5,'elements':0x5,'strLength':0x100,'totalStrLength':0x100*0x3,'autoExpandLimit':0x1e,'autoExpandMaxDepth':0x2};function _0x57dce3(_0xa51c71,_0xc40013,_0x49c361,_0x7c1401,_0x59201c,_0x27a426){var _0x50e3fe=_0x1cbe52;let _0x5532f1,_0x321602;try{_0x321602=_0x5b4fd4(),_0x5532f1=_0xa26422[_0xc40013],!_0x5532f1||_0x321602-_0x5532f1['ts']&gt;0x1f4&amp;&amp;_0x5532f1['count']&amp;&amp;_0x5532f1[_0x50e3fe(0x265)]/_0x5532f1[_0x50e3fe(0x1f6)]&lt;0x64?(_0xa26422[_0xc40013]=_0x5532f1={'count':0x0,'time':0x0,'ts':_0x321602},_0xa26422[_0x50e3fe(0x2a6)]={}):_0x321602-_0xa26422[_0x50e3fe(0x2a6)]['ts']&gt;0x32&amp;&amp;_0xa26422[_0x50e3fe(0x2a6)][_0x50e3fe(0x1f6)]&amp;&amp;_0xa26422[_0x50e3fe(0x2a6)][_0x50e3fe(0x265)]/_0xa26422[_0x50e3fe(0x2a6)][_0x50e3fe(0x1f6)]&lt;0x64&amp;&amp;(_0xa26422['hits']={});let _0x22cbcd=[],_0x3f3e9d=_0x5532f1[_0x50e3fe(0x1e1)]||_0xa26422[_0x50e3fe(0x2a6)][_0x50e3fe(0x1e1)]?_0x5744f6:_0x33dde3,_0x1141ba=_0x35dbd1=&gt;{var _0x567687=_0x50e3fe;let _0x1584e0={};return _0x1584e0['props']=_0x35dbd1['props'],_0x1584e0[_0x567687(0x2b8)]=_0x35dbd1[_0x567687(0x2b8)],_0x1584e0['strLength']=_0x35dbd1[_0x567687(0x268)],_0x1584e0[_0x567687(0x246)]=_0x35dbd1[_0x567687(0x246)],_0x1584e0['autoExpandLimit']=_0x35dbd1[_0x567687(0x245)],_0x1584e0[_0x567687(0x1f4)]=_0x35dbd1[_0x567687(0x1f4)],_0x1584e0[_0x567687(0x1ff)]=!0x1,_0x1584e0[_0x567687(0x1d6)]=!_0x110256,_0x1584e0[_0x567687(0x1e6)]=0x1,_0x1584e0[_0x567687(0x296)]=0x0,_0x1584e0[_0x567687(0x258)]=_0x567687(0x20b),_0x1584e0['rootExpression']=_0x567687(0x2af),_0x1584e0['autoExpand']=!0x0,_0x1584e0[_0x567687(0x236)]=[],_0x1584e0['autoExpandPropertyCount']=0x0,_0x1584e0[_0x567687(0x2a4)]=!0x0,_0x1584e0[_0x567687(0x26b)]=0x0,_0x1584e0[_0x567687(0x29c)]={'current':void 0x0,'parent':void 0x0,'index':0x0},_0x1584e0;};for(var _0x3d41d9=0x0;_0x3d41d9&lt;_0x59201c[_0x50e3fe(0x2b4)];_0x3d41d9++)_0x22cbcd[_0x50e3fe(0x282)](_0xdd71a7['serialize']({'timeNode':_0xa51c71===_0x50e3fe(0x265)||void 0x0},_0x59201c[_0x3d41d9],_0x1141ba(_0x3f3e9d),{}));if(_0xa51c71==='trace'){let _0x10db8b=Error[_0x50e3fe(0x2a1)];try{Error[_0x50e3fe(0x2a1)]=0x1/0x0,_0x22cbcd['push'](_0xdd71a7['serialize']({'stackNode':!0x0},new Error()[_0x50e3fe(0x23d)],_0x1141ba(_0x3f3e9d),{'strLength':0x1/0x0}));}finally{Error[_0x50e3fe(0x2a1)]=_0x10db8b;}}return{'method':_0x50e3fe(0x284),'version':_0x582bd,'args':[{'ts':_0x49c361,'session':_0x7c1401,'args':_0x22cbcd,'id':_0xc40013,'context':_0x27a426}]};}catch(_0x586eba){return{'method':_0x50e3fe(0x284),'version':_0x582bd,'args':[{'ts':_0x49c361,'session':_0x7c1401,'args':[{'type':_0x50e3fe(0x1e3),'error':_0x586eba&amp;&amp;_0x586eba['message']}],'id':_0xc40013,'context':_0x27a426}]};}finally{try{if(_0x5532f1&amp;&amp;_0x321602){let _0xb61c81=_0x5b4fd4();_0x5532f1['count']++,_0x5532f1['time']+=_0x428c5e(_0x321602,_0xb61c81),_0x5532f1['ts']=_0xb61c81,_0xa26422[_0x50e3fe(0x2a6)][_0x50e3fe(0x1f6)]++,_0xa26422[_0x50e3fe(0x2a6)]['time']+=_0x428c5e(_0x321602,_0xb61c81),_0xa26422['hits']['ts']=_0xb61c81,(_0x5532f1[_0x50e3fe(0x1f6)]&gt;0x32||_0x5532f1[_0x50e3fe(0x265)]&gt;0x64)&amp;&amp;(_0x5532f1['reduceLimits']=!0x0),(_0xa26422[_0x50e3fe(0x2a6)]['count']&gt;0x3e8||_0xa26422[_0x50e3fe(0x2a6)]['time']&gt;0x12c)&amp;&amp;(_0xa26422['hits'][_0x50e3fe(0x1e1)]=!0x0);}}catch{}}}return _0x57dce3;}((_0x2aaeb3,_0x36d8da,_0x12b37f,_0x57e3d2,_0x2fd701,_0x3efb24,_0x35570f,_0x1d15e1,_0x6ffb5d,_0x87aaa4)=&gt;{var _0x1e6a74=_0x4bc600;if(_0x2aaeb3['_console_ninja'])return _0x2aaeb3[_0x1e6a74(0x261)];if(!J(_0x2aaeb3,_0x1d15e1,_0x2fd701))return _0x2aaeb3['_console_ninja']={'consoleLog':()=&gt;{},'consoleTrace':()=&gt;{},'consoleTime':()=&gt;{},'consoleTimeEnd':()=&gt;{},'autoLog':()=&gt;{},'autoLogMany':()=&gt;{},'autoTraceMany':()=&gt;{},'coverage':()=&gt;{},'autoTrace':()=&gt;{},'autoTime':()=&gt;{},'autoTimeEnd':()=&gt;{}},_0x2aaeb3[_0x1e6a74(0x261)];let _0x23c3c8=W(_0x2aaeb3),_0x1b4ed4=_0x23c3c8['elapsed'],_0x1b4720=_0x23c3c8[_0x1e6a74(0x292)],_0x58293b=_0x23c3c8['now'],_0x118266={'hits':{},'ts':{}},_0x4bbc9d=Y(_0x2aaeb3,_0x6ffb5d,_0x118266,_0x3efb24),_0x109ea1=_0xb41e4c=&gt;{_0x118266['ts'][_0xb41e4c]=_0x1b4720();},_0x3fe9c2=(_0x1c50b6,_0x2f8ba5)=&gt;{var _0x565823=_0x1e6a74;let _0x2debbf=_0x118266['ts'][_0x2f8ba5];if(delete _0x118266['ts'][_0x2f8ba5],_0x2debbf){let _0x39e809=_0x1b4ed4(_0x2debbf,_0x1b4720());_0x1d64fa(_0x4bbc9d(_0x565823(0x265),_0x1c50b6,_0x58293b(),_0x2a339d,[_0x39e809],_0x2f8ba5));}},_0x499a1a=_0x323055=&gt;_0x58654d=&gt;{var _0x40acc9=_0x1e6a74;try{_0x109ea1(_0x58654d),_0x323055(_0x58654d);}finally{_0x2aaeb3[_0x40acc9(0x21b)][_0x40acc9(0x265)]=_0x323055;}},_0x4004cb=_0x4f5b13=&gt;_0x140ac1=&gt;{var _0x369530=_0x1e6a74;try{let [_0x3b118c,_0x4f5ebe]=_0x140ac1['split'](_0x369530(0x252));_0x3fe9c2(_0x4f5ebe,_0x3b118c),_0x4f5b13(_0x3b118c);}finally{_0x2aaeb3['console']['timeEnd']=_0x4f5b13;}};_0x2aaeb3[_0x1e6a74(0x261)]={'consoleLog':(_0x54b41d,_0x1e5836)=&gt;{var _0x4252b2=_0x1e6a74;_0x2aaeb3[_0x4252b2(0x21b)][_0x4252b2(0x284)][_0x4252b2(0x1e2)]!==_0x4252b2(0x208)&amp;&amp;_0x1d64fa(_0x4bbc9d('log',_0x54b41d,_0x58293b(),_0x2a339d,_0x1e5836));},'consoleTrace':(_0x36d7b4,_0x4478f9)=&gt;{var _0x43e8a7=_0x1e6a74;_0x2aaeb3['console'][_0x43e8a7(0x284)][_0x43e8a7(0x1e2)]!==_0x43e8a7(0x1d5)&amp;&amp;_0x1d64fa(_0x4bbc9d(_0x43e8a7(0x269),_0x36d7b4,_0x58293b(),_0x2a339d,_0x4478f9));},'consoleTime':()=&gt;{var _0x2f1631=_0x1e6a74;_0x2aaeb3[_0x2f1631(0x21b)][_0x2f1631(0x265)]=_0x499a1a(_0x2aaeb3[_0x2f1631(0x21b)][_0x2f1631(0x265)]);},'consoleTimeEnd':()=&gt;{var _0x41ece6=_0x1e6a74;_0x2aaeb3[_0x41ece6(0x21b)][_0x41ece6(0x1d4)]=_0x4004cb(_0x2aaeb3[_0x41ece6(0x21b)][_0x41ece6(0x1d4)]);},'autoLog':(_0x35fd8f,_0x41e38e)=&gt;{var _0x53741b=_0x1e6a74;_0x1d64fa(_0x4bbc9d(_0x53741b(0x284),_0x41e38e,_0x58293b(),_0x2a339d,[_0x35fd8f]));},'autoLogMany':(_0x35ac8f,_0x1f7a22)=&gt;{var _0x1bad7d=_0x1e6a74;_0x1d64fa(_0x4bbc9d(_0x1bad7d(0x284),_0x35ac8f,_0x58293b(),_0x2a339d,_0x1f7a22));},'autoTrace':(_0x55951a,_0x2c19f5)=&gt;{var _0x16a9f8=_0x1e6a74;_0x1d64fa(_0x4bbc9d(_0x16a9f8(0x269),_0x2c19f5,_0x58293b(),_0x2a339d,[_0x55951a]));},'autoTraceMany':(_0x2bf2af,_0xf71a17)=&gt;{var _0x1f7319=_0x1e6a74;_0x1d64fa(_0x4bbc9d(_0x1f7319(0x269),_0x2bf2af,_0x58293b(),_0x2a339d,_0xf71a17));},'autoTime':(_0x4997a6,_0x5a0b95,_0x53d3db)=&gt;{_0x109ea1(_0x53d3db);},'autoTimeEnd':(_0x4c0e6b,_0x41e244,_0x53e95d)=&gt;{_0x3fe9c2(_0x41e244,_0x53e95d);},'coverage':_0xc932cf=&gt;{_0x1d64fa({'method':'coverage','version':_0x3efb24,'args':[{'id':_0xc932cf}]});}};let _0x1d64fa=b(_0x2aaeb3,_0x36d8da,_0x12b37f,_0x57e3d2,_0x2fd701,_0x87aaa4),_0x2a339d=_0x2aaeb3[_0x1e6a74(0x2a5)];return _0x2aaeb3['_console_ninja'];})(globalThis,'127.0.0.1',_0x4bc600(0x1ec),_0x4bc600(0x24a),_0x4bc600(0x27c),_0x4bc600(0x216),_0x4bc600(0x22d),[\"localhost\",\"127.0.0.1\",\"example.cypress.io\",\"Elberts-MacBook-Pro.local\",\"172.17.219.213\"],_0x4bc600(0x221),_0x4bc600(0x281));function _0x2b49(){var _0x31fb4e=['port','string','[object\\x20Map]','_setNodeExpressionPath','_ws','perf_hooks','stack','env','_addFunctionsNode','_HTMLAllCollection','_getOwnPropertyDescriptor','remix','unref','_capIfString','autoExpandLimit','totalStrLength','now','_webSocketErrorDocsLink','NEGATIVE_INFINITY',\"/Users/elberttimothy/.vscode/extensions/wallabyjs.console-ninja-1.0.266/node_modules\",'dockerizedApp','replace','indexOf','getWebSocketClass','path','_p_','_treeNodePropertiesAfterFullValue',':logPointId:','WebSocket','process','expressionsToEvaluate','includes','error','expId','_setNodeLabel','reload','negativeInfinity','host','145212RzUuxF','_addLoadNode','catch','_WebSocketClass','_console_ninja','_connecting','valueOf','default','time','Error','close','strLength','trace','3593205BcbunP','allStrLength','logger\\x20failed\\x20to\\x20connect\\x20to\\x20host','type','symbol','nodeModules','funcName','_inNextEdge','concat','_setNodePermissions','array','[object\\x20Array]','_setNodeId','readyState','10931rETynB','stringify','_addObjectProperty','_disposeWebsocket','jest','ws/index.js','_isMap','performance','message','','push','_setNodeExpandableState','log','\\x20server','defineProperty','getter','https://tinyurl.com/37x8b79t','_reconnectTimeout','_sendErrorMessage','[object\\x20Date]','map','cappedProps','_connectAttemptCount','3080560rOCuqr','_isPrimitiveType','pathToFileURL','timeStamp','_cleanNode','then','current','level','nuxt','bigint','parent','_processTreeNodeResult','getOwnPropertySymbols','node','data','pop','enumerable','__es'+'Module','stackTraceLimit','method','NEXT_RUNTIME','resolveGetters','_console_ninja_session','hits','isArray','autoExpand','_numberRegExp','_setNodeQueryPath','test','hrtime','_isPrimitiveWrapperType','getOwnPropertyNames','root_exp','logger\\x20websocket\\x20error','getOwnPropertyDescriptor','date','Console\\x20Ninja\\x20failed\\x20to\\x20send\\x20logs,\\x20restarting\\x20the\\x20process\\x20may\\x20help;\\x20also\\x20see\\x20','length','get','capped','Buffer','elements','substr','_propertyName','_allowedToConnectOnSend','onopen','null','_inBrowser','_isUndefined','_isNegativeZero','timeEnd','disabledTrace','noFunctions','_isSet','constructor','location','toString','index','_maxConnectAttemptCount','Number','RegExp','logger\\x20failed\\x20to\\x20connect\\x20to\\x20host,\\x20see\\x20','_connectToHostNow','reduceLimits','name','unknown','Set','_WebSocket','depth','join','_regExpToString','create','versions','send','54474','positiveInfinity','bind','hostname','String','_objectToString','_connected','undefined','autoExpandMaxDepth','onclose','count','warn','nan','Symbol','_allowedToSend','_sortProps','url','POSITIVE_INFINITY','_type','sortProps','forEach','number','_hasSymbolPropertyOnItsPath','1037314PfGsPK','edge','split','...','_isArray','disabledLog','_consoleNinjaAllowedToStart','object','root_exp_id','hasOwnProperty','_attemptToReconnectShortly','call','[object\\x20Set]','negativeZero','_additionalMetadata','setter','HTMLAllCollection','prototype','global','1.0.0','_hasSetOnItsPath','15fnamwA','_treeNodePropertiesBeforeFullValue','value','console','4745856RTNeNK','parse','autoExpandPropertyCount','_getOwnPropertySymbols','toLowerCase','','_p_name','Console\\x20Ninja\\x20failed\\x20to\\x20send\\x20logs,\\x20refreshing\\x20the\\x20page\\x20may\\x20help;\\x20also\\x20see\\x20','Map','props','serialize','set','match','\\x20browser','isExpressionToEvaluate','_addProperty','onerror','1702460753455','_socket','astro','failed\\x20to\\x20find\\x20and\\x20load\\x20WebSocket','_getOwnPropertyNames','function','3568140AwaOwm','_property','_undefined','autoExpandPreviousObjects'];_0x2b49=function(){return _0x31fb4e;};return _0x2b49();}");}catch(e){}};/* istanbul ignore next */function oo_oo(i:string,...v:any[]){try{oo_cm().consoleLog(i, v);}catch(e){} return v};oo_oo;/* istanbul ignore next */function oo_tr(i:string,...v:any[]){try{oo_cm().consoleTrace(i, v);}catch(e){} return v};oo_tr;/* istanbul ignore next */function oo_ts(){try{oo_cm().consoleTime();}catch(e){}};oo_ts;/* istanbul ignore next */function oo_te(){try{oo_cm().consoleTimeEnd();}catch(e){}};oo_te;/*eslint unicorn/no-abusive-eslint-disable:,eslint-comments/disable-enable-pair:,eslint-comments/no-unlimited-disable:,eslint-comments/no-aggregating-enable:,eslint-comments/no-duplicate-disable:,eslint-comments/no-unused-disable:,eslint-comments/no-unused-enable:,*/</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2023-12-13T09:45:54.267Z
+            </div>
+        <script src="prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="sorter.js"></script>
+        <script src="block-navigation.js"></script>
+    </body>
+</html>
+    

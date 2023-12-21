@@ -10,7 +10,7 @@
     "db-setup": "ts-node src/lib/redis.ts"
   },
   "jest": {
-    "testTimeout": 60000
+    "testTimeout": 10000
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +19,6 @@
     "@babel/preset-env": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
     "@types/cookie-parser": "^1.4.6",
-    "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.8",
     "@types/jsonwebtoken": "^9.0.5",

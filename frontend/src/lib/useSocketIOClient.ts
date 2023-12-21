@@ -1,9 +1,10 @@
 import { io } from "socket.io-client"
 
-export default function useSocketIOClient () {
-    const clientSocket = io({
-        autoConnect: false,
-        path: '/match-server/socket.io/'
-    })
-    return clientSocket
-}
+const clientSocket = io({
+    path: '/match-server/socket.io/',
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 10000,
+    reconnection: true
+})
+
+export default clientSocket

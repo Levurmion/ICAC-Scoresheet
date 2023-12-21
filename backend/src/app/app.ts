@@ -3,10 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import auth from "./auth/auth";
 import matches from "./matches/matches";
-import redisClient from "../lib/redis/useRedisClient";
 
 // initialize environment variables
-import "dotenv/config";
 const app = express();
 
 // GLOBAL MIDDLEWARES

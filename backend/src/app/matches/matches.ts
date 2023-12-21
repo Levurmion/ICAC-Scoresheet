@@ -1,13 +1,14 @@
-import redisClient from "../../lib/redis/useRedisClient";
+import redisClient from "../../lib/redis/redisClient";
 import { Router } from "express";
-import { MatchParams, LiveMatch, MatchTokenPayload, LiveMatchRedisType } from "../../lib/types";
+import { MatchParams, RedisMatch, MatchTokenPayload, RedisMatchReturnType, UserSession } from "../../lib/types";
 import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";
 import useSupabaseClient from "../../lib/supabase/useSupabaseClient";
 import { getRedisMatch, getRedisMatchReservations, getUserId, isValidAlphanumeric, isValidDateString, setRedisMatchReservation } from "../../lib/utilities";
-import { isRestrictedMatch, isValidLiveMatchState } from "../../lib/typeGuards";
+import { isValidLiveMatchState } from "../../lib/typeGuards";
 import "dotenv/config";
+import Match from "../../lib/classes/Match";
 
 const jwt = require("jsonwebtoken");
 const matches = Router();
@@ -35,25 +36,24 @@ matches.post("/", async (req, res) => {
     }
 
     const matchUUID = uuid4();
-    const match: LiveMatch = {
+    const match: RedisMatch = {
         ...matchParams,
         host,
-        created_at: new Date(),
+        created_at: new Date().toUTCString(),
         current_end: 0,
         current_state: "open",
         previous_state: "open",
-        participants: {},
+        submission_map: {},
     };
 
     // check if an exact match name exists
     const potentialMatches = await redisClient.ft.search("idx:matches", `@name:(${name})`)
 
-    console.log(potentialMatches)
-
     if (potentialMatches.documents.some(match => match.value.name === name)) {
         return res.status(409).send("name already taken by a live match");
     } else {
-        await redisClient.json.SET(`match:${matchUUID}`, "$", match as unknown as RedisJSON);
+        const matchId = `match:${matchUUID}`
+        await Match.createRedisMatch(matchId, match, redisClient)
         return res.status(201).json({
             id:`match:${matchUUID}`,
             value: match
@@ -107,9 +107,33 @@ matches.get("/live/:match_name", async (req, res) => {
     }
 
     const redisQuery = [nameQuery, stateQuery, hostQuery].filter((val) => val !== undefined).join(" ");
-    const matches = await redisClient.ft.SEARCH("idx:matches", redisQuery);
+    const matches = await redisClient.ft.SEARCH("idx:matches", redisQuery)
 
     if (matches.total > 0) {
+        const matchIds = matches.documents.map(match => match.id)
+        const allMatchParticipants: Array<{ [user_creds: string]: string }[]> = []
+        for (const matchId of matchIds) {
+            const matchParticipants = await Match.getParticipants(matchId, redisClient)
+            const participantDetails = matchParticipants.map(participant => {
+                const {
+                    user_id,
+                    first_name,
+                    last_name,
+                    university
+                } = participant
+                return {
+                    user_id,
+                    first_name,
+                    last_name,
+                    university
+                }
+            })
+            allMatchParticipants.push(participantDetails)
+        }
+        matches.documents.forEach((doc, idx) => {
+            doc.value.participants = allMatchParticipants[idx]
+        })
+
         return res.status(200).json(matches.documents);
     } else if (matches.total === 0) {
         return res.sendStatus(204);
@@ -177,7 +201,7 @@ matches.delete("/:match_id", async (req, res) => {
     if (matchHost) {
         const user_id = await getUserId({ req, res });
         if (matchHost === user_id) {
-            await redisClient.DEL(match_id);
+            await Match.deleteRedisMatch(match_id, redisClient);
             return res.sendStatus(200);
         } else {
             return res.sendStatus(403);
@@ -217,7 +241,7 @@ matches.post("/:match_id/reserve", async (req, res) => {
     } else if (matchState === "open") {
         // check that the number of participants + current reservations do not exceed the match max_participants limit
         const { max_participants } = match;
-        const numberParticipants = Object.keys(match.participants).length;
+        const numberParticipants = await Match.getNumParticipants(match_id, redisClient);
         const numberReservations = await getRedisMatchReservations(match_id);
 
         if (numberParticipants + numberReservations >= max_participants) {
@@ -231,8 +255,8 @@ matches.post("/:match_id/reserve", async (req, res) => {
             role: "archer",
         }; // defaults role to archer
 
-        if (isRestrictedMatch(match)) {
-            if (!(user_id in match.whitelist)) {
+        if (match.whitelist) {
+            if (match.whitelist && !(user_id in match.whitelist)) {
                 return res.status(403).send("restricted match (not in whitelist)");
             } else {
                 // update role as user could be a judge in restricted matches

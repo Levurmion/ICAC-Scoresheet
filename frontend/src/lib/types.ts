@@ -14,7 +14,7 @@ export interface UserSignUpCredentials extends UserSignInCredentials {
     disability?: string;
 }
 
-export type MatchState = "open" | "full" | "submit" | "waiting submit" | "confirmation" | "waiting confirmation" | "finished" | "paused"
+export type MatchState = "open" | "full" | "submit" | "confirmation" | "finished" | "paused"
 
 export type MatchRole = "archer" | "judge"
 
@@ -23,6 +23,7 @@ export type Score = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | "X"
 export type Arrow = {
     score: Score,
     previous_score: Score,
+    submitted_by: string,
     judge_uuid: string | null
 }
 
@@ -32,11 +33,18 @@ export type MatchTokenPayload = {
     role: MatchRole,
 }
 
-export type MatchParticipant<R extends MatchRole> = {
-    ready: boolean,
-    role: R,
-    scores: R extends "judge" ? undefined : Arrow[],
-    ends_confirmed?: boolean[];
+export interface UserSession<R extends MatchRole=MatchRole> {
+    // first and last names to be derived from token
+    match_id: string;
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    ready: boolean;
+    university: string;
+    role: R;
+    scores: R extends "judge" ? undefined : Arrow[];
+    ends_confirmed: R extends "judge" ? undefined : boolean[];
+    connected: boolean
 }
 
 export interface MatchParams {
@@ -47,28 +55,24 @@ export interface MatchParams {
     num_ends: number;
 }
 
-export interface PublicMatch extends MatchParams {
-    created_at: Date;
+export interface RedisMatch extends MatchParams {
+    created_at: string;
     current_end: number;
-    current_state: MatchState;
-    previous_state: MatchState;
     host: string;
-    participants: {
-        [user_uuid: string]: MatchParticipant<MatchRole>
-    };
-}
-
-export interface RestrictedMatch extends PublicMatch {
-    whitelist: {
+    participant_sessions: string[];
+    submission_map?: {
+        [submitter_id: string]: string // sessionId
+    }
+    whitelist?: {
         [user_id: string]: MatchRole
     }
+    current_state: MatchState;
+    previous_state: MatchState;
 }
-
-export type LiveMatch = RestrictedMatch | PublicMatch
 
 export type LiveMatchRedisType = {
     id: string,
-    value: LiveMatch
+    value: RedisMatch
 }
 
 export interface CompletedMatch {
