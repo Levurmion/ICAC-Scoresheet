@@ -2,7 +2,6 @@ import { RedisJSON } from "@redis/json/dist/commands";
 import { RedisClientType, createClient } from "redis";
 import * as types from "../types";
 import Match from "./Match";
-import redisClient from "../redis/redisClient";
 import { beforeEach, afterEach } from "@jest/globals";
 
 // create new client because we are testing from outside the container

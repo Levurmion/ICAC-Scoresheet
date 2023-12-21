@@ -6,7 +6,6 @@ import { Response, Request } from "express";
 import useSupabaseClient from "../lib/supabase/useSupabaseClient";
 import { decodeJWT, getSession, getSessionExpirySeconds, saveDataIntoSocket, setSession } from "../lib/utilities";
 import { MatchTokenPayload, UserSession } from "../lib/types";
-import { LiveMatch } from "../lib/classes/deprecated/Match";
 import Match from "../lib/classes/Match";
 
 const cors = require("cors");

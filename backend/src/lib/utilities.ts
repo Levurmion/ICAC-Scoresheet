@@ -1,7 +1,6 @@
 import { Request, Response } from "express"
 import useSupabaseClient from "./supabase/useSupabaseClient"
 import { RedisMatch, UserSignInCredentials, UserSignUpCredentials } from "./types"
-import redisClient from "./redis/useRedisClient"
 
 export const userSignUp: UserSignUpCredentials = {
     email: "elberttimothy23@gmail.com",

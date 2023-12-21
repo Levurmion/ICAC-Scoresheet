@@ -1,5 +1,4 @@
 import { RedisClientType, createClient } from "redis";
-import 'dotenv/config'
 
 declare global {
     var redisClient: RedisClientType
