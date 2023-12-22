@@ -78,7 +78,6 @@ Socket.IO is a cross-platform **Websocket/HTTP long-polling** library that provi
 NGINX is a webserver that has built-in load balancing and reverse proxy capabilities. For development, this project uses NGINX as a reverse proxy to serve all requests/responses to and from our backend services under a single domain. In production, it feels appropriate to build a Kubernetes cluster for high service availability considering that system failures mid-competitions cannot be tolerated. Serving the application under a single domain provides the following benefits:
 - **A single TLS/SSL termination point** as NGINX can convert all outgoing traffic from our backend services into HTTPS. This means we only need one SSL certificate to enable HTTPS for our entire application, served by the NGINX webserver. Internally, all communication between services can safely occur through HTTP within a firewall.
 - **No need to configure cross-domain cookies** for cross-service authentication. Since browsers tend to enforce strict single-domain policies for delivering cookies on HTTP/HTTPS requests, serving our entire application under a single domain circumvents having to configure TLS/SSL for individual services to enable cookies to be shared between different domains.
-- **Future extensibility for load balancing** as in addition to being a reverse proxy, NGINX can "round-robin" requests to a pool of server instances to facilitate horizontal scaling.
 
 ## Setting Up A Local Dev Environment
 
