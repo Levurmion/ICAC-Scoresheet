@@ -72,12 +72,13 @@ Notifies a change in the match lobby state. This could be changes to:
 ```typescript
 [
   {
-    id: string,
+    user_id: string,
     university: string,
     first_name: string,
     last_name: string,
     ready: boolean,
-    connected: boolean
+    connected: boolean,
+    role: string
   },
   ...
 ]

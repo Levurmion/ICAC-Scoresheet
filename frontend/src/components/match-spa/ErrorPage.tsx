@@ -1,7 +1,7 @@
 'use client'
 
 import { Socket } from "socket.io-client"
-import { MatchSPAErrorProps } from "./MatchSPAControllerTypes"
+import { MatchSPAErrorProps } from "./depracated/MatchSPAControllerTypes"
 
 interface ErrorPageProps extends MatchSPAErrorProps {
     clientSocket: Socket

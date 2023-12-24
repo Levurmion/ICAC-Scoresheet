@@ -1,7 +1,7 @@
 'use client'
 
 import { LobbyUserDetails, MatchSPALobbyProps } from "./MatchSPAControllerTypes";
-import ClientButton from "../input/ClientButton";
+import ClientButton from "../../input/ClientButton";
 import { useOptimistic } from "react";
 import * as ScrollArea from '@radix-ui/react-scroll-area'
 import { Socket } from "socket.io-client";

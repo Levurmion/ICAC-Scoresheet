@@ -114,6 +114,10 @@ matches.get("/live/:match_name", async (req, res) => {
         const allMatchParticipants: Array<{ [user_creds: string]: string }[]> = []
         for (const matchId of matchIds) {
             const matchParticipants = await Match.getParticipants(matchId, redisClient)
+            if (matchParticipants[0] === null) {
+                allMatchParticipants.push([])
+                continue
+            }
             const participantDetails = matchParticipants.map(participant => {
                 const {
                     user_id,

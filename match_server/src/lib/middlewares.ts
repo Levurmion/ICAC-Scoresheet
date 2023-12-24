@@ -3,7 +3,7 @@ import useSupabaseClient from "./supabase/useSupabaseClient";
 
 // authentication middleware
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
-    const supabase = useSupabaseClient({ req, res });
+    const supabase = useSupabaseClient({ req });
     const {
         data: { user },
     } = await supabase.auth.getUser();

@@ -33,6 +33,16 @@ export type MatchTokenPayload = {
     role: MatchRole,
 }
 
+export interface LobbyUserDetails {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    university: string;
+    ready: boolean;
+    connected: boolean;
+    role: string;
+}
+
 export interface UserSession<R extends MatchRole=MatchRole> {
     // first and last names to be derived from token
     match_id: string;
@@ -108,7 +118,7 @@ export interface EndResetResponse {
     action: "reset";
     resetPayload: EndResubmissionForm[]
 }
-export type EndRejectionResponses = "waiting" | EndResetResponse
+export type EndRejectionResponses = "waiting" | "reject"
 export type EndConfirmationResponses = EndRejectionResponses | "proceed"
 
 export type LiveMatchRedisType = {
@@ -147,4 +157,9 @@ export interface Scoresheet {
     num_ends: number;
     created_at: string;
     scoresheet: Arrow[];
+}
+
+// Socket.IO State
+export interface SocketIORedisMatchState extends RedisMatch {
+    participants: UserSession[]
 }
