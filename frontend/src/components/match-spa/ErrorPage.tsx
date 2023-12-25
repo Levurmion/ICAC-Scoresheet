@@ -1,13 +1,10 @@
 'use client'
 
 import { Socket } from "socket.io-client"
-import { MatchSPAErrorProps } from "./depracated/MatchSPAControllerTypes"
+import { ErrorPageProps } from "./MatchSPATypes"
 
-interface ErrorPageProps extends MatchSPAErrorProps {
-    clientSocket: Socket
-}
 
-export default function ErrorPage ({ clientSocket, errorMessage }: ErrorPageProps) {
+export default function ErrorPage ({ socket, error }: ErrorPageProps) {
 
     return (
         <>
@@ -15,7 +12,7 @@ export default function ErrorPage ({ clientSocket, errorMessage }: ErrorPageProp
                 Connection Error!
             </h1>
             <p className="text-responsive__large font-medium text-red-600">
-                {errorMessage}
+                {error}
             </p>
         </>
     )

@@ -384,4 +384,12 @@ describe("Match Server Events Testing Suite", () => {
             expect(userBFinishedState).toMatchObject(finishedMatchState)
         });
     });
+
+    describe("Testing Finished Match Events", () => {
+
+        test("Match is In The Finished State", async () => {
+            const { current_state } = await Match.getState(testMatchId, testClient)
+            expect(current_state).toBe("finished")
+        })
+    })
 });

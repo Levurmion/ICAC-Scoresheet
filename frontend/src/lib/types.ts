@@ -159,3 +159,45 @@ export interface Scoresheet {
     created_at: string;
     scoresheet: Arrow[];
 }
+
+// Socket.IO State
+export interface SocketIORedisMatchState extends RedisMatch {
+    participants: UserSession[];
+}
+
+// Socket.IO Types
+export type ServerMatchUpdateEventCb = (currentMatchState: SocketIORedisMatchState) => void;
+export type ServerErrorEventCb = (message: string) => void;
+
+export interface ServerToClientEvents {
+    connected: (message: string) => void;
+    "lobby-update": ServerMatchUpdateEventCb;
+    "end-submit": ServerMatchUpdateEventCb;
+    "end-confirmation": ServerMatchUpdateEventCb;
+    "end-reset": ServerMatchUpdateEventCb;
+    "match-finished": ServerMatchUpdateEventCb;
+    "pause-match": ServerMatchUpdateEventCb;
+    "resume-match": ServerMatchUpdateEventCb;
+    "lobby-update:error": ServerErrorEventCb;
+}
+
+export type ClientReplyCb = (reply: string) => void;
+
+export interface ClientToServerEvents {
+    "user-leave": (replyCb: ClientReplyCb) => void;
+    "user-ready": () => void;
+    "user-unready": () => void;
+    "user-submit": (scores: Score[], replyCb: ClientReplyCb) => void;
+    "user-confirm": (replyCb: ClientReplyCb) => void;
+    "user-reject": (replyCb: ClientReplyCb) => void;
+}
+
+export interface InterServerEvents {
+    ping: () => void;
+}
+
+export interface SocketData {
+    sessionId: string;
+    matchId: string;
+    userId: string;
+}

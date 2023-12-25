@@ -274,6 +274,12 @@ export default class Match {
 
                 // remove session from "active-sessions"
                 await redisClient.HDEL("active-sessions", sessionId);
+
+                // if this was the last user or match is still in the lobby (full), always reset the match to "open"
+                if (matchParticipants.length === 1 || current_state === "full") {
+                    await Match.setState(matchId, "open", redisClient);
+                    await redisClient.json.SET(matchId, "$.current_end", 0)
+                }
             }
         } catch (error: any) {
             throw new Error(`Cannot sync expired session: ${error.message}.`);

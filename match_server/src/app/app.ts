@@ -5,7 +5,7 @@ import redisClient from "../lib/redis/redisClient";
 import { Response, Request } from "express";
 import useSupabaseClient from "../lib/supabase/useSupabaseClient";
 import { decodeJWT, getSession, getSessionExpirySeconds, saveDataIntoSocket, setSession } from "../lib/utilities";
-import { MatchTokenPayload, Score, SocketIORedisMatchState, UserSession } from "../lib/types";
+import { ClientToServerEvents, InterServerEvents, MatchTokenPayload, Score, ServerToClientEvents, SocketData, SocketIORedisMatchState, UserSession } from "../lib/types";
 import Match from "../lib/classes/Match";
 import { randomUUID } from "crypto";
 
@@ -15,7 +15,12 @@ const express = require("express");
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
+const io = new Server<
+ClientToServerEvents,
+ServerToClientEvents,
+InterServerEvents,
+SocketData
+>(server, {
     cookie: true,
     connectionStateRecovery: {
         maxDisconnectionDuration: 5 * 1000, // 5 minutes
@@ -147,7 +152,9 @@ io.use(async (socket, next) => {
 
             const sessionId = await Match.setSession(sessionPayload, redisClient);
             if (sessionId) {
-                saveDataIntoSocket(socket, accessToken.match_uuid, authToken.id, sessionId);
+                // remove reservation
+                await redisClient.DEL(`reservation:${tokenPayload.match_uuid}:${authToken.id}`)
+                saveDataIntoSocket(socket, tokenPayload.match_uuid, authToken.id, sessionId);
                 next();
             } else {
                 throw new Error("Failed to set a new session.");
@@ -201,7 +208,7 @@ io.on("connection", async (socket) => {
     }
 
     // LOBBY EVENTS
-    socket.on("user-leave", async (replyCb: (reply: string) => void) => {
+    socket.on("user-leave", async (replyCb) => {
         try {
             await userMatch.leaveMatch()
             replyCb("OK")
@@ -309,7 +316,7 @@ io.on("connection", async (socket) => {
 
     // DISCONNECTION EVENTS
     socket.on('disconnect', async (reason) => {
-        if (reason === "transport close") {
+        if (reason === "transport close" || reason === "client namespace disconnect") {
             await userMatch.setDisconnect()
             const currentMatchState = await userMatch.getSocketIORedisMatchState()
             const {current_state} = currentMatchState
