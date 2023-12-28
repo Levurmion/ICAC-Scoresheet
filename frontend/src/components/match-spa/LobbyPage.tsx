@@ -57,7 +57,7 @@ export default function LobbyPage ({ socket, data }: LobbyPageProps) {
                 <h1 className="font-extrabold">Match Lobby</h1>
                 <div className="">
                     <p className="text-responsive__xx-large font-bold">
-                        {">"}{data.name}
+                        {data.name}
                     </p>
                     <p className="-mt-1 text-responsive__x-large font-medium text-beige-950">
                         {data.round !== undefined ? <span>{`${data.round}`}</span> : ""} &bull; {data.num_ends} ends of {data.arrows_per_end} arrows

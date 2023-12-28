@@ -18,6 +18,7 @@ import {
     resumedMatchState,
     finishedMatchState,
 } from "./appTestcases";
+import useSupabaseBasicClient from "../lib/supabase/useSupabaseBasicClient";
 const io = require("socket.io-client");
 
 // TEST DATA
@@ -35,8 +36,8 @@ const testMatch: RedisMatch = {
     previous_state: "open",
     submission_map: {},
 };
-const testUserIdA = "test-user-A";
-const testUserIdB = "test-user-B";
+const testUserIdA = "57ab3332-c2fe-4233-9fcb-df1387de331e";
+const testUserIdB = "b5708a67-5e10-4af6-94c5-80cbd8e8464d";
 
 function createClientSocket(userId: string) {
     return io("http://localhost:8001", {
@@ -88,6 +89,20 @@ describe("Match Server Events Testing Suite", () => {
         await testClient.disconnect();
         clientSocketA.disconnect();
         clientSocketB.disconnect();
+
+        const supabase = useSupabaseBasicClient()
+        
+        // delete the scoresheets
+        await supabase
+            .from("scoresheets")
+            .delete()
+            .in("user_id", [testUserIdA, testUserIdB])
+
+        // delete the match saved in supabase
+        const delMatchResponse = await supabase
+            .from("matches")
+            .delete()
+            .eq("host", testUserIdA)
     });
 
     describe("Testing Lobby Events", () => {
@@ -151,10 +166,11 @@ describe("Match Server Events Testing Suite", () => {
             const userADisconnectionUpdate = await userADisconnectionUpdatePromise;
             expect(userADisconnectionUpdate).toEqual(expectedUserBDisconnectedMatchState);
 
+            
             // wait until userB is reconnected to receive "lobby-update"
             const userBReconnectionUpdate = await userBReconnectionUpdatePromise;
             expect(userBReconnectionUpdate).toEqual(expectedUserBMatchState);
-
+            
             // delay to ensure that reconnection occurred
             await delay(1000);
         });
@@ -340,7 +356,11 @@ describe("Match Server Events Testing Suite", () => {
             await delay(1000);
         });
 
-        test("Match Is Finished Once All Ends Have Been Submitted and Confirmed", async () => {
+    });
+
+    describe("Testing Finished Match Events", () => {
+
+        test("Match Is Finished Once All Ends Have Been Submitted and Confirmed, Automatically Submits to Supabase", async () => {
             // take match to the final end
             for (let end = 2; end <= 3; end++) {
                 // userA submits
@@ -382,14 +402,21 @@ describe("Match Server Events Testing Suite", () => {
             ])
             expect(userAFinishedState).toMatchObject(finishedMatchState)
             expect(userBFinishedState).toMatchObject(finishedMatchState)
+
+            // monitor saving to supabase
+            const userA_savedToSupabasePromise = waitFor(clientSocketA, "save-update")
+            const userB_savedToSupabasePromise = waitFor(clientSocketB, "save-update")
+            const userA_savedToSupabase = await userA_savedToSupabasePromise
+            const userB_savedToSupabase = await userB_savedToSupabasePromise
+            console.log(userA_savedToSupabase)
+            expect(userA_savedToSupabase).toEqual("OK")
+            expect(userB_savedToSupabase).toEqual("OK")
+
         });
-    });
 
-    describe("Testing Finished Match Events", () => {
-
-        test("Match is In The Finished State", async () => {
+        test("Match is In The Saved State", async () => {
             const { current_state } = await Match.getState(testMatchId, testClient)
-            expect(current_state).toBe("finished")
+            expect(current_state).toBe("saved")
         })
     })
 });

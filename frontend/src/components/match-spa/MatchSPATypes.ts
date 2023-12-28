@@ -1,7 +1,7 @@
 import { ClientToServerEvents, MatchState, ServerToClientEvents, SocketIORedisMatchState, UserSession } from "@/lib/types";
 import { Socket } from "socket.io-client";
 
-export type MatchSPAPagesWithData = "paused" | "lobby" | "submit" | "confirmation" | "finished";
+export type MatchSPAPagesWithData = "paused" | "lobby" | "submit" | "resubmit" | "confirmation" | "finished";
 export type MatchSPAPagesWithoutData = "connecting" | "error"
 
 export type MatchStateWithData = {
@@ -39,4 +39,14 @@ export interface LobbyPageProps extends MatchSPAPageProps {
 
 export interface SubmitPageProps extends MatchSPAPageProps {
     data: SocketIORedisMatchState;
+    resubmit?: boolean
+}
+
+export interface ConfirmationPageProps extends MatchSPAPageProps {
+    data: SocketIORedisMatchState
+}
+
+export interface FinishedPageProps extends MatchSPAPageProps {
+    data: SocketIORedisMatchState,
+    saveProgress: string
 }

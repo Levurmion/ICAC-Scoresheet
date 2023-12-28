@@ -167,3 +167,11 @@ export function waitForEvent (eventEmitter: EventEmitter, event: string) {
         eventEmitter.once(event, payload => resolve(payload))
     })
 }
+
+export function delay (ms: number) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(true)
+        }, ms)
+    })
+}

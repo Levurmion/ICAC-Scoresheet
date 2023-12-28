@@ -1,3 +1,5 @@
+import { Json } from "./database.types";
+
 export interface UserSignInCredentials {
     email: string;
     password: string;
@@ -14,7 +16,7 @@ export interface UserSignUpCredentials extends UserSignInCredentials {
     disability?: string;
 }
 
-export type MatchState = "open" | "full" | "submit" | "confirmation" | "finished" | "reported" | "paused";
+export type MatchState = "open" | "full" | "submit" | "confirmation" | "finished" | "reported" | "paused" | "stalled" | "saved";
 
 export type MatchRole = "archer" | "judge";
 
@@ -154,9 +156,10 @@ export interface Scoresheet {
     user_id: string;
     arrows_shot: number;
     arrows_per_end: number;
-    num_ends: number;
+    num_ends?: number;
     created_at: string;
-    scoresheet: Arrow[];
+    scoresheet: Json;
+    competition?: string;
 }
 
 // Socket.IO State
@@ -174,10 +177,12 @@ export interface ServerToClientEvents {
     "end-submit": ServerMatchUpdateEventCb;
     "end-confirmation": ServerMatchUpdateEventCb;
     "end-reset": ServerMatchUpdateEventCb;
+    "confirmation-update": ServerMatchUpdateEventCb;
     "match-finished": ServerMatchUpdateEventCb;
     "pause-match": ServerMatchUpdateEventCb;
     "resume-match": ServerMatchUpdateEventCb;
     "lobby-update:error": ServerErrorEventCb;
+    "save-update": (saveResult: string ) => void
 }
 
 export type ClientReplyCb = (reply: string) => void;

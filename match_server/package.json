@@ -13,6 +13,7 @@
   "dependencies": {
     "@redis/json": "^1.0.6",
     "@supabase/ssr": "^0.0.10",
+    "@supabase/supabase-js": "^2.39.1",
     "cookie": "^0.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

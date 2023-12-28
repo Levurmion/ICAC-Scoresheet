@@ -1,6 +1,6 @@
 import redisClient from "../../lib/redis/redisClient";
 import { Router } from "express";
-import { MatchParams, RedisMatch, MatchTokenPayload, RedisMatchReturnType, UserSession } from "../../lib/types";
+import { MatchParams, RedisMatch, MatchTokenPayload, UserSession } from "../../lib/types";
 import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";

@@ -1012,8 +1012,7 @@ describe("Match Testing Suite", () => {
                     user_id: "user-001",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
@@ -1023,15 +1022,14 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
-                    ]
+                    ])
                 },
                 {
                     round: "Portsmouth",
                     user_id: "user-002",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
@@ -1041,15 +1039,14 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
-                    ]
+                    ])
                 },
                 {
                     round: "Portsmouth",
                     user_id: "user-003",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
@@ -1059,15 +1056,14 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
-                    ]
+                    ])
                 },
                 {
                     round: "Portsmouth",
                     user_id: "user-004",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
@@ -1077,7 +1073,7 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
-                    ]
+                    ])
                 }
             ]
         } as types.MatchReport

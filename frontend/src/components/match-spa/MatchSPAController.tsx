@@ -9,6 +9,8 @@ import ErrorPage from "./ErrorPage"
 import LobbyPage from "./LobbyPage"
 import SubmitPage from "./SubmitPage"
 import PausedModal from "./PausedModal"
+import ConfirmationPage from "./ConfirmationPage"
+import FinishedPage from "./FinishedPage"
 
 export default function MatchSPAController () {
     const [ pageState, setPageState ] = useState<MatchSPAControllerStates>({
@@ -17,6 +19,7 @@ export default function MatchSPAController () {
     })
     const [ error, setError ] = useState<string | null>(null)
     const [ paused, setPaused ] = useState<SocketIORedisMatchState | null>(null)
+    const [ saveProgress, setSaveProgress ] = useState("pending")
 
     function renderMatchSPA () {
         if (error) {
@@ -30,6 +33,12 @@ export default function MatchSPAController () {
                 return <LobbyPage socket={clientSocket} data={pageState.data} />
             case "submit":
                 return <SubmitPage socket={clientSocket} data={pageState.data} />
+            case "resubmit":
+                return <SubmitPage socket={clientSocket} data={pageState.data} resubmit={true} />
+            case "confirmation":
+                return <ConfirmationPage socket={clientSocket} data={pageState.data} />
+            case "finished":
+                return <FinishedPage socket={clientSocket} data={pageState.data} saveProgress={saveProgress}/>
         }
     }
 
@@ -59,6 +68,56 @@ export default function MatchSPAController () {
             })
         }
 
+        const onEndConfirmation = (data: SocketIORedisMatchState) => {
+            setPageState({
+                page: "confirmation",
+                data
+            })
+        }
+
+        const onConfirmationUpdate = (data: SocketIORedisMatchState) => {
+            console.log("confirmation update")
+            setPageState({
+                page: "confirmation",
+                data
+            })
+        }
+
+        const onEndReset = (data: SocketIORedisMatchState) => {
+            setPageState(prevState => {
+                if (prevState.page === "confirmation") {
+                    return {
+                        page: "resubmit",
+                        data: prevState.data
+                    }
+                } else {
+                    return {
+                        page: "resubmit",
+                        data
+                    }
+                }
+            })
+        }
+
+        const onMatchFinished = (data: SocketIORedisMatchState) => {
+            setPageState({
+                page: "finished",
+                data
+            })
+        }
+
+        const onSaveUpdate = (saveProgress: string) => {
+            setSaveProgress(saveProgress)
+        }
+
+        const onConnectError = (error: Error) => {
+            setError(error.message)
+        }
+
+        const onConnect = () => {
+            setError(null)
+        }
+
         const onPause = (data: SocketIORedisMatchState) => {
             setPaused(data)
         }
@@ -71,14 +130,26 @@ export default function MatchSPAController () {
                     page: current_state,
                     data
                 })
+            } else if (current_state === "finished" || current_state === "reported" || current_state === "saved") {
+                setPageState({
+                    page: "finished",
+                    data
+                })
             }
         }
 
         // Socket.IO event listeners
+        clientSocket.on("connect_error", onConnectError)
+        clientSocket.on("connect", onConnect)
         clientSocket.on("lobby-update", onLobbyUpdate)
         clientSocket.on("end-submit", onEndSubmit)
+        clientSocket.on("end-confirmation", onEndConfirmation)
+        clientSocket.on("confirmation-update", onConfirmationUpdate)
+        clientSocket.on("end-reset", onEndReset)
         clientSocket.on("pause-match", onPause)
         clientSocket.on("resume-match", onResume)
+        clientSocket.on("match-finished", onMatchFinished)
+        clientSocket.on("save-update", onSaveUpdate)
 
         // Window event listeners
         window.addEventListener("popstate", onBrowserPopstate)
@@ -87,10 +158,17 @@ export default function MatchSPAController () {
         clientSocket.connect()
 
         return () => {
+            clientSocket.off("connect_error", onConnectError)
+            clientSocket.off("connect", onConnect)
             clientSocket.off("lobby-update", onLobbyUpdate)
             clientSocket.off("end-submit", onEndSubmit)
+            clientSocket.off("end-confirmation", onEndConfirmation)
+            clientSocket.off("confirmation-update", onConfirmationUpdate)
+            clientSocket.off("end-reset", onEndReset)
             clientSocket.off("pause-match", onPause)
             clientSocket.off("resume-match", onResume)
+            clientSocket.off("match-finished", onMatchFinished)
+            clientSocket.off("save-update", onSaveUpdate)
             window.removeEventListener("popstate", onBrowserPopstate)
             window.removeEventListener("beforeunload", onBrowserRefresh)
             clientSocket.disconnect()
