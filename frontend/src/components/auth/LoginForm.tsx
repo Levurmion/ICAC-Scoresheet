@@ -41,7 +41,7 @@ export default function LogInForm() {
                 loginFailed && <p className="text-lg text-red-700">wrong email or password!</p>
             }
             <div className='mt-auto'>
-                <ClientButton type='submit'>
+                <ClientButton id="login-button" type='submit'>
                     <span className='block text-responsive__large p-2 w-full font-semibold'>Log In</span>
                 </ClientButton>
             </div>

@@ -53,6 +53,7 @@ app.get("/", (req: Request, res: Response) => {
 io.use(authenticateConnectionRequest)
 
 
+// Socket.IO entrypoint
 io.on("connection", async (socket) => {
 
     const {
@@ -245,6 +246,8 @@ io.on("connection", async (socket) => {
                                 }
 
                             } catch (error: any) {
+                                // stall match
+                                await Match.setState(matchId, "stalled", redisClient)
                                 io.to(matchId).emit("save-update", error.message)
                             }
                         }

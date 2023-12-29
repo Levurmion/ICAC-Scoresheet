@@ -30,7 +30,7 @@ export default function SignUpForm () {
             <ClientDropdownInput placeholder="disability" name="disability" options={["yes", "no"]} />
 
             <div className='mt-auto'>
-                <ClientButton type='submit'>
+                <ClientButton id="signup-button" type='submit'>
                     <span className='block text-responsive__large p-2 w-full font-semibold'>Sign Up</span>
                 </ClientButton>
             </div>

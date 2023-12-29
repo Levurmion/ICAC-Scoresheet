@@ -1,6 +1,6 @@
 import { RedisClientType, createClient } from "redis";
-import { MatchTokenPayload, RedisMatch, SocketIORedisMatchState, UserSession } from "../lib/types";
-import Match from "../lib/classes/Match";
+import { MatchTokenPayload, RedisMatch, SocketIORedisMatchState, UserSession } from "../../lib/types";
+import Match from "../../lib/classes/Match";
 import { resolve } from "path";
 import {
     expectedUserAMatchState,
@@ -17,8 +17,8 @@ import {
     pausedMatchState,
     resumedMatchState,
     finishedMatchState,
-} from "./appTestcases";
-import useSupabaseBasicClient from "../lib/supabase/useSupabaseBasicClient";
+} from "./fixtures";
+import useSupabaseBasicClient from "../../lib/supabase/useSupabaseBasicClient";
 const io = require("socket.io-client");
 
 // TEST DATA

@@ -59,7 +59,8 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
 
     if (authResponse.error) {
         console.log(authResponse.error)
-        throw new Error('authentication error');
+        next(new Error('authentication error'));
+        return
     }
 
     const accessToken = cookies["match_access_token"];
