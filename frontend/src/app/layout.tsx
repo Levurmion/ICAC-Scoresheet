@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang='en'>
             <body className={inter.className}>
-                <main className='h-full w-full flex flex-col items-center p-4 gap-2'>{children}</main>
+                <main className='h-full sm:h-fit sm:min-h-full w-full bg-beige-50 flex flex-col sm:rounded-lg sm:shadow-lg overflow-hidden items-center p-4 gap-2'>{children}</main>
             </body>
         </html>
     );

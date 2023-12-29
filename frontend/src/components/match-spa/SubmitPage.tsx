@@ -101,15 +101,15 @@ export default function SubmitPage({ socket, data, resubmit }: SubmitPageProps) 
     }
 
     return (
-        <div className='w-full h-full flex flex-col items-center gap-4'>
-            <p className='text-responsive__large font-semibold w-[100dvw] sm:w-[400px] -mt-4 py-2 px-4 bg-gray-300 text-slate-700'>
+        <div className='w-full h-full flex flex-col items-center gap-12'>
+            <p className='text-responsive__large font-semibold w-[100dvw] sm:w-[420px] py-2 px-4 bg-gray-300 text-slate-700'>
                 You are being scored by{" "}
                 <span className='font-extrabold text-slate-800'>
                     {userSubmitter?.first_name} {userSubmitter?.last_name}
                 </span>
             </p>
 
-            <section className='flex flex-col w-full'>
+            <section className='flex flex-col w-full -mt-8'>
                 <h1 className='font-extrabold'>
                     End {data.current_end}/{data.num_ends}
                 </h1>

@@ -34,7 +34,7 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
     };
 
     return (
-        <div className='w-full h-full flex flex-col gap-4'>
+        <div className='w-full h-full flex flex-col gap-8 mt-4'>
             <div className='w-full flex flex-col'>
                 <h1 className='font-extrabold'>Confirm End {current_end}</h1>
                 <p className='text-responsive__x-large'>If any of the participants rejects, the match will be asked to resubmit the current end.</p>

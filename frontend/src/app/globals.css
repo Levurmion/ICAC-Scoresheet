@@ -21,7 +21,7 @@ html {
 }
 
 body {
-  @apply bg-beige-50 h-[100dvh] w-[100dvw] sm:w-[400px] sm:rounded-lg sm:h-fit sm:min-h-[95dvh] sm:my-[2.5dvh] sm:shadow-lg mx-auto
+  @apply flex h-[100dvh] w-[100dvw] sm:w-[420px] sm:min-h-[90dvh] sm:my-[2.5dvh] mx-auto
 }
 
 h1 {
