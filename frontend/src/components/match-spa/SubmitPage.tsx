@@ -117,9 +117,6 @@ export default function SubmitPage({ socket, data, resubmit }: SubmitPageProps) 
 
             <section className='flex flex-col justify-center grow gap-4'>
                 <div className='flex flex-col w-full'>
-                    {/* <p className="text-responsive__x-large font-semibold text-beige-800">
-                        End total <span className="font-extrabold text-beige-900">{endTotal}</span>
-                    </p> */}
                     <p className='text-responsive__x-large font-semibold text-slate-700'>You are scoring for</p>
                     <h2 className='font-extrabold text-slate-900'>
                         {userToSubmitFor.first_name} {userToSubmitFor.last_name}
@@ -156,7 +153,7 @@ export default function SubmitPage({ socket, data, resubmit }: SubmitPageProps) 
                                         <BackspaceIcon fontSize='inherit' />
                                     </button>
                                 ) : undefined}
-                                <div className={`text-4xl h-24 w-fit`}>
+                                <div className={`text-4xl h-20 w-fit`}>
                                     <ArrowScore score={score} />
                                 </div>
                             </div>

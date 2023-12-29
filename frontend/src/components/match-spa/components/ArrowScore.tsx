@@ -27,9 +27,9 @@ export function ArrowScore({ score }: { score: Score | Arrow | null }) {
     } else if (arrowScore === 2 || arrowScore === 1) {
         color = "bg-black text-white";
     } else if (arrowScore === 0) {
-        color = "bg-gray-300 text-black";
+        color = "bg-gray-200 text-black";
     } else if (arrowScore === null) {
-        color = "bg-gray-300 text-slate-700";
+        color = "bg-gray-200 text-slate-700";
     }
 
     return (

@@ -93,22 +93,22 @@ export function EndTotal({
             <div className='flex flex-col h-fit py-1 gap-1'>
                 <div className='flex flex-col'>
                     <div className='flex text-responsive__xxx-large font-bold items-center'>
-                        {archer.first_name} {archer.last_name}
                         {endConfirmed === true ? (
-                            <span className='text-green-700 ps-2 drop-shadow-sm flex'>
+                            <span className='text-green-700 pe-2 drop-shadow-sm flex'>
                                 <VerifiedIcon fontSize='inherit' />
                             </span>
                         ) : endConfirmed === false ? (
-                            <span className='text-red-600 ps-2 drop-shadow-sm flex'>
+                            <span className='text-red-600 pe-2 drop-shadow-sm flex'>
                                 <DoNotDisturbAltOutlinedIcon fontSize='inherit' />
                             </span>
                         ) : null}
+                        {archer.first_name} {archer.last_name}
                     </div>
                 </div>
                 <div className='flex flex-row w-full gap-2'>
                     {endArrows.map((score, arrowIdx) => {
                         return (
-                            <div key={`arrow:${archer.user_id}-${arrowIdx}-${score.score}`} className='h-16 w-fit text-3xl drop-shadow-sm'>
+                            <div key={`arrow:${archer.user_id}-${arrowIdx}-${score.score}`} className='h-14 w-fit text-2xl drop-shadow-sm'>
                                 <ArrowScore score={score} />
                             </div>
                         );
@@ -116,23 +116,8 @@ export function EndTotal({
                 </div>
             </div>
             <div className='ms-auto flex flex-col justify-end h-full'>
-                <div className='text-3xl grid place-items-center h-16 aspect-square font-bold'>{endTotal}</div>
+                <div className='text-2xl grid place-items-center h-16 aspect-square font-bold'>{endTotal}</div>
             </div>
         </li>
     );
 }
-
-// {
-//     endConfirmed === undefined ? (
-//         <div className="h-[50%] aspect-square">
-//         </div>
-//     ) : endConfirmed === true ? (
-//         <div className="text-5xl text-green-700 pe-2 drop-shadow-sm">
-//             <VerifiedIcon fontSize="inherit"/>
-//         </div>
-//     ) : (
-//         <div className="text-5xl text-red-600 pe-2 drop-shadow-sm">
-//             <DoNotDisturbAltOutlinedIcon fontSize="inherit"/>
-//         </div>
-//     )
-// }
