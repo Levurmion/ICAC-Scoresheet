@@ -1,8 +1,10 @@
-export default function LoadingSpinner() {
+
+export default function LoadingSpinner({ ringColor, highlightColor }: { ringColor?: string, highlightColor?: string }) {
+    
     return (
         <svg
             aria-hidden='true'
-            className='w-full h-full text-gray-200 animate-spin dark:text-beige-300 fill-beige-500'
+            className={`w-full h-full animate-spin ${ringColor ?? "text-beige-300"} ${highlightColor ?? "fill-beige-500"}`}
             viewBox='0 0 100 101'
             fill='none'
             xmlns='http://www.w3.org/2000/svg'>

@@ -1,6 +1,6 @@
 import redisClient from "../../lib/redis/redisClient";
 import { Router } from "express";
-import { MatchParams, RedisMatch, MatchTokenPayload, RedisMatchReturnType, UserSession } from "../../lib/types";
+import { MatchParams, RedisMatch, MatchTokenPayload, UserSession } from "../../lib/types";
 import { authenticate } from "../../lib/middlewares";
 import { v4 as uuid4 } from "uuid";
 import { RedisJSON } from "@redis/json/dist/commands";
@@ -114,6 +114,10 @@ matches.get("/live/:match_name", async (req, res) => {
         const allMatchParticipants: Array<{ [user_creds: string]: string }[]> = []
         for (const matchId of matchIds) {
             const matchParticipants = await Match.getParticipants(matchId, redisClient)
+            if (matchParticipants[0] === null) {
+                allMatchParticipants.push([])
+                continue
+            }
             const participantDetails = matchParticipants.map(participant => {
                 const {
                     user_id,

@@ -59,7 +59,7 @@ export default function HostMatchForm() {
             );
         } else if (data?.status === 409) {
             return <span className='block text-responsive__large p-2 w-full font-semibold'>Name Already Taken!</span>;
-        } else if (isLoading) {
+        } else if (isLoading && createMatchParams) {
             return (
                 <div className='flex w-full items-center justify-center'>
                     <div className='h-6 w-6'>
@@ -95,8 +95,8 @@ export default function HostMatchForm() {
 
     return (
         <form onSubmit={handleCreateMatchSubmit} className='w-full mt-auto flex flex-col gap-2' suppressHydrationWarning>
-            <ClientInput onChangeCb={handleMatchNameChange} type='text' placeholder='match name' name='name' pattern='^[A-Za-z0-9_ ]+$' required />
-            <ClientInput type='text' placeholder='round (optional)' name='round' />
+            <ClientInput id="match-name-field" onChangeCb={handleMatchNameChange} type='text' placeholder='match name' name='name' pattern='^[A-Za-z0-9_ ]+$' required />
+            <ClientInput id="round-name-field" type='text' placeholder='round (optional)' name='round' />
             <ClientNumberInput min={2} step={1} placeholder='number of participants' name='max_participants' required />
             <p className='mt-4'>
                 <span className='font-extrabold'>total: </span>

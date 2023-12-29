@@ -2,6 +2,7 @@ import { RedisJSON } from "@redis/json/dist/commands";
 import { RedisClientType, createClient } from "redis";
 import * as types from "../types";
 import Match from "./Match";
+import redisClient from "../redis/redisClient";
 import { beforeEach, afterEach } from "@jest/globals";
 
 // create new client because we are testing from outside the container
@@ -245,6 +246,45 @@ describe("Match Testing Suite", () => {
     });
 
     describe("Testing the Behaviour of Match Lobby Occupancy (open and full states)", () => {
+        const expectedLobbyUserDetails: types.LobbyUserDetails[] = [
+            {
+                user_id: "user-001",
+                first_name: "Alice",
+                last_name: "Johnson",
+                ready: false,
+                university: "Some University",
+                role: "archer",
+                connected: true,
+            },
+            {
+                user_id: "user-002",
+                first_name: "Bob",
+                last_name: "Smith",
+                ready: false,
+                university: "Some University",
+                role: "archer",
+                connected: true,
+            },
+            {
+                user_id: "user-003",
+                first_name: "Charlie",
+                last_name: "Brown",
+                ready: false,
+                university: "Some University",
+                role: "archer",
+                connected: true,
+            },
+            {
+                user_id: "user-004",
+                first_name: "Diana",
+                last_name: "Prince",
+                ready: false,
+                university: "Some University",
+                role: "archer",
+                connected: true,
+            },
+        ]
+
         beforeAll(async () => {
             await Match.createRedisMatch(testMatchId, testMatch, testClient);
             for (const testSession of testUserSessions) {
@@ -265,6 +305,11 @@ describe("Match Testing Suite", () => {
             const participants = await Match.getParticipants(testMatchId, testClient);
             expect(participants).toEqual(testUserSessions);
         });
+
+        test("Can correctly retrieve lobby user details", async () => {
+            const lobbyUserDetails = await Match.getLobbyUserDetails(testMatchId, testClient)
+            expect(lobbyUserDetails).toEqual(expectedLobbyUserDetails)
+        })
 
         test("Match is full when the number of participants >= max_participants", async () => {
             const matchState = await Match.getState(testMatchId, testClient);
@@ -852,7 +897,7 @@ describe("Match Testing Suite", () => {
             expect(match.current_end).toBe(2);
         });
 
-        test("When One Of The Users Disagree, Match Gets Reset to the Start of This End", async () => {
+        test("When one of users disagree, the confirm/reject methods return reject", async () => {
             // only 3 of users confirm
             for (const user of matchInstances.slice(0, 3)) {
                 const confirmAction = await user.confirmEnd();
@@ -860,7 +905,7 @@ describe("Match Testing Suite", () => {
             }
             const lastUser = matchInstances[3];
             const lastUserConfirmAction = await lastUser.rejectEnd();
-            expect(lastUserConfirmAction).toEqual(endResetResponse);
+            expect(lastUserConfirmAction).toEqual("reject");
 
             // check that end did not progress
             const match = await lastUser.getRedisMatch();
@@ -871,29 +916,7 @@ describe("Match Testing Suite", () => {
             for (const participant of participants) {
                 expect(participant.scores).toEqual([]);
             }
-        });
-
-        test("Reset Also Works After Second Submission", async () => {
-            for (const user of matchInstances) {
-                await user.confirmEnd();
-            }
-            for (const user of matchInstances) {
-                await user.submitEndArrows([6, 7, 8]);
-            }
-            const thirdUser = matchInstances[2];
-            const secondEndTotals = await thirdUser.getEndTotals();
-            expect(secondEndTotals).toEqual(secondEndTotal);
-
-            // reject confirmation again
-            for (const user of matchInstances.slice(0, 2)) {
-                await user.confirmEnd();
-            }
-            await thirdUser.rejectEnd();
-            const lastUser = matchInstances[3];
-            const secondEndRejectionResponse = await lastUser.confirmEnd();
-            expect(secondEndRejectionResponse).toEqual(secondEndResetResponse)
-        });
-
+        })
 
     });
 

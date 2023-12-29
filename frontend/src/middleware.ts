@@ -12,6 +12,9 @@ export async function middleware (req: NextRequest) {
     }
 }
 
+
+// comment out for offline development
+
 export const config = {
     matcher: [
         '/user/:path*'

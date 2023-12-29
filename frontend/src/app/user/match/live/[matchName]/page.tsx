@@ -1,4 +1,4 @@
-import MatchSPAController from "@/components/match-spa/MatchSPAController";
+import MatchSPAController from "@/components/match-spa/MatchSPAController"
 
 export default function LiveMatchPage () {
 

@@ -1,86 +1,147 @@
 'use client'
 
-import { LobbyUserDetails, MatchSPALobbyProps } from "./MatchSPAControllerTypes";
+import { MatchRole } from "@/lib/types";
+import { LobbyPageProps } from "./MatchSPATypes";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SignalWifiStatusbarConnectedNoInternet4Icon from '@mui/icons-material/SignalWifiStatusbarConnectedNoInternet4';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ClientButton from "../input/ClientButton";
-import { useOptimistic } from "react";
-import * as ScrollArea from '@radix-ui/react-scroll-area'
-import { Socket } from "socket.io-client";
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import { motion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
 import { useUserContext } from "@/lib/contexts/ServerToClientUserContextProvider";
+import { useRouter } from "next/navigation";
 
-interface LobbyPageProps extends MatchSPALobbyProps {
-    clientSocket: Socket
-}
+export default function LobbyPage ({ socket, data }: LobbyPageProps) {
 
-export default function LobbyPage ({ clientSocket, isOpen, registeredUsers }: LobbyPageProps ) {
+    const router = useRouter()
+    const participantReadyStates = data.participants.map(participant => participant.ready)
+    const userContext = useUserContext()
+    const userIdx = useRef(data.participants.findIndex(participant => participant.user_id === userContext?.id))
+    
+    // SIMULATE OPTIMISTIC UPDATES
+    const [optimisticReadyStates, setOptimisiticReadyStates] = useState(participantReadyStates)
 
-    const [optimisticUserDetails, setOptimisticUserDetails] = useOptimistic(registeredUsers)
-    const user = useUserContext()
-    const userId = user?.id
+    // synchronize state with prop change
+    useEffect(() => {
+        setOptimisiticReadyStates(data.participants.map(participant => participant.ready))
+    }, [data])
 
+    // EVENT HANDLERS
     const handleReady = () => {
-        console.log('readying...')
-        clientSocket.emit('client:lobby-ready')
+        setOptimisiticReadyStates(prevReadyStates => {
+            const newReadyStates = [...prevReadyStates]
+            newReadyStates[userIdx.current] = true
+            return newReadyStates
+        })
+        socket.emit("user-ready")
     }
 
     const handleUnready = () => {
-        console.log('undreadying...')
-        clientSocket.emit('client:lobby-unready')
+        setOptimisiticReadyStates(prevReadyStates => {
+            const newReadyStates = [...prevReadyStates]
+            newReadyStates[userIdx.current] = false
+            return newReadyStates
+        })
+        socket.emit("user-unready")
+    }
+
+    const handleLeaveMatch = () => {
+        socket.emit("user-leave", (reply) => {
+            if (reply === "OK") router.back()
+        })
     }
 
     return (
-        <>
-            <section className="flex flex-col w-full h-[55dvh] gap-2">
-                <h2 className="font-semibold text-beige-950">Match Lobby</h2>
-                <ScrollArea.Root className='w-full h-full grow basis-0 bg-beige-100 border border-beige-950 rounded-md overflow-y-scroll shadow-md'>
-                    <ScrollArea.Viewport asChild className="w-full h-full">
-                        {
-                            registeredUsers?.map(user => {
-                                return <RegisteredUser key={user.id} {...user} isCurrentUser={userId === user.id} />
-                            })
-                        }
-                    </ScrollArea.Viewport>
-                </ScrollArea.Root>
-                <div className="flex flex-row w-full h-fit gap-2">
+        <div className="w-full h-full flex flex-col gap-14">
+            <div className="w-full flex flex-col gap-1">
+                <h1 className="font-extrabold">Match Lobby</h1>
+                <div className="">
+                    <p className="text-responsive__xx-large font-bold">
+                        {data.name}
+                    </p>
+                    <p className="-mt-1 text-responsive__x-large font-medium text-beige-950">
+                        {data.round !== undefined ? <span>{`${data.round}`}</span> : ""} &bull; {data.num_ends} ends of {data.arrows_per_end} arrows
+                    </p>
+                </div>
+            </div>
+
+            <div className="w-full flex flex-col gap-4">
+                <h2 className="font-bold">Participants ({data.participants.length}/{data.max_participants})</h2>
+                <ul className="w-full h-fit rounded-md">
+                    {
+                        data.participants.map((participant, idx) => {
+                            const readyState = optimisticReadyStates[idx]
+                            const { user_id } = participant
+                            return <Participant key={user_id} {...participant} ready={readyState} isUser={user_id === userContext?.id}/>
+                        })
+                    }
+                </ul>
+                <div className="w-full flex gap-2">
                     <ClientButton onClickHandler={handleUnready}>
-                        <span className="block text-responsive__large p-2 font-semibold">Unready</span>
+                        <p className="p-2 font-semibold">Unready</p>
                     </ClientButton>
                     <ClientButton onClickHandler={handleReady}>
-                        <span className="block text-responsive__large p-2 font-semibold">Ready</span>
+                        <p className="p-2 font-semibold">Ready</p>
                     </ClientButton>
                 </div>
-            </section>
-        </>
+            </div>
+            
+            <div className="w-full h-fit mt-auto">
+                <ClientButton onClickHandler={handleLeaveMatch}>
+                    <p className="p-2 font-semibold">Leave Match</p>
+                </ClientButton>
+            </div>
+        </div>
     )
 }
 
-interface RegisteredUserProps extends LobbyUserDetails {
-    isCurrentUser: boolean
+export interface ParticipantProps {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    university: string;
+    ready: boolean;
+    connected: boolean;
+    role: MatchRole;
+    isUser?: boolean;
 }
 
-export function RegisteredUser ({ first_name, last_name, university, ready, connected, isCurrentUser }: RegisteredUserProps) {
+export function Participant ({ user_id, first_name, last_name, university, ready, connected, role, isUser }: ParticipantProps) {
+
+    const roleEmoji = role === "archer" ? <span>&#127993;</span> : <span>&#128203;</span>
 
     return (
-        <div className={`relative flex w-full h-fit py-1.5 px-2 justify-between items-center ${connected ? "" : "bg-slate-400"}`}>
-            <div className="flex flex-col h-fit">
-                <p className="text-responsive__xx-large font-semibold -mb-0.5">{isCurrentUser && <span>	&#128073;</span>} {first_name} {last_name}</p>
-                <p className="text-responsive__medium italic text-beige-800">{university ?? "unaffiliated"}</p>
+        <li id={user_id} className="w-full h-fit flex items-center px-2 py-1 rounded-sm">
+            {   
+                isUser ? (
+                    <div className="h-fit pe-3 text-responsive__xx-large">
+                        &#128073;
+                    </div>
+                ) : connected ? (
+                    <div className="h-fit pe-3 text-green-600 text-responsive__xx-large">
+                        <CheckCircleIcon fontSize="inherit"/>
+                    </div>
+                ) : (
+                    <div className="h-fit pe-3 text-red-700 text-responsive__xx-large animate-pulse">
+                        <SignalWifiStatusbarConnectedNoInternet4Icon fontSize="inherit"/>
+                    </div>
+                )
+            }
+            <div className="flex-col grow">
+                <p className="text-responsive__xx-large font-semibold text-beige-950">{roleEmoji} {first_name} {last_name}</p>
+                <p className="text-responsive__medium -mt-1 italic text-beige-900">{university ?? "unaffiliated"}</p>
             </div>
-            <div className="absolute right-0 h-full aspect-square grid place-items-center text-responsive__xxx-large">
-                {
-                    ready ? (
-                        <motion.div key="readyIcon" initial={{opacity: 0.2}} animate={{opacity:1}} className="text-green-700">
-                            <TaskAltIcon fontSize="inherit" />
-                        </motion.div>
-                    ) : (
-                        <motion.div key="unreadyIcon" initial={{opacity: 0.2}} animate={{opacity:1}} className="text-red-700">
-                            <RadioButtonUncheckedIcon fontSize="inherit" />
-                        </motion.div>
-                    )
-                }
-            </div>
-        </div>
+            {
+                ready ? (
+                    <div className="h-fit pe-3 text-green-600 text-responsive__xx-large">
+                        <ThumbUpIcon fontSize="inherit"/>
+                    </div>
+                ) : (
+                    <div className="h-fit pe-3 text-beige-950 text-responsive__xx-large">
+                        <ThumbDownIcon fontSize="inherit"/>
+                    </div>
+                )
+            }
+        </li>
     )
 }

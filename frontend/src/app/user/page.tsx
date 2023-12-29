@@ -29,13 +29,13 @@ export default async function UserPage() {
                     <HostedMatchList />
                 </div>
                 <div className='w-full h-fit flex gap-2'>
-                    <ClientButton>
-                        <Link href='/user/match/host' className='block text-responsive__large p-2 w-full font-semibold'>
+                    <ClientButton >
+                        <Link id="login-button" href='/user/match/host' className='block text-responsive__large p-2 w-full font-semibold'>
                             Host a Match
                         </Link>
                     </ClientButton>
                     <ClientButton>
-                        <Link href='/user/match/join' className='block text-responsive__large p-2 w-full font-semibold'>
+                        <Link id="join-match-button" href='/user/match/join' className='block text-responsive__large p-2 w-full font-semibold'>
                             Join a Match
                         </Link>
                     </ClientButton>

@@ -16,7 +16,7 @@ export default function useSupabaseAdminClient (context: { req: Request, res: Re
                     if (!context.res) return;
                     context.res.cookie(key, encodeURIComponent(value), {
                         ...options,
-                        sameSite: "Lax",
+                        sameSite: "lax",
                         httpOnly: true,
                     });
                 },
