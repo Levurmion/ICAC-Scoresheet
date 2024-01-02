@@ -3,7 +3,7 @@ version: '3'
 services:
 
   backend:
-    image: levurmion/icac-scoresheet:backend-v1.0
+    image: levurmion/icac-scoresheet:backend-arm64-v1.0
     ports:
       - "3001:3001"
     command: >
@@ -14,7 +14,7 @@ services:
       - HOST_DOMAIN=icac-scoresheet.com
 
   match_server_1:
-    image: levurmion/icac-scoresheet:match-server-v1.0
+    image: levurmion/icac-scoresheet:match-server-arm64-v1.0
     ports:
       - "3030:3030"
     env_file:
@@ -25,7 +25,7 @@ services:
       - PORT=3030
   
   match_server_2:
-    image: levurmion/icac-scoresheet:match-server-v1.0
+    image: levurmion/icac-scoresheet:match-server-arm64-v1.0
     ports:
       - "3031:3031"
     env_file:
@@ -36,7 +36,7 @@ services:
       - PORT=3031
   
   frontend:
-    image: levurmion/icac-scoresheet:frontend-v1.0
+    image: levurmion/icac-scoresheet:frontend-arm64-v1.0
     ports:
       - "3000:3000"
     env_file:
@@ -44,7 +44,7 @@ services:
     restart: always
 
   nginx:
-    image: levurmion/icac-scoresheet:nginx-v1.0
+    image: levurmion/icac-scoresheet:nginx-arm64-v1.0
     restart: always
     depends_on:
       - frontend
