@@ -23,7 +23,6 @@ export default function MatchSPAController() {
     });
     const [error, setError] = useState<string | null>(null);
     const [paused, setPaused] = useState<SocketIORedisMatchState | null>(null);
-    const [saveProgress, setSaveProgress] = useState("pending");
     const [viewScoresheet, setViewScoresheet] = useState(false);
 
     function matchIsRunning() {
@@ -47,18 +46,16 @@ export default function MatchSPAController() {
             case "confirmation":
                 return <ConfirmationPage socket={clientSocket} data={pageState.data} />;
             case "finished":
-                return <FinishedPage socket={clientSocket} data={pageState.data} saveProgress={saveProgress} />;
+                return <FinishedPage socket={clientSocket} data={pageState.data} />;
         }
     }
 
     useEffect(() => {
         const onBrowserPopstate = () => {
-            console.log("navigating");
             clientSocket.disconnect(); // forceful disconnect to trigger session expiry
         };
 
         const onBrowserRefresh = () => {
-            console.log("refreshing");
             clientSocket.disconnect(); // forceful disconnect to trigger session expiry
         };
 
@@ -84,7 +81,7 @@ export default function MatchSPAController() {
         };
 
         const onConfirmationUpdate = (data: SocketIORedisMatchState) => {
-            console.log("confirmation update");
+
             setPageState({
                 page: "confirmation",
                 data,
@@ -114,8 +111,11 @@ export default function MatchSPAController() {
             });
         };
 
-        const onSaveUpdate = (saveProgress: string) => {
-            setSaveProgress(saveProgress);
+        const onSaveUpdate = (data: SocketIORedisMatchState) => {
+            setPageState({
+                page: "finished",
+                data
+            })
         };
 
         const onConnectError = (error: Error) => {
@@ -138,7 +138,7 @@ export default function MatchSPAController() {
                     page: current_state,
                     data,
                 });
-            } else if (current_state === "finished" || current_state === "reported" || current_state === "saved") {
+            } else if (current_state === "finished" || current_state === "reported" || current_state === "saved" || current_state === "save error") {
                 setPageState({
                     page: "finished",
                     data,
@@ -184,24 +184,31 @@ export default function MatchSPAController() {
     }, []);
 
     useEffect(() => {
-        console.log(pageState);
     }, [pageState]);
 
     useEffect(() => {
-        console.log("paused", paused);
+        
     }, [paused]);
+
+    useEffect(() => {
+        if (viewScoresheet) {
+            document.body.style.overflowY = "hidden"
+        } else {
+            document.body.style.overflowY = ""
+        }
+    }, [viewScoresheet])
 
     return (
         <section className='w-full h-full flex flex-col'>
             <PausedModal socket={clientSocket} data={paused} />
             {matchIsRunning() && (
                 <>
-                    <nav className='flex flex-row justify-center w-[100dvw] sm:w-[420px] -ms-4 -mt-4 p-2'>
+                    <nav className={`flex flex-row justify-center w-[100dvw] sm:w-[420px] -ms-4 -mt-4 ${viewScoresheet}`}>
                         <button
                             onClick={() => {
                                 setViewScoresheet((prev) => !prev);
                             }}
-                            className='flex items-center justify-center gap-1 w-full py-2 px-4 rounded-sm font-semibold bg-beige-900 text-white shadow-md text-responsive__x-large'>
+                            className='flex items-center justify-center gap-1 w-full py-2 px-4 font-semibold bg-gray-600 text-white shadow-md text-responsive__x-large'>
                             <AssignmentIcon fontSize='inherit' /> Scoresheet
                         </button>
                     </nav>
@@ -212,13 +219,9 @@ export default function MatchSPAController() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className='flex flex-col absolute z-40 top-0 left-0 w-[100dvw] h-full sm:h-[100dvh] p-4 sm:p-0 items-center justify-center backdrop-blur-sm bg-black/20'>
+                                className='flex flex-col absolute z-40 top-0 left-0 w-full h-full sm:h-[100vh] p-4 sm:p-0 items-center justify-center bg-black/25'>
                                 <motion.div
-                                    initial={{ translateY: "-100%" }}
-                                    animate={{ translateY: 0 }}
-                                    exit={{ translateY: "-100%" }}
-                                    transition={{ type: "spring", stiffness: 200, damping: 22 }}
-                                    className='flex flex-col gap-2 w-full sm:w-[420px]'>
+                                    className='flex flex-col gap-2 w-full sm:w-[420px] h-[55dvh]'>
                                     <button
                                         onClick={() => {
                                             setViewScoresheet(false);

@@ -3,8 +3,6 @@ import {
     Arrow,
     EndConfirmationResponses,
     EndRejectionResponses,
-    EndResetResponse,
-    EndResubmissionForm,
     EndSubmissionForm,
     EndTotals,
     LobbyUserDetails,
@@ -18,7 +16,6 @@ import {
     UserSession,
 } from "../types";
 import { RedisJSON } from "@redis/json/dist/commands";
-import { warn } from "console";
 import { Json } from "../database.types";
 
 export default class Match {
@@ -59,16 +56,19 @@ export default class Match {
             const sessionId = Match.createUserSessionId(sessionPayload.user_id);
             const matchId = sessionPayload.match_id;
 
+            // check if match exists
             const matchExists = await redisClient.json.GET(matchId);
             if (!matchExists) {
                 throw new Error("Match does not exist");
             }
 
+            // check if session exists
             const sessionExists = await redisClient.json.GET(sessionId);
             if (sessionExists) {
                 throw new Error("Session already exists");
             }
 
+            // check if match is at capacity
             const maxParticipants = (await redisClient.json.GET(matchId, {
                 path: [".max_participants"],
             })) as number;
@@ -107,10 +107,12 @@ export default class Match {
         const matchId = (await redisClient.HGET("active-sessions", sessionId)) as string;
         const { current_state } = await Match.getState(matchId, redisClient);
 
-        // do not allow deleting sessions when Match is finished/reported
+        // do not allow deleting sessions when Match is finished/reported/save error
         // important that session stays untouched because we are saving scores to database
         if (current_state === "finished" || current_state === "reported") {
-            throw new Error(`Cannot delete session: Match is ${current_state}, saving scores to database.`);
+            throw new Error(`Cannot delete session: Match is currently saving scores to database.`);
+        } else if (current_state === "save error") {
+            throw new Error(`Saving scores to database error! Notify match host for futher instructions!`)
         }
 
         // remove participant
@@ -126,34 +128,26 @@ export default class Match {
             .json.DEL(sessionId)
             .exec();
 
-        // if this was the last user or match is still in the lobby (full), always reset the match to "open"
-        if (matchParticipants.length === 1 || current_state === "full") {
-            if (current_state === "saved") {
-                await Match.deleteRedisMatch(matchId, redisClient)
-            } else {
-                // reset end
-                await redisClient.json.SET(matchId, "$.current_end", 0)
-                await Match.setState(matchId, "open", redisClient);
-            }
-        } else if (current_state === "submit" || current_state === "confirmation") {
-            await Match.setState(matchId, "paused", redisClient);
+        // if this was the last user and match has been saved, delete match
+        if (newMatchParticipants.length === 0 && current_state === "saved") {
+            await Match.deleteRedisMatch(matchId, redisClient);
+        // if match is paused, and someone leaves, stall
+        } else if (current_state === "paused") {
+            await Match.setState(matchId, "stalled", redisClient)
+        // if this is still the lobby, always reset to open
+        } else if (current_state === "open" || current_state === "full") {
+            await Match.setState(matchId, "open", redisClient)
         }
     }
 
     // MATCH CREATE, READ, DELETE METHODS
     static async createRedisMatch(matchId: string, matchDetails: RedisMatch, redisClient: RedisClientType) {
-        const {
-            num_ends,
-            arrows_per_end,
-            current_end,
-            max_participants,
-            round
-        } = matchDetails
-        matchDetails.round = round?.length === 0 ? undefined : round
-        matchDetails.num_ends = Number(num_ends)
-        matchDetails.arrows_per_end = Number(arrows_per_end)
-        matchDetails.current_end = Number(current_end)
-        matchDetails.max_participants = Number(max_participants)
+        const { num_ends, arrows_per_end, current_end, max_participants, round } = matchDetails;
+        matchDetails.round = round?.length === 0 ? undefined : round;
+        matchDetails.num_ends = Number(num_ends);
+        matchDetails.arrows_per_end = Number(arrows_per_end);
+        matchDetails.current_end = Number(current_end);
+        matchDetails.max_participants = Number(max_participants);
         await redisClient.HSET("match-participants", matchId, JSON.stringify([]));
         await redisClient.json.SET(matchId, "$", matchDetails as unknown as RedisJSON);
     }
@@ -281,8 +275,8 @@ export default class Match {
                 const { current_state } = await Match.getState(matchId, redisClient);
                 if (current_state === "full") {
                     await Match.setState(matchId, "open", redisClient);
-                } else if (current_state === "submit" || current_state === "confirmation") {
-                    await Match.setState(matchId, "paused", redisClient);
+                } else if (current_state === "paused") {
+                    await Match.setState(matchId, "stalled", redisClient)
                 }
 
                 // remove participant
@@ -295,12 +289,8 @@ export default class Match {
 
                 // if match has been saved and this was the last user, delete from Redis
                 if (matchParticipants.length === 1 && current_state === "saved") {
-                    await Match.deleteRedisMatch(matchId, redisClient)
-                // if this was the last user or match is still in the lobby (full), always reset the match to "open"
-                } else if (matchParticipants.length === 1 || current_state === "full") {
-                    await Match.setState(matchId, "open", redisClient);
-                    await redisClient.json.SET(matchId, "$.current_end", 0)
-                } 
+                    await Match.deleteRedisMatch(matchId, redisClient);
+                }
             }
         } catch (error: any) {
             throw new Error(`Cannot sync expired session: ${error.message}.`);
@@ -385,21 +375,23 @@ export default class Match {
         await this.redisClient.WATCH(this.matchId);
         await this.redisClient.json.SET(this.sessionId, "$.ready", true);
         if (current_state === "full") {
-            const participants = await this.getParticipants()
+            const participants = await this.getParticipants();
             const allParticipantsReady = participants.every((participant) => participant.ready);
 
             if (allParticipantsReady) {
-                const submissionMap = await this.setupSubmissionMap()
-                const startMatchTransaction = await this.redisClient.MULTI()
-                .json.SET(this.matchId, "$.started_at", new Date().toISOString())
-                .json.SET(this.matchId, "$.submission_map", submissionMap)
-                .json.SET(this.matchId, "$.current_state", "submit")
-                .json.SET(this.matchId, "$.previous_state", current_state)
-                .json.NUMINCRBY(this.matchId, "$.current_end", 1).EXEC();
+                const submissionMap = await this.setupSubmissionMap();
+                const startMatchTransaction = await this.redisClient
+                    .MULTI()
+                    .json.SET(this.matchId, "$.started_at", new Date().toISOString())
+                    .json.SET(this.matchId, "$.submission_map", submissionMap)
+                    .json.SET(this.matchId, "$.current_state", "submit")
+                    .json.SET(this.matchId, "$.previous_state", current_state)
+                    .json.NUMINCRBY(this.matchId, "$.current_end", 1)
+                    .EXEC();
             }
         }
         // unwatch
-        await this.redisClient.UNWATCH()
+        await this.redisClient.UNWATCH();
     }
 
     public async setUnready() {
@@ -413,7 +405,7 @@ export default class Match {
     }
 
     public async setConnect() {
-        await this.redisClient.json.SET(this.sessionId, "$.connected", true);
+        await this.redisClient.MULTI().json.SET(this.sessionId, "$.connected", true).PERSIST(this.sessionId).EXEC();
 
         // check if everyone is connected
         const participants = await this.getParticipants();
@@ -423,13 +415,17 @@ export default class Match {
         }
     }
 
-    public async setDisconnect() {
-        await this.redisClient.json.SET(this.sessionId, "$.connected", false);
-
-        // only trigger pause if it is a running match
+    public async setDisconnect(expirySeconds: number) {
+        
+        // only trigger pause and start expiry if it is a running match or in the lobby
         const { current_state } = await this.getState();
-        if (current_state === "submit" || current_state === "confirmation") {
+        if (current_state === "save error") {
+            await this.redisClient.json.SET(this.sessionId, "$.connected", false)
+        } else if (current_state === "submit" || current_state === "confirmation" || current_state === "paused") {
+            await this.redisClient.MULTI().json.SET(this.sessionId, "$.connected", false).expire(this.sessionId, expirySeconds).EXEC();
             await this.setState("paused");
+        } else if (current_state === "open" || current_state === "full" || current_state === "stalled") {
+            await this.redisClient.MULTI().json.SET(this.sessionId, "$.connected", false).expire(this.sessionId, expirySeconds).EXEC();
         }
     }
 
@@ -508,11 +504,11 @@ export default class Match {
             })) as string;
 
             // verify that user has not submitted for this end
-            const numScoresSubmitted = await this.redisClient.json.ARRLEN(submitForSessionId, "$.scores") as number[]
+            const numScoresSubmitted = (await this.redisClient.json.ARRLEN(submitForSessionId, "$.scores")) as number[];
             if (numScoresSubmitted[0] === currentEnd * arrowsPerEnd) {
-                throw new Error("End already submitted")
-            } else if (numScoresSubmitted[0] !== (currentEnd * arrowsPerEnd) - arrowsPerEnd) {
-                throw new Error(`Corrupt record`)
+                throw new Error("End already submitted");
+            } else if (numScoresSubmitted[0] !== currentEnd * arrowsPerEnd - arrowsPerEnd) {
+                throw new Error(`Corrupt record`);
             }
 
             const endArrows: Arrow[] = scores.map((score) => {
@@ -592,12 +588,14 @@ export default class Match {
         }
 
         // verify that user has not decided this end
-        const numEndsConfirmed = Number(await this.redisClient.json.ARRLEN(this.sessionId, "$.ends_confirmed"))
+        const numEndsConfirmed = Number(await this.redisClient.json.ARRLEN(this.sessionId, "$.ends_confirmed"));
         if (numEndsConfirmed === currentEnd) {
-            throw new Error("End confirmation already decided.")
+            throw new Error("End confirmation already decided.");
         }
 
         // append true to ends_confirmed array
+        // can cause race condition because if two users confirm at the same time, both can get
+        // allUsersConfirmed === true after fetching participants
         await this.redisClient.json.ARRAPPEND(this.sessionId, `$.ends_confirmed`, true);
 
         // get all participants, check if everyone has submitted
@@ -615,31 +613,44 @@ export default class Match {
         });
 
         // all users submitted response, all of them accepts
+        // To prevent race condition, we must WATCH the matchId key to make sure that only the
+        // first instance can modify it. The second instance, upon attempting the transaction,
+        // would have realized that the key has been modified SINCE when it evaluated the
+        // participants, suggesting that another instance has already handled the transaction.
+        // This will kill the second transaction so current_end increment only occurs exactly once.
+        await this.redisClient.WATCH(this.matchId);
         if (allUsersConfirmed) {
             const numEnds = (await this.redisClient.json.GET(this.matchId, {
                 path: [".num_ends"],
             })) as number;
 
+            const proceedTransaction = this.redisClient.MULTI();
+
             // final end
             if (Number(currentEnd) === Number(numEnds)) {
-                await this.setState("finished");
+                await proceedTransaction.json.SET(this.matchId, "$.current_state", "finished").json.SET(this.matchId, "$.previous_state", current_state).exec();
             }
             // not final end, proceed to next end
             else {
-                await this.nextEnd();
-                await this.setState("submit");
+                await proceedTransaction
+                .json.SET(this.matchId, "$.current_state", "submit")
+                .json.SET(this.matchId, "$.previous_state", current_state)
+                .json.NUMINCRBY(this.matchId, "$.current_end", 1)
+                .exec()
             }
 
             return "proceed";
         }
         // all users submitted response, one of them rejects
         if (allUsersSubmitted && someUsersReject) {
+            await this.redisClient.UNWATCH();
             await this.setState("submit");
             await this.resetEnd();
             return "reject";
         }
         // not all users have submitted their confirmation response for this end
         else {
+            await this.redisClient.UNWATCH();
             return "waiting";
         }
     }
@@ -656,9 +667,9 @@ export default class Match {
         }
 
         // verify that user has not decided this end
-        const numEndsConfirmed = Number(await this.redisClient.json.ARRLEN(this.sessionId, "$.ends_confirmed"))
+        const numEndsConfirmed = Number(await this.redisClient.json.ARRLEN(this.sessionId, "$.ends_confirmed"));
         if (numEndsConfirmed === currentEnd) {
-            throw new Error("End confirmation already decided.")
+            throw new Error("End confirmation already decided.");
         }
 
         // append false to ends_confirmed array
@@ -724,10 +735,7 @@ export default class Match {
             submissionMap[participantUserIds[idx]] = participantSessionIds[idx];
         }
 
-        return submissionMap
-
-        // set the submission map
-        // await this.redisClient.json.SET(this.matchId, "$.submission_map", submissionMap);
+        return submissionMap;
     }
 
     private async nextEnd() {
@@ -739,21 +747,25 @@ export default class Match {
             path: ['$.["current_end", "arrows_per_end"]'],
         })) as [number, number];
         const participants = await this.getParticipants<"archer">();
-        const submissionMap = (await this.redisClient.json.GET(this.matchId, {
-            path: [".submission_map"],
-        })) as { [submitterId: string]: string };
 
-        for (const [_, sessionId] of Object.entries(submissionMap)) {
-            const numSubmittedArrows = Number(await this.redisClient.json.ARRLEN(sessionId, ".scores")) as number
+        for (const participant of participants) {
+            const sessionId = Match.createUserSessionId(participant.user_id);
+            const numEndsDecided = participant.ends_confirmed.length;
+            const numSubmittedArrows = participant.scores.length;
 
             // reset arrows
             if (numSubmittedArrows === Number(arrowsPerEnd)) { // first end
                 await this.redisClient.json.SET(sessionId, "$.scores", []);
             } else if (numSubmittedArrows > Number(arrowsPerEnd)) {
-                await this.redisClient.json.ARRTRIM(sessionId, "$.scores", 0, ((currentEnd * arrowsPerEnd) - arrowsPerEnd) - 1)
+                await this.redisClient.json.ARRTRIM(sessionId, "$.scores", 0, (currentEnd * arrowsPerEnd) - arrowsPerEnd - 1);
             }
+
             // reset confirmation
-            await this.redisClient.json.ARRPOP(sessionId, "$.ends_confirmed");
+            if (numEndsDecided === 1) { // first end
+                await this.redisClient.json.SET(sessionId, "$.ends_confirmed", []);
+            } else if (numEndsDecided === Number(currentEnd)) { // remove the last one
+                await this.redisClient.json.ARRTRIM(sessionId, "$.ends_confirmed", 0, currentEnd - 2);
+            } // do nothing otherwise
         }
     }
 }

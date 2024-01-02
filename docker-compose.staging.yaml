@@ -1,0 +1,72 @@
+version: '3'
+
+services:
+
+  backend:
+    build:
+      dockerfile: Dockerfile
+      target: prod
+      context: backend
+    ports:
+      - "3001:3001"
+    command: >
+      sh -c "npm run db-setup && npm run start"
+    env_file:
+      - backend/.env.production
+    environment:
+      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+      - HOST_DOMAIN=http://localhost:8001
+
+  match_server_1:
+    build:
+      context: match_server
+      dockerfile: Dockerfile
+      target: prod
+    ports:
+      - "3030:3030"
+    env_file:
+      - match_server/.env.production
+    environment:
+      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+      - SESSION_EXPIRY=15
+      - HOST_DOMAIN=http://localhost:8001
+      - PORT=3030
+  
+  match_server_2:
+    build:
+      context: match_server
+      dockerfile: Dockerfile
+      target: prod
+    ports:
+      - "3031:3031"
+    env_file:
+      - match_server/.env.production
+    environment:
+      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+      - SESSION_EXPIRY=15
+      - HOST_DOMAIN=http://localhost:8001
+      - PORT=3031
+  
+  frontend:
+    build:
+      dockerfile: Dockerfile
+      target: nextprod
+      context: frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    restart: always
+
+  nginx:
+    build:
+      dockerfile: Dockerfile
+      context: nginx
+    restart: always
+    depends_on:
+      - frontend
+      - backend
+      - match_server_1
+      - match_server_2
+    ports:
+      - '8001:80'

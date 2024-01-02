@@ -44,8 +44,6 @@ export default function SubmitPage({ socket, data, resubmit }: SubmitPageProps) 
     const [allowSubmit, setAllowSubmit] = useState(resubmit === true ? true : false)
     const [submitting, setSubmitting] = useState(false)
 
-    const endTotal = arrows.reduce((prevScore, currScore) => prevScore + (currScore === "X" ? 10 : currScore), 0)
-
     const handleSetArrow = (score: Score) => {
         const numNullArrows = arrows.filter((score) => score === null).length
 
@@ -96,7 +94,9 @@ export default function SubmitPage({ socket, data, resubmit }: SubmitPageProps) 
     const handleSubmit = () => {
         setSubmitting(true)
         socket.emit("user-submit", arrows, (reply: string) => {
-            console.log(reply)
+            if (reply !== "OK") {
+                alert(reply)
+            }
         })
     }
 
@@ -149,7 +149,7 @@ export default function SubmitPage({ socket, data, resubmit }: SubmitPageProps) 
                                         onClick={() => {
                                             handleDeleteArrow(idx);
                                         }}
-                                        className={`absolute grid place-items-center h-8 w-8 right-0 text-base ${color} rounded-full`}>
+                                        className={`absolute grid place-items-center h-7 w-7 right-0 text-base ${color} rounded-full`}>
                                         <BackspaceIcon fontSize='inherit' />
                                     </button>
                                 ) : undefined}

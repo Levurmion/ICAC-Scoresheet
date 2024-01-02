@@ -46,6 +46,7 @@ function createClientSocket(userId: string) {
         reconnectionDelayMax: 10000,
         reconnection: true,
         autoConnect: false,
+        transports: ['websocket'],
         auth: {
             devToken: {
                 match_uuid: testMatchId,
@@ -109,6 +110,7 @@ describe("Match Server Events Testing Suite", () => {
         test("New Match States Broadcasted When New User Connects", async () => {
             // only user A in match
             const userAMatchStatePromise = waitFor(clientSocketA, "lobby-update");
+            console.log('connecting A')
             clientSocketA.connect();
             const userAMatchState = await userAMatchStatePromise;
             expect(userAMatchState).toEqual(expectedUserAMatchState);
@@ -116,6 +118,7 @@ describe("Match Server Events Testing Suite", () => {
             // user B joins, check that user A listens to "lobby-update"
             const userALobbyUpdatePromise = waitFor(clientSocketA, "lobby-update");
             const userBLobbyUpdatePromise = waitFor(clientSocketB, "lobby-update");
+            console.log('connecting B')
             clientSocketB.connect();
             const lobbyUpdates = await Promise.all([userALobbyUpdatePromise, userBLobbyUpdatePromise]);
             const [userALobbyUpdate, userBLobbyUpdate] = lobbyUpdates;
@@ -164,11 +167,13 @@ describe("Match Server Events Testing Suite", () => {
 
             // check that userB disconnection was broadcasted to userA
             const userADisconnectionUpdate = await userADisconnectionUpdatePromise;
+            const userBReconnectionUpdate = await userBReconnectionUpdatePromise;
+            console.log(userADisconnectionUpdate)
             expect(userADisconnectionUpdate).toEqual(expectedUserBDisconnectedMatchState);
-
+            
             
             // wait until userB is reconnected to receive "lobby-update"
-            const userBReconnectionUpdate = await userBReconnectionUpdatePromise;
+            console.log(userBReconnectionUpdate)
             expect(userBReconnectionUpdate).toEqual(expectedUserBMatchState);
             
             // delay to ensure that reconnection occurred

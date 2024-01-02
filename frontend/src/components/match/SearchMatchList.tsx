@@ -50,7 +50,7 @@ export default function SearchMatchList() {
                 if (joinMatchRes.status === 200) {
                     setRequestingJoin('success')
                     setTimeout(() => {
-                        router.push(`/user/match/live/${encodeURI(selectedMatch?.value.name as string)}`)
+                        router.push("/user/match/live/")
                     }, 1000)
                 } else if (joinMatchRes.status === 403) {
                     alert(joinMatchRes.data)
@@ -153,11 +153,11 @@ export default function SearchMatchList() {
     return (
         <div className='flex flex-col h-[70dvh] gap-2 w-full mt-auto'>
             <div className='flex flex-col gap-1'>
-                <h2 className='font-semibold text-beige-950'>Search by Match Name</h2>
+                <h2 className='font-semibold text-black'>Search by Match Name</h2>
                 <ClientInput type='text' placeholder='match name' onChangeCb={handleReboundInputChange} />
             </div>
 
-            <ScrollArea.Root className='w-full h-full bg-beige-100 border border-beige-950 rounded-md overflow-y-scroll shadow-md'>
+            <ScrollArea.Root className='w-full h-full bg-white rounded-md overflow-y-scroll shadow-md'>
                 <ScrollArea.Viewport asChild className='w-full h-full'>
                     {renderRetrievedMatches()}
                 </ScrollArea.Viewport>

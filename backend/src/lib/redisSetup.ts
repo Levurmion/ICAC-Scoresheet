@@ -1,12 +1,17 @@
 import { createClient } from "redis";
 import { SchemaFieldTypes } from "redis";
+import 'dotenv/config'
+
+const redisClient = createClient({
+    url: process.env.REDIS_URL
+});
 
 (async () => {
     try {
-        const redisClient = createClient({
-            url: 'redis://localhost:6379'
-        })
         await redisClient.connect()
+
+        // set up keyspace notifications
+        await redisClient.CONFIG_SET("notify-keyspace-events", "Ex")
         
         // create index
         await redisClient.ft.CREATE("idx:matches", {
@@ -35,5 +40,6 @@ import { SchemaFieldTypes } from "redis";
     }
     catch (error) {
         console.log(error)
+        await redisClient.disconnect()
     }
 })()

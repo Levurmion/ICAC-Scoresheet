@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import useSupabaseServerClient from "../../../lib/useSupabaseServerClient";
 import { UserMetadata } from "@supabase/supabase-js";
+import RejoinMatchButton from "@/components/match/RejoinMatchButton";
 
 export default async function UserPage() {
     const cookieStore = cookies();
@@ -17,15 +18,13 @@ export default async function UserPage() {
 
     return (
         <>
-            <h1 className='w-full'>
-                <span className='font-extrabold'>Welcome</span>{" "}
-                <span>
-                    {first_name} {last_name}!
-                </span>
+            <RejoinMatchButton />
+            <h1 className='w-full font-extrabold'>
+                {first_name} {last_name}
             </h1>
-            <div className='w-full h-[50dvh] flex flex-col my-auto gap-2'>
-                <div className='w-full h-full flex flex-col gap-1'>
-                    <h2 className='font-semibold text-beige-950'>Hosted Matches</h2>
+            <div className='w-full h-[55dvh] flex flex-col my-auto gap-2'>
+                <div className='w-full h-full flex flex-col gap-2'>
+                    <h2 className='font-semibold text-black'>Hosted Matches</h2>
                     <HostedMatchList />
                 </div>
                 <div className='w-full h-fit flex gap-2'>

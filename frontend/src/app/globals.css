@@ -20,10 +20,6 @@ html {
   @apply bg-beige-800
 }
 
-body {
-  @apply flex h-[100dvh] w-[100dvw] sm:w-[420px] sm:min-h-[90dvh] sm:my-[2.5dvh] mx-auto
-}
-
 h1 {
   @apply text-5xl short-mobile:text-4xl
 }
@@ -85,4 +81,13 @@ input[type=time]::-webkit-datetime-edit {
 select {
   -webkit-appearance: none;
   -moz-appearance: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
 }

@@ -23,7 +23,7 @@ export function MatchCard({ match, children, selected }: MatchCardProps) {
             exit={{ opacity: [1, 0, 0], height: 0, paddingBlock: 0, border: '0px'}}
             ref={cardRef}
             value={match.id}
-            className={`relative w-full flex flex-col text-beige-950 pt-1.5 pb-2 px-2 border-b-[1px] border-beige-200 transition-colors ${selected ? "bg-beige-950" : ""}`}>
+            className={`relative w-full flex flex-col text-beige-950 pt-1.5 pb-2 px-2 border-b-[1px] border-beige-100 transition-colors ${selected ? "bg-beige-950" : ""}`}>
             <div className={`w-full flex items-center gap-2 text-responsive__medium whitespace-nowrap ${selected ? "text-white" : "text-beige-950"}`}>
                 <h3 className='font-semibold'>{matchInfo.name}</h3>
             </div>

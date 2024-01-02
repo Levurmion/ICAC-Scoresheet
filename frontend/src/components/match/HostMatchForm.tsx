@@ -15,7 +15,7 @@ import LoadingSpinner from "../svg-icons/LoadingSpinner";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
-export function createMatch(matchParams: MatchParams | null) {
+function createMatch(matchParams: MatchParams | null) {
     return useSWR(
         ["/api/matches", matchParams],
         async ([path, reqBody]) => {

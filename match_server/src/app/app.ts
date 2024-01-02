@@ -5,11 +5,21 @@ import redisClient from "../lib/redis/redisClient";
 import { Response, Request } from "express";
 import useSupabaseClient from "../lib/supabase/useSupabaseClient";
 import { decodeJWT, getSession, getSessionExpirySeconds, saveDataIntoSocket, setSession } from "../lib/utilities";
-import { ClientToServerEvents, InterServerEvents, MatchTokenPayload, Score, ServerToClientEvents, SocketData, SocketIORedisMatchState, UserSession } from "../lib/types";
+import {
+    ClientToServerEvents,
+    InterServerEvents,
+    MatchTokenPayload,
+    Score,
+    ServerToClientEvents,
+    SocketData,
+    SocketIORedisMatchState,
+    UserSession,
+} from "../lib/types";
 import Match from "../lib/classes/Match";
 import { randomUUID } from "crypto";
 import useSupabaseBasicClient from "../lib/supabase/useSupabaseBasicClient";
 import { authenticateConnectionRequest } from "../lib/middlewares";
+import { createAdapter } from "@socket.io/redis-streams-adapter";
 
 const cors = require("cors");
 const cookie = require("cookie");
@@ -17,17 +27,15 @@ const express = require("express");
 
 const app = express();
 const server = createServer(app);
-const io = new Server<
-ClientToServerEvents,
-ServerToClientEvents,
-InterServerEvents,
-SocketData
->(server, {
+
+const socketIOStreamsClient = redisClient.duplicate();
+(async () => {
+    await socketIOStreamsClient.connect();
+})();
+
+const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(server, {
     cookie: true,
-    connectionStateRecovery: {
-        maxDisconnectionDuration: 5 * 1000, // 5 minutes
-        skipMiddlewares: true,
-    },
+    adapter: createAdapter(socketIOStreamsClient),
 });
 
 // COMPUTED FROM ENVIRONMENT VARIABLES
@@ -39,173 +47,151 @@ const cleanupClient = redisClient.duplicate();
 app.use(
     cors({
         origin: ["http://frontend", "http://backend"],
-        credentials: true
+        credentials: true,
     })
 );
-
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Welcome to the /match-server. Provide an access token to join a match.");
 });
 
-
 // middleware to authenticate connections prior to Websocket upgrade
-io.use(authenticateConnectionRequest)
-
+io.use(authenticateConnectionRequest);
 
 // Socket.IO entrypoint
 io.on("connection", async (socket) => {
-
-    const {
-        sessionId,
-        matchId,
-        userId
-    } = socket.data
+    const { sessionId, matchId, userId } = socket.data;
 
     // make socket join a match room identified by the matchId
     console.log(socket.data.userId, "connected!");
-    socket.join(matchId)
-
-    // cancel session expiry
-    await redisClient.PERSIST(sessionId)
+    socket.join(matchId);
 
     // create the user's match instance with a separate redisClient
-    const userRedisClient = redisClient.duplicate()
-    await userRedisClient.connect()
-    const userMatch = await Match.initMatchForUser(userId, userRedisClient) as Match
+    const userRedisClient = redisClient.duplicate();
+    await userRedisClient.connect();
+    const userMatch = (await Match.initMatchForUser(userId, userRedisClient)) as Match;
 
     // ping successful connection
-    socket.emit("connected", `Welcome to the /match-server. This is ${matchId}.`)
+    socket.emit("connected", `Welcome to the /match-server. This is ${matchId}.`);
 
     // broadcast current match state with the NEW PARTICIPANT to everyone in the room
     try {
-        // update connection status to connected regardless
-        await userMatch.setConnect()
+        // update connection status to connected regardless which also cancels session expiry
+        await userMatch.setConnect();
 
-        const currentMatchState = await userMatch.getSocketIORedisMatchState()
-        const { current_state, previous_state } = currentMatchState
+        const currentMatchState = await userMatch.getSocketIORedisMatchState();
+        const { current_state, previous_state } = currentMatchState;
         // const allParticipantsConnected = currentMatchState.participants.every(participant => participant.connected)
         if (current_state === "open" || current_state === "full") {
-            io.to(matchId).emit("lobby-update", currentMatchState)
+            io.to(matchId).emit("lobby-update", currentMatchState);
         } else if (current_state === "stalled" || current_state === "paused") {
-            io.to(matchId).emit("pause-match", currentMatchState)
-        } else if (previous_state === "paused" || current_state === "finished" || current_state === "reported" || current_state === "saved") {
-            io.to(matchId).emit("resume-match", currentMatchState)
+            io.to(matchId).emit("pause-match", currentMatchState);
+        } else if (previous_state === "paused" || current_state === "finished" || current_state === "reported" || current_state === "saved" || current_state === "save error") {
+            io.to(matchId).emit("resume-match", currentMatchState);
         }
-
     } catch (error: any) {
-        io.to(matchId).emit("lobby-update:error", error.message)
+        io.to(matchId).emit("lobby-update:error", error.message);
     }
 
     // LOBBY EVENTS
     socket.on("user-leave", async (replyCb) => {
         try {
-            await userMatch.leaveMatch()
-            replyCb("OK")
-
-            // broadcast update to match room
-            const currentMatchState = await Match.getSocketIORedisMatchState(matchId, redisClient)
-            const { current_state, participants } = currentMatchState
-
-            if (current_state === "open" || current_state === "full") {
-                socket.broadcast.to(matchId).emit("lobby-update", currentMatchState)
-            } else if (current_state === "paused") {
-                await Match.setState(matchId, "stalled", redisClient)
-                const updatedMatchState = await Match.getSocketIORedisMatchState(matchId, redisClient)
-                socket.broadcast.to(matchId).emit("pause-match", updatedMatchState)
-            } else if (current_state === "saved" && participants.length === 0) { // match has been saved and this was the last user
-                await Match.deleteRedisMatch(matchId, redisClient)
+            const matchExists = await userRedisClient.json.GET(matchId)
+            if (!matchExists) { // match has been deleted by host
+                replyCb("OK")
+            } else {
+                await userMatch.leaveMatch();
+                replyCb("OK");
+    
+                // broadcast update to match room
+                const currentMatchState = await Match.getSocketIORedisMatchState(matchId, redisClient);
+                const { current_state, participants } = currentMatchState;
+    
+                if (current_state === "open") {
+                    socket.broadcast.to(matchId).emit("lobby-update", currentMatchState);
+                } else if (current_state === "paused" || current_state === "stalled") {
+                    socket.broadcast.to(matchId).emit("pause-match", currentMatchState);
+                }
             }
 
             // gracefully disconnect
-            socket.disconnect()
-            await userRedisClient.disconnect()
-
+            socket.disconnect();
+            await userRedisClient.disconnect();
         } catch (error: any) {
-            replyCb(error.message)
+            replyCb(error.message);
         }
-    })
+    });
 
     socket.on("user-ready", async () => {
         try {
-            await userMatch.setReady()
+            await userMatch.setReady();
 
             // broadcast update to match room
-            const currentMatchState = await userMatch.getSocketIORedisMatchState()
-            const { current_state } = currentMatchState
+            const currentMatchState = await userMatch.getSocketIORedisMatchState();
+            const { current_state } = currentMatchState;
 
             if (current_state === "submit") {
-                io.to(matchId).emit("end-submit", currentMatchState)
+                io.to(matchId).emit("end-submit", currentMatchState);
             } else {
-                io.to(matchId).emit("lobby-update", currentMatchState)
+                io.to(matchId).emit("lobby-update", currentMatchState);
             }
-
         } catch (error: any) {
-            io.to(matchId).emit("lobby-update:error", error.message)
+            io.to(matchId).emit("lobby-update:error", error.message);
         }
-    })
+    });
 
     socket.on("user-unready", async () => {
         try {
-            await userMatch.setUnready()
+            await userMatch.setUnready();
 
             // broadcast update to match room
-            const currentMatchState = await userMatch.getSocketIORedisMatchState()
-            io.to(matchId).emit("lobby-update", currentMatchState)
-
+            const currentMatchState = await userMatch.getSocketIORedisMatchState();
+            io.to(matchId).emit("lobby-update", currentMatchState);
         } catch (error: any) {
-            io.to(matchId).emit("lobby-update:error", error.message)
+            io.to(matchId).emit("lobby-update:error", error.message);
         }
-    })
+    });
 
     // SUBMISSION EVENTS
     socket.on("user-submit", async (scores: Score[], replyCb: (reply: string) => void) => {
         try {
-            await userMatch.submitEndArrows(scores)
-            replyCb("OK")
+            await userMatch.submitEndArrows(scores);
+            replyCb("OK");
 
             // broadcast update to match room
-            const currentMatchState = await userMatch.getSocketIORedisMatchState()
-            const { current_state } = currentMatchState
+            const currentMatchState = await userMatch.getSocketIORedisMatchState();
+            const { current_state } = currentMatchState;
             if (current_state === "confirmation") {
-                io.to(matchId).emit("end-confirmation", currentMatchState)
+                io.to(matchId).emit("end-confirmation", currentMatchState);
             }
-
         } catch (error: any) {
-            replyCb(error.message)
+            replyCb(error.message);
         }
-    })
+    });
 
     // CONFIRMATION EVENTS
     socket.on("user-confirm", async (replyCb: (reply: string) => void) => {
         try {
-            const action = await userMatch.confirmEnd()
-            replyCb("OK")
-            
-            const currentMatchState = await userMatch.getSocketIORedisMatchState()
-            const { current_state } = currentMatchState
+            const action = await userMatch.confirmEnd();
+            replyCb("OK");
+
+            const currentMatchState = await userMatch.getSocketIORedisMatchState();
+            const { current_state } = currentMatchState;
             switch (action) {
                 case "proceed":
                     if (current_state === "submit") {
-                        io.to(matchId).emit("end-submit", currentMatchState)
+                        io.to(matchId).emit("end-submit", currentMatchState);
                     } else if (current_state === "finished") {
-                        io.to(matchId).emit("match-finished", currentMatchState)
+                        io.to(matchId).emit("match-finished", currentMatchState);
 
                         // get report and save to Supabase
-                        const matchReport = await userMatch.getMatchReport()
+                        const matchReport = await userMatch.getMatchReport();
 
                         if (matchReport) {
                             try {
-                                const supabase = useSupabaseBasicClient()
+                                const supabase = useSupabaseBasicClient();
 
-                                const {
-                                    competition,
-                                    host,
-                                    name,
-                                    started_at,
-                                    finished_at,
-                                    scoresheets
-                                } = matchReport
+                                const { competition, host, name, started_at, finished_at, scoresheets } = matchReport;
 
                                 // save match first
                                 const writeMatch = await supabase
@@ -215,145 +201,133 @@ io.on("connection", async (socket) => {
                                         name,
                                         host,
                                         started_at,
-                                        finished_at
+                                        finished_at,
                                     })
-                                    .select()
-                                
+                                    .select();
+
                                 if (writeMatch.status >= 400) {
-                                    throw new Error(writeMatch.error?.message)
+                                    await Match.setState(matchId, "save error", redisClient);
+                                    throw new Error(writeMatch.error?.message);
                                 }
 
-                                const supabaseMatchId = writeMatch.data?.[0].id
-                                const scoresheetsWithMatchId = scoresheets.map(scoresheet => {
-                                    return {...scoresheet, match_id: supabaseMatchId}
-                                })
+                                const supabaseMatchId = writeMatch.data?.[0].id;
+                                const scoresheetsWithMatchId = scoresheets.map((scoresheet) => {
+                                    return { ...scoresheet, match_id: supabaseMatchId };
+                                });
 
                                 // now save scoresheets
                                 const writeScoresheets = await supabase
                                     .from("scoresheets")
                                     .insert(scoresheetsWithMatchId as any)
-                                    .select()
-                                
+                                    .select();
+
                                 if (writeScoresheets.status >= 400) {
-                                    throw new Error(writeScoresheets.error?.message)
+                                    await Match.setState(matchId, "save error", userRedisClient);
+                                    throw new Error(writeScoresheets.error?.message);
                                 }
 
-                                const savedScoresheets = writeScoresheets.data
-                                await Match.setState(matchId, "saved", userRedisClient)
+                                const savedScoresheets = writeScoresheets.data;
+                                await Match.setState(matchId, "saved", userRedisClient);
+                                const currentMatchState = await Match.getSocketIORedisMatchState(matchId, userRedisClient);
 
                                 if (savedScoresheets) {
-                                    io.to(matchId).emit("save-update", "OK")
+                                    io.to(matchId).emit("save-update", currentMatchState);
                                 }
-
                             } catch (error: any) {
                                 // stall match
-                                await Match.setState(matchId, "stalled", redisClient)
-                                io.to(matchId).emit("save-update", error.message)
+                                await Match.setState(matchId, "save error", userRedisClient);
+                                const currentMatchState = await Match.getSocketIORedisMatchState(matchId, userRedisClient);
+                                io.to(matchId).emit("save-update", currentMatchState);
                             }
                         }
                     }
-                    break
+                    break;
                 case "reject":
-                    io.to(matchId).emit("end-reset", currentMatchState)
-                    break
+                    io.to(matchId).emit("end-reset", currentMatchState);
+                    break;
                 case "waiting":
-                    io.to(matchId).emit("confirmation-update", currentMatchState)
-                    break
+                    io.to(matchId).emit("confirmation-update", currentMatchState);
+                    break;
             }
-
         } catch (error: any) {
-            replyCb(error.message)
+            replyCb(error.message);
         }
-    })
+    });
 
     socket.on("user-reject", async (replyCb: (reply: string) => void) => {
         try {
-            const action = await userMatch.rejectEnd()
-            replyCb("OK")
+            const action = await userMatch.rejectEnd();
+            replyCb("OK");
 
-            const currentMatchState = await userMatch.getSocketIORedisMatchState()
+            const currentMatchState = await userMatch.getSocketIORedisMatchState();
             if (action === "reject") {
-                io.to(matchId).emit("end-reset", currentMatchState)
+                io.to(matchId).emit("end-reset", currentMatchState);
             } else if (action === "waiting") {
-                io.to(matchId).emit("confirmation-update", currentMatchState)
+                io.to(matchId).emit("confirmation-update", currentMatchState);
             }
-
         } catch (error: any) {
-            replyCb(error.message)
+            replyCb(error.message);
         }
-    })
+    });
 
     // DISCONNECTION EVENTS
-    socket.on('disconnect', async (reason) => {
-        
+    socket.on("disconnect", async (reason) => {
         if (reason === "transport close" || reason === "client namespace disconnect") {
-            await userMatch.setDisconnect()
+            await userMatch.setDisconnect(sessionExpirySeconds);
 
-            const currentMatchState = await userMatch.getSocketIORedisMatchState()
-            const {current_state} = currentMatchState
+            const currentMatchState = await userMatch.getSocketIORedisMatchState();
+            const { current_state } = currentMatchState;
 
             if (current_state === "open" || current_state === "full") {
-                socket.broadcast.to(matchId).emit("lobby-update", currentMatchState)
+                socket.broadcast.to(matchId).emit("lobby-update", currentMatchState);
             } else if (current_state === "paused") {
-                socket.broadcast.to(matchId).emit("pause-match", currentMatchState)
+                socket.broadcast.to(matchId).emit("pause-match", currentMatchState);
             }
         }
 
-        const { current_state } = await Match.getState(matchId, redisClient)
-
-        // expire session if match is not finished
-        if (current_state !== "finished" && current_state !== "reported") {
-            await redisClient.expire(socket.data.sessionId, sessionExpirySeconds)
-            console.log(reason, `${socket.data.sessionId} expiring in ${sessionExpirySeconds}...`)
-        }
+        // if cache is slower than reconnection, there will be a chance that users reconnect before
+        // the code below this line manages to execute - result will be a race condition whereby
+        // 1. user reconnect - session refreshed (without expiry having been set)
+        // 2. current_state obtained
+        // 3. if match is running (not finished or reported), the session will get expired anyway
+        //
+        // Maybe we perform a transaction within userMatch.setDisconnect()?
 
         // disconnect userRedisClient
-        await userRedisClient.disconnect()
-    })
+        await userRedisClient.disconnect();
+    });
 });
 
-
-const matchServer = server.listen(3030, async () => {
+const matchServer = server.listen(process.env.PORT, async () => {
     // setup Redis clients
     await redisClient.connect();
     await cleanupClient.connect();
     await cleanupClient.pSubscribe("__keyevent@0__:expired", async (expiredKey: string, channel: string) => {
         if (expiredKey.startsWith("match-session:")) {
-            const matchId = await redisClient.HGET("active-sessions", expiredKey) as string
-            await Match.syncExpiredSession(expiredKey, redisClient)
-            const { current_state, previous_state } = await Match.getState(matchId, redisClient)
-            console.log("cleared: ", expiredKey)
-
-            // if session expired while match was paused, stall the match
-            if (current_state === "paused") {
-                await Match.setState(matchId, "stalled", redisClient)
-            }
+            await Match.syncExpiredSession(expiredKey, redisClient);
+            console.log("cleared: ", expiredKey);
         }
     });
 
     // start expiring all previous instance that could have persisted due to a crash
-    const sessionIds = await redisClient.KEYS("match-session:*")
+    const sessionIds = await redisClient.KEYS("match-session:*");
     for (const sessionId of sessionIds) {
-        await redisClient.EXPIRE(sessionId, sessionExpirySeconds, "NX")
-        console.log("expiring: ", sessionId)
+        await redisClient.EXPIRE(sessionId, sessionExpirySeconds, "NX");
+        console.log("expiring: ", sessionId);
     }
 
     // notify listening
-    console.log("match-server listening on port 3030.");
+    console.log(`match-server listening on port ${process.env.PORT}.`);
 });
 
 // shutdown function
-function shutdownCb() {
-    matchServer.close(async () => {
-        await redisClient.disconnect();
-        await cleanupClient.disconnect();
-        process.exit(0);
-    });
-}
+matchServer.on('close' ,async () => {
+    await redisClient.disconnect();
+    await cleanupClient.disconnect();
+    process.exit(0);
+});
 
-// graceful shutdown handlers
-process.on("SIGINT", shutdownCb);
-process.on("SIGTERM", shutdownCb);
+// server error handlers
 process.on("uncaughtException", (err) => {
     console.error("Unhandled Exception:", err);
 });

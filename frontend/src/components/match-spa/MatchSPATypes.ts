@@ -47,6 +47,5 @@ export interface ConfirmationPageProps extends MatchSPAPageProps {
 }
 
 export interface FinishedPageProps extends MatchSPAPageProps {
-    data: SocketIORedisMatchState,
-    saveProgress: string
+    data: SocketIORedisMatchState
 }

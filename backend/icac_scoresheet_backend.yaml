@@ -366,6 +366,30 @@ paths:
           description: The requested **Match** does not exist.
         '401':
           description: User is unauthenticated.
+  
+  /matches/session-exists:
+    get:
+      summary: Check whether user has an active session with a live match.
+      description: >
+        This endpoint checks whether a user has an active match session in the Redis database. If it exists, returns the time to live (TTL) of the session. The user ID will be obtained from the submitted authentication token.
+      operationId: checkSessionExists
+      security:
+        - auth-token: []
+      tags:
+        - matches
+      responses:
+        '200':
+          description: User has an active match session in Redis.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ttl:
+                    type: number
+        '404':
+          description: User does not have an active match session in Redis.
+        
 
 
 components:

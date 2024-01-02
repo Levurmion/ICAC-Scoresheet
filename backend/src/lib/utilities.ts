@@ -43,7 +43,7 @@ export function isValidAlphanumeric(string: string): boolean {
 
 export async function getUserId(context: { req: Request, res: Response }) {
     const supabase = useSupabaseClient(context)
-    return (await supabase.auth.getUser()).data.user?.id ?? false
+    return (await supabase.auth.getUser()).data.user?.id ?? null
 }
 
 export async function getRedisMatch(matchId: string) {

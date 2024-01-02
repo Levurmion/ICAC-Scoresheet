@@ -10,11 +10,15 @@ export default function PausedModal ({ socket, data }: PausedModalProps) {
 
     const router = useRouter()
 
-    if (data) {
-        useEffect(() => {
+    useEffect(() => {
+        if (data) {
             document.body.style.overflow = "hidden"
-        }, [])
+        } else {
+            document.body.style.overflow = ""
+        }
+    }, [data])
 
+    if (data) {
         const handleLeave = () => {
             socket.emit("user-leave", (reply: string) => {
                 if (reply === "OK") router.back()
@@ -34,9 +38,6 @@ export default function PausedModal ({ socket, data }: PausedModalProps) {
             </dialog>
         )
     } else {
-        useEffect(() => {
-            document.body.style.overflow = ""
-        }, [])
         return <></>
     }
 }

@@ -1,0 +1,90 @@
+version: '3'
+
+services:
+
+  backend:
+    build:
+      dockerfile: backend/Dockerfile
+      target: dev
+    depends_on:
+      - redis
+    ports:
+      - "3001:3001"
+    command: >
+      sh -c "npm install &&
+            npm run db-setup-dev &&
+            npm run dev"
+    environment:
+      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+  
+  frontend:
+    build: frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    restart: always
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - type: bind
+        source: ./frontend
+        target: /app/
+      # override bind mount by specifying as Docker-managed volumes
+      - /app/node_modules   # persisting as bind mount will populate the container with OS-specific packages
+      - /app/.next          # persisting as bind mount will populate the container with OS-specific artefacts
+  
+  match_server_1:
+    build:
+      dockerfile: ./match_server/Dockerfile
+      target: dev
+    ports:
+      - "3030:3030"
+    depends_on:
+      - redis
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - ./match_server:/app
+      - /app/node_modules
+    environment:
+      - PORT=3030
+      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+
+  match_server_2:
+    build:
+      dockerfile: ./match_server/Dockerfile
+      target: dev
+    ports:
+      - "3031:3031"
+    depends_on:
+      - redis
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - ./match_server:/app
+      - /app/node_modules
+    environment:
+      - PORT=3031
+      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis.conf:/redis/redis.conf
+    command: "redis-server /redis/redis.conf"
+
+  nginx:
+    image: 'nginx'
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+      - match_server_1
+      - match_server_2
+    ports:
+      - '8001:80'
+    volumes:
+      - ./nginx/dev/default.conf:/etc/nginx/conf.d/default.conf

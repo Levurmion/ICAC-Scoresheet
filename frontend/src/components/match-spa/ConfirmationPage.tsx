@@ -23,13 +23,17 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
 
     const handleConfirm = () => {
         socket.emit("user-confirm", (reply: string) => {
-            console.log(reply);
+            if (reply !== "OK") {
+                alert(reply)
+            }
         });
     };
 
     const handleReject = () => {
         socket.emit("user-reject", (reply: string) => {
-            console.log(reply);
+            if (reply !== "OK") {
+                alert(reply)
+            }
         });
     };
 

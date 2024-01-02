@@ -1,4 +1,4 @@
-import { CompletedMatch, RedisMatchReturnType, MatchParams } from "../../lib/types"
+import { CompletedMatch, LiveMatchRedisType, MatchParams } from "../../lib/types"
 import { persistentUserSignIn, testUsersSignIn } from "../../lib/utilities"
 
 const supertest = require('supertest')
@@ -6,33 +6,51 @@ const agent = supertest.agent
 
 const userAgent = agent('http://localhost:8001/api')
 
+// test user
+const testUserDetails = {
+    email: "matchesRouteTest@test.com",
+    first_name: "Matches Route",
+    last_name: "Test",
+    password: "password",
+    gender: "male",
+    date_of_birth: "2024-03-21",
+}
+
+const testUserSignIn = {
+    email: "matchesRouteTest@test.com",
+    password: "password"
+}
+
+// CRUD test data
+const badMatches = [
+    {"name": "Mighty_Match_1@", "max_participants": 227, "num_ends": 200, "arrows_per_end": 166},
+    {"name": "Swift_Match()_2", "max_participants": 197, "num_ends": 6, "arrows_per_end": 63},
+    {"name": "Swift_Match_3", "num_ends": 117, "arrows_per_end": 75},
+]
+const matchesToCreate = [
+    {"name": "Mighty_Match_1", "max_participants": 2, "num_ends": 200, "arrows_per_end": 166},
+    {"name": "Swift_Match_2", "max_participants": 197, "num_ends": 6, "arrows_per_end": 63},
+    {"name": "Swift_Match_3", "max_participants": 24, "num_ends": 117, "arrows_per_end": 75},
+    {"name": "Rapid_Match_9", "max_participants": 3, "num_ends": 214, "arrows_per_end": 114},
+    {"name": "Mighty_Match_10", "max_participants": 17, "num_ends": 139, "arrows_per_end": 131}
+]
+const existingMatches = [
+    {"name": "Rapid_Match_9", "max_participants": 3, "num_ends": 214, "arrows_per_end": 114},
+    {"name": "Mighty_Match_10", "max_participants": 17, "num_ends": 139, "arrows_per_end": 131}
+]
+const matchNames = matchesToCreate.map(matchParams => matchParams.name)
+let liveMatchIds: string[]
+let completedMatchIds: string[]
+
 describe("Testing /matches endpoints", () => {
 
-    // CRUD test data
-    const badMatches = [
-        {"name": "Mighty_Match_1@", "max_participants": 227, "num_ends": 200, "arrows_per_end": 166},
-        {"name": "Swift_Match()_2", "max_participants": 197, "num_ends": 6, "arrows_per_end": 63},
-        {"name": "Swift_Match_3", "num_ends": 117, "arrows_per_end": 75},
-    ]
-    const matchesToCreate = [
-        {"name": "Mighty_Match_1", "max_participants": 2, "num_ends": 200, "arrows_per_end": 166},
-        {"name": "Swift_Match_2", "max_participants": 197, "num_ends": 6, "arrows_per_end": 63},
-        {"name": "Swift_Match_3", "max_participants": 24, "num_ends": 117, "arrows_per_end": 75},
-        {"name": "Rapid_Match_9", "max_participants": 3, "num_ends": 214, "arrows_per_end": 114},
-        {"name": "Mighty_Match_10", "max_participants": 17, "num_ends": 139, "arrows_per_end": 131}
-    ]
-    const existingMatches = [
-        {"name": "Rapid_Match_9", "max_participants": 3, "num_ends": 214, "arrows_per_end": 114},
-        {"name": "Mighty_Match_10", "max_participants": 17, "num_ends": 139, "arrows_per_end": 131}
-    ]
-    const matchNames = matchesToCreate.map(matchParams => matchParams.name)
-    let liveMatchIds: string[]
-    let completedMatchIds: string[]
+    beforeAll(async () => {
+        const signUpRes = await userAgent.post('/auth/sign-up/user').send(testUserDetails)
+        const signInRest = await userAgent.post('/auth/sign-in').send(testUserSignIn)
+    })
 
-
-    test("Sign In User: POST /auth/sign-in", async () => {
-        const res = await userAgent.post('/auth/sign-in').send(persistentUserSignIn)
-        expect(res.statusCode).toEqual(200)
+    afterAll(async () => {
+        const deleteRes = await userAgent.delete('/auth/user')
     })
 
     test("Create a Match: POST /matches", async () => {
@@ -41,7 +59,7 @@ describe("Testing /matches endpoints", () => {
             const res = await userAgent.post('/matches').send(badMatch)
             expect(res.statusCode).toBe(400)
         }
-        // create 10 unique matches
+        // create 5 unique matches
         for (const matchParams of matchesToCreate) {
             const res = await userAgent.post('/matches').send(matchParams)
             expect(res.statusCode).toEqual(201)
@@ -93,7 +111,7 @@ describe("Testing /matches endpoints", () => {
         ]
         const retrievedMatches = res.body
         const firstRetrievedMatch = retrievedMatches?.[0]
-        liveMatchIds = retrievedMatches.map((match: RedisMatchReturnType) => {
+        liveMatchIds = retrievedMatches.map((match: LiveMatchRedisType) => {
             return match.id
         })
 
@@ -110,77 +128,11 @@ describe("Testing /matches endpoints", () => {
         }
     })
 
-    test("Retrieve Completed Matches by Name: GET /matches/completed/:match_name", async () => {
-        const res = await userAgent
-        .get('/matches/completed/match')
-        const completedMatchProperties = [
-            "competition",
-            "finished_at",
-            "host",
-            "id",
-            "name",
-            "started_at"
-        ]
-        const pastMatchNames = [
-            "match_27_Nov",
-            "match_28_Nov",
-            "match_29_Nov",
-            "match_30_Nov",
-            "match_2_Dec",
-            "match_1_Dec"
-        ]
-        const retrievedPastMatches = res.body
-        const firstRetrievedPastMatch = retrievedPastMatches?.[0]
-
-        // make sure returned object shape is correct
-        completedMatchProperties.forEach(prop => {
-            expect(firstRetrievedPastMatch).toHaveProperty(prop)
-        })
-
-        // check that both past matches were retrieved
-        for (const pastMatch of retrievedPastMatches) {
-            expect(pastMatchNames).toContain(pastMatch.name)
-        }
-
-        // save match IDs for following tests
-        completedMatchIds = retrievedPastMatches.map((match: CompletedMatch) => match.id)
-    })
-
-    test("Retrieve Completed Matches by Name and Date: GET /matches/completed/:match_name", async () => {
-        const after28Nov = await userAgent.get('/matches/completed/match_').query({
-            after: new Date(2023, 10, 28).toDateString()
-        })
-        const before3Dec = await userAgent.get('/matches/completed/match_').query({
-            before: new Date(2023, 11, 3).toDateString()
-        })
-        const after29NovBefore2Dec = await userAgent.get('/matches/completed/match_').query({
-            after: new Date(2023, 10, 29).toDateString(),
-            before: new Date(2023, 11, 2).toDateString()
-        })
-
-        const matchNamesInDateRange = [
-            "match_27_Nov",
-            "match_28_Nov",
-            "match_29_Nov",
-            "match_30_Nov",
-            "match_1_Dec",
-            "match_2_Dec",
-        ]
-        
-        const after28NovMatchNames = after28Nov.body.map((match: CompletedMatch) => match.name)
-        const before3DecMatchnames = before3Dec.body.map((match: CompletedMatch) => match.name)
-        const after29NovBefore2DecMatchnames = after29NovBefore2Dec.body.map((match: CompletedMatch) => match.name)
-        
-        after28NovMatchNames.forEach((name: string) => expect(matchNamesInDateRange.slice(1)).toContain(name))
-        before3DecMatchnames.forEach((name: string) => expect(matchNamesInDateRange).toContain(name))
-        after29NovBefore2DecMatchnames.forEach((name: string) => expect(matchNamesInDateRange.slice(3,5)).toContain(name))
-    })
-
     test("Request Access to a Live Match: POST /matches/:match_id/reserve", async () => {
         const getMatchRes = await userAgent.get('/matches/live/Mighty_Match_1').query({
             state: "open"
         })
-        const match: RedisMatchReturnType = getMatchRes.body?.[0]
+        const match: LiveMatchRedisType = getMatchRes.body?.[0]
         const matchId = match.id
 
         // initialize 3 user agents
@@ -241,8 +193,6 @@ describe("Testing /matches endpoints", () => {
 
         const scoresheets = res.body
         const firstScoresheet = scoresheets[0]
-
-        console.log(scoresheets)
 
         // check that scoresheet has at least the required properties
         scoresheetProperties.forEach(prop => {

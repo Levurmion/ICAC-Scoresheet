@@ -29,6 +29,7 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
 
     // permit access for development
     const { devToken } = socket.handshake.auth
+    console.log(devToken)
     if (devToken) {
         console.log('connecting with devToken')
         const devUserSession: UserSession<"archer"> = {
@@ -43,6 +44,13 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
             ends_confirmed: [],
             connected: true,
         };
+        const sessionExists = await Match.getSession(devToken.user_id, redisClient);
+        if (sessionExists) {
+            saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, Match.createUserSessionId(devToken.user_id));
+            next()
+            return
+        }
+
         const sessionId = await Match.setSession(devUserSession, redisClient);
         if (sessionId) {
             saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, sessionId);

@@ -16,7 +16,7 @@ export interface UserSignUpCredentials extends UserSignInCredentials {
     disability?: string;
 }
 
-export type MatchState = "open" | "full" | "submit" | "confirmation" | "finished" | "reported" | "paused" | "stalled" | "saved";
+export type MatchState = "open" | "full" | "submit" | "confirmation" | "finished" | "reported" | "paused" | "stalled" | "saved" | "save error";
 
 export type MatchRole = "archer" | "judge";
 
@@ -182,7 +182,7 @@ export interface ServerToClientEvents {
     "pause-match": ServerMatchUpdateEventCb;
     "resume-match": ServerMatchUpdateEventCb;
     "lobby-update:error": ServerErrorEventCb;
-    "save-update": (saveResult: string ) => void
+    "save-update": ServerMatchUpdateEventCb;
 }
 
 export type ClientReplyCb = (reply: string) => void;

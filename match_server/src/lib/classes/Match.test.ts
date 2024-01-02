@@ -472,8 +472,8 @@ describe("Match Testing Suite", () => {
         test("A Disconnecting User Should Pause the Match", async () => {
             const firstUser = matchInstances[0];
             const secondUser = matchInstances[1];
-            await firstUser.setDisconnect();
-            await secondUser.setDisconnect();
+            await firstUser.setDisconnect(60);
+            await secondUser.setDisconnect(60);
             const matchState = await Match.getState(testMatchId, testClient);
             expect(matchState).toEqual({
                 current_state: "paused",

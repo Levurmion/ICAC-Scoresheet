@@ -28,17 +28,17 @@ export default function ClientNumberInput(props: ClientNumberInput) {
     };
 
     return (
-        <div className='relative flex gap-0.5 w-full h-fit'>
+        <div className='relative flex items-center gap-1 w-full h-fit'>
             <button
                 type='button'
-                className='h-full aspect-square rounded-md bg-white shadow-sm border border-solid border-beige-950 text-beige-950'
+                className='h-full aspect-square rounded-md bg-white shadow-sm border border-solid border-beige-500 text-beige-950'
                 onClick={handleDecrement}>
                 <RemoveIcon />
             </button>
             <ClientInput {...props} ref={numberInputRef} type='number' textAlignment='text-center' />
             <button
                 type='button'
-                className='h-full aspect-square rounded-md bg-white shadow-sm border border-solid border-beige-950 text-beige-950'
+                className='h-full aspect-square rounded-md bg-white shadow-sm border border-solid border-beige-500 text-beige-950'
                 onClick={handleIncrement}>
                 <AddIcon />
             </button>

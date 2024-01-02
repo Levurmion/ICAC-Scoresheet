@@ -110,7 +110,7 @@ export default function HostedMatchList() {
                                     <MatchCard key={match.id} match={match}>
                                         <CardAction>
                                             <button
-                                                className='w-full h-full grid place-items-center bg-beige-900 text-white text-responsive__small'
+                                                className='w-full h-full grid place-items-center bg-beige-800 text-white text-responsive__small'
                                                 onClick={() => {
                                                     handleRequestDelete(idx);
                                                 }}
@@ -136,8 +136,8 @@ export default function HostedMatchList() {
     };
 
     return (
-        <ScrollArea.Root className='w-full h-full grow basis-0 bg-beige-100 border border-beige-950 rounded-md overflow-y-scroll shadow-md'>
-            <ScrollArea.Viewport asChild className='w-full h-full'>
+        <ScrollArea.Root className='w-full h-full grow basis-0 bg-white rounded-md overflow-y-scroll shadow-md'>
+            <ScrollArea.Viewport asChild className='w-full h-full no-scrollbar'>
                 {renderHostedMatches()}
             </ScrollArea.Viewport>
         </ScrollArea.Root>

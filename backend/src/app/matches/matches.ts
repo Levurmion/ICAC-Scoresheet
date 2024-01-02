@@ -307,4 +307,19 @@ matches.get("/token/validate", async (req, res) => {
     }
 });
 
+// check if user has an active session
+matches.get("/session-exists", async (req, res) => {
+    const userId = await getUserId({ req, res }) as string
+    const sessionTtl = await redisClient.TTL(Match.createUserSessionId(userId))
+
+    // returns -1 if key exists with no expiry
+    if (sessionTtl >= -1) {
+        return res.json({
+            ttl: sessionTtl
+        })
+    } else {
+        return res.sendStatus(404)
+    }
+})
+
 export default matches;
