@@ -4,8 +4,9 @@ services:
 
   backend:
     build:
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile
       target: dev
+      context: backend
     depends_on:
       - redis
     ports:
@@ -14,18 +15,21 @@ services:
       sh -c "npm install &&
             npm run db-setup-dev &&
             npm run dev"
-    environment:
-      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+    env_file:
+      - backend/.env.development
     volumes:
       - ./backend:/app
       - /app/node_modules
   
   frontend:
-    build: frontend
+    build:
+      dockerfile: Dockerfile
+      context: frontend
+      target: dev
     ports:
       - "3000:3000"
     env_file:
-      - ./frontend/.env.local
+      - frontend/.env.development
     restart: always
     command: sh -c "npm install && npm run dev"
     volumes:
@@ -38,7 +42,8 @@ services:
   
   match_server_1:
     build:
-      dockerfile: ./match_server/Dockerfile
+      context: match_server
+      dockerfile: Dockerfile
       target: dev
     ports:
       - "3030:3030"
@@ -48,13 +53,16 @@ services:
     volumes:
       - ./match_server:/app
       - /app/node_modules
+    env_file:
+      - match_server/.env.development
     environment:
       - PORT=3030
       - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
 
   match_server_2:
     build:
-      dockerfile: ./match_server/Dockerfile
+      context: match_server
+      dockerfile: Dockerfile
       target: dev
     ports:
       - "3031:3031"
@@ -64,6 +72,8 @@ services:
     volumes:
       - ./match_server:/app
       - /app/node_modules
+    env_file:
+      - match_server/.env.development
     environment:
       - PORT=3031
       - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
@@ -85,6 +95,6 @@ services:
       - match_server_1
       - match_server_2
     ports:
-      - '8001:80'
+      - '80:80'
     volumes:
       - ./nginx/dev/default.conf:/etc/nginx/conf.d/default.conf
