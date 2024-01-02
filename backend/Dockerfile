@@ -49,4 +49,3 @@ COPY --from=tsbuild /app/dist /app/dist
 EXPOSE 3001
 
 CMD npm run db-setup && npm run start
-
