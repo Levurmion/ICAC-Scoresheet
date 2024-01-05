@@ -146,7 +146,10 @@ export const expectedAllReadyMatchState = {
     current_end: 1,
     current_state: "submit",
     previous_state: "full",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T02:34:23.718Z",
     participants: [
         {
@@ -268,7 +271,10 @@ export const userASubmit_end1 = {
     current_end: 1,
     current_state: "submit",
     previous_state: "full",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T11:00:36.795Z",
     participants: [
         {
@@ -313,7 +319,10 @@ export const confirmation_end1 = {
     current_end: 1,
     current_state: "confirmation",
     previous_state: "submit",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T11:30:00.782Z",
     participants: [
         {
@@ -362,7 +371,10 @@ export const endReset_end1 = {
     current_end: 1,
     current_state: "submit",
     previous_state: "confirmation",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T14:18:06.471Z",
     participants: [
         {
@@ -403,7 +415,10 @@ export const submitMatchState_end2 = {
     current_end: 2,
     current_state: "submit",
     previous_state: "confirmation",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T14:40:03.106Z",
     participants: [
         {
@@ -452,7 +467,10 @@ export const pausedMatchState = {
     current_end: 2,
     current_state: "paused",
     previous_state: "submit",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T15:01:12.652Z",
     participants: [
         {
@@ -501,7 +519,10 @@ export const resumedMatchState = {
     current_end: 2,
     current_state: "submit",
     previous_state: "paused",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T15:26:11.025Z",
     participants: [
         {
@@ -551,7 +572,10 @@ export const finishedMatchState = {
     current_end: 3,
     current_state: "finished",
     previous_state: "confirmation",
-    submission_map: { "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e", "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
     // started_at: "2023-12-24T15:47:43.879Z",
     participants: [
         {
@@ -571,7 +595,7 @@ export const finishedMatchState = {
                 { score: 10, submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
                 { score: 10, submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
                 { score: 10, submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
-                { score: 10, submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d" }
+                { score: 10, submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d" },
             ],
             ends_confirmed: [true, true, true],
             connected: true,
@@ -593,7 +617,125 @@ export const finishedMatchState = {
                 { score: 10, submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e" },
                 { score: 10, submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e" },
                 { score: 10, submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e" },
-                { score: 10, submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e" }
+                { score: 10, submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e" },
+            ],
+            ends_confirmed: [true, true, true],
+            connected: true,
+        },
+    ],
+};
+
+export const saveToSupabaseResponse = {
+    name: "Test Match",
+    round: "Portsmouth",
+    max_participants: 2,
+    arrows_per_end: 3,
+    num_ends: 3,
+    host: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+    // created_at: "2023-12-12T08:20:10.458Z",
+    current_end: 3,
+    current_state: "saved",
+    previous_state: "reported",
+    submission_map: {
+        "b5708a67-5e10-4af6-94c5-80cbd8e8464d": "match-session:57ab3332-c2fe-4233-9fcb-df1387de331e",
+        "57ab3332-c2fe-4233-9fcb-df1387de331e": "match-session:b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+    },
+    // started_at: "2024-01-04T10:43:29.223Z",
+    participants: [
+        {
+            match_id: "match:test-match-fake-id-001",
+            user_id: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+            first_name: "Test",
+            last_name: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+            ready: true,
+            university: "Some University",
+            role: "archer",
+            scores: [
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+                {
+                    score: 10,
+                    submitted_by: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+                },
+            ],
+            ends_confirmed: [true, true, true],
+            connected: true,
+        },
+        {
+            match_id: "match:test-match-fake-id-001",
+            user_id: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+            first_name: "Test",
+            last_name: "b5708a67-5e10-4af6-94c5-80cbd8e8464d",
+            ready: true,
+            university: "Some University",
+            role: "archer",
+            scores: [
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
+                {
+                    score: 10,
+                    submitted_by: "57ab3332-c2fe-4233-9fcb-df1387de331e",
+                },
             ],
             ends_confirmed: [true, true, true],
             connected: true,

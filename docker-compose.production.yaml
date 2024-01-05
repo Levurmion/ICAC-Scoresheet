@@ -9,7 +9,7 @@ services:
     command: >
       sh -c "npm run db-setup && npm run start"
     env_file:
-      - backend/.env.production
+      - ./backend/.env.production
     environment:
       - HOST_DOMAIN=icac-scoresheet.com
 
@@ -18,7 +18,7 @@ services:
     ports:
       - "3030:3030"
     env_file:
-      - match_server/.env.production
+      - ./match_server/.env.production
     environment:
       - SESSION_EXPIRY=15
       - HOST_DOMAIN=icac-scoresheet.com
@@ -29,7 +29,7 @@ services:
     ports:
       - "3031:3031"
     env_file:
-      - match_server/.env.production
+      - ./match_server/.env.production
     environment:
       - SESSION_EXPIRY=15
       - HOST_DOMAIN=icac-scoresheet.com
@@ -41,6 +41,7 @@ services:
       - "3000:3000"
     env_file:
       - ./frontend/.env.local
+      - ./frontend/.env.production
     restart: always
 
   nginx:

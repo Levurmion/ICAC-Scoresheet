@@ -45,17 +45,16 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
             connected: true,
         };
         const sessionExists = await Match.getSession(devToken.user_id, redisClient);
+        console.log(sessionExists)
         if (sessionExists) {
             saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, Match.createUserSessionId(devToken.user_id));
-            next()
-            return
+            return next()
         }
 
         const sessionId = await Match.setSession(devUserSession, redisClient);
         if (sessionId) {
             saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, sessionId);
-            next();
-            return
+            return next();
         }
     }
 

@@ -14,7 +14,7 @@ services:
     env_file:
       - backend/.env.production
     environment:
-      - HOST_DOMAIN=http://localhost:8001
+      - HOST_DOMAIN=http://localhost
 
   match_server_1:
     build:
@@ -27,7 +27,7 @@ services:
       - match_server/.env.production
     environment:
       - SESSION_EXPIRY=15
-      - HOST_DOMAIN=http://localhost:8001
+      - HOST_DOMAIN=http://localhost
       - PORT=3030
   
   match_server_2:
@@ -41,7 +41,7 @@ services:
       - match_server/.env.production
     environment:
       - SESSION_EXPIRY=15
-      - HOST_DOMAIN=http://localhost:8001
+      - HOST_DOMAIN=http://localhost
       - PORT=3031
   
   frontend:

@@ -17,9 +17,11 @@ import {
     pausedMatchState,
     resumedMatchState,
     finishedMatchState,
+    saveToSupabaseResponse,
 } from "./fixtures";
 import useSupabaseBasicClient from "../../lib/supabase/useSupabaseBasicClient";
 const io = require("socket.io-client");
+const dotenv = require('dotenv')
 
 // TEST DATA
 const testMatchId = "match:test-match-fake-id-001";
@@ -40,13 +42,12 @@ const testUserIdA = "57ab3332-c2fe-4233-9fcb-df1387de331e";
 const testUserIdB = "b5708a67-5e10-4af6-94c5-80cbd8e8464d";
 
 function createClientSocket(userId: string) {
-    return io("http://localhost:8001", {
+    return io("http://localhost", {
         path: "/match-server/socket.io/",
         reconnectionDelay: 1000,
         reconnectionDelayMax: 10000,
         reconnection: true,
         autoConnect: false,
-        transports: ['websocket'],
         auth: {
             devToken: {
                 match_uuid: testMatchId,
@@ -110,7 +111,6 @@ describe("Match Server Events Testing Suite", () => {
         test("New Match States Broadcasted When New User Connects", async () => {
             // only user A in match
             const userAMatchStatePromise = waitFor(clientSocketA, "lobby-update");
-            console.log('connecting A')
             clientSocketA.connect();
             const userAMatchState = await userAMatchStatePromise;
             expect(userAMatchState).toEqual(expectedUserAMatchState);
@@ -118,7 +118,6 @@ describe("Match Server Events Testing Suite", () => {
             // user B joins, check that user A listens to "lobby-update"
             const userALobbyUpdatePromise = waitFor(clientSocketA, "lobby-update");
             const userBLobbyUpdatePromise = waitFor(clientSocketB, "lobby-update");
-            console.log('connecting B')
             clientSocketB.connect();
             const lobbyUpdates = await Promise.all([userALobbyUpdatePromise, userBLobbyUpdatePromise]);
             const [userALobbyUpdate, userBLobbyUpdate] = lobbyUpdates;
@@ -168,12 +167,10 @@ describe("Match Server Events Testing Suite", () => {
             // check that userB disconnection was broadcasted to userA
             const userADisconnectionUpdate = await userADisconnectionUpdatePromise;
             const userBReconnectionUpdate = await userBReconnectionUpdatePromise;
-            console.log(userADisconnectionUpdate)
             expect(userADisconnectionUpdate).toEqual(expectedUserBDisconnectedMatchState);
             
             
             // wait until userB is reconnected to receive "lobby-update"
-            console.log(userBReconnectionUpdate)
             expect(userBReconnectionUpdate).toEqual(expectedUserBMatchState);
             
             // delay to ensure that reconnection occurred
@@ -413,9 +410,8 @@ describe("Match Server Events Testing Suite", () => {
             const userB_savedToSupabasePromise = waitFor(clientSocketB, "save-update")
             const userA_savedToSupabase = await userA_savedToSupabasePromise
             const userB_savedToSupabase = await userB_savedToSupabasePromise
-            console.log(userA_savedToSupabase)
-            expect(userA_savedToSupabase).toEqual("OK")
-            expect(userB_savedToSupabase).toEqual("OK")
+            expect(userA_savedToSupabase).toMatchObject(saveToSupabaseResponse)
+            expect(userB_savedToSupabase).toMatchObject(saveToSupabaseResponse)
 
         });
 

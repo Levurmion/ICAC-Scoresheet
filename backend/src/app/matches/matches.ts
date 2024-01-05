@@ -107,6 +107,7 @@ matches.get("/live/:match_name", async (req, res) => {
     }
 
     const redisQuery = [nameQuery, stateQuery, hostQuery].filter((val) => val !== undefined).join(" ");
+    console.log(redisQuery)
     const matches = await redisClient.ft.SEARCH("idx:matches", redisQuery)
 
     if (matches.total > 0) {

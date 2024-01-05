@@ -35,6 +35,10 @@ const socketIOStreamsClient = redisClient.duplicate();
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(server, {
     cookie: true,
+    connectionStateRecovery: {
+        maxDisconnectionDuration: 60000,
+        skipMiddlewares: true
+    },
     adapter: createAdapter(socketIOStreamsClient),
 });
 
@@ -284,14 +288,6 @@ io.on("connection", async (socket) => {
                 socket.broadcast.to(matchId).emit("pause-match", currentMatchState);
             }
         }
-
-        // if cache is slower than reconnection, there will be a chance that users reconnect before
-        // the code below this line manages to execute - result will be a race condition whereby
-        // 1. user reconnect - session refreshed (without expiry having been set)
-        // 2. current_state obtained
-        // 3. if match is running (not finished or reported), the session will get expired anyway
-        //
-        // Maybe we perform a transaction within userMatch.setDisconnect()?
 
         // disconnect userRedisClient
         await userRedisClient.disconnect();

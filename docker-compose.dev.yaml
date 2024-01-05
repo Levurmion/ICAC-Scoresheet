@@ -17,6 +17,8 @@ services:
             npm run dev"
     env_file:
       - backend/.env.development
+    environment:
+      - REDIS_URL=redis://redis:6379
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -40,7 +42,7 @@ services:
       - /app/node_modules   # persisting as bind mount will populate the container with OS-specific packages
       - /app/.next          # persisting as bind mount will populate the container with OS-specific artefacts
   
-  match_server_1:
+  match_server:
     build:
       context: match_server
       dockerfile: Dockerfile
@@ -57,26 +59,7 @@ services:
       - match_server/.env.development
     environment:
       - PORT=3030
-      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
-
-  match_server_2:
-    build:
-      context: match_server
-      dockerfile: Dockerfile
-      target: dev
-    ports:
-      - "3031:3031"
-    depends_on:
-      - redis
-    command: sh -c "npm install && npm run dev"
-    volumes:
-      - ./match_server:/app
-      - /app/node_modules
-    env_file:
-      - match_server/.env.development
-    environment:
-      - PORT=3031
-      - REDIS_URL=redis://ICAClub:ICAClub2023!@redis-17521.c252.ap-southeast-1-1.ec2.cloud.redislabs.com:17521
+      - REDIS_URL=redis://redis:6379
 
   redis:
     image: redis/redis-stack:latest
@@ -92,8 +75,7 @@ services:
     depends_on:
       - frontend
       - backend
-      - match_server_1
-      - match_server_2
+      - match_server
     ports:
       - '80:80'
     volumes:
