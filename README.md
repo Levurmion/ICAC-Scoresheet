@@ -49,7 +49,7 @@ The project will be composed of 6 main services.
     </tr>
     <tr>
       <td>reverse proxy</td>
-      <td>NGINX (dev)/Kubernetes (pro)</td>
+      <td>NGINX</td>
       <td>AWS EC2</td>
     </tr>
   </tbody>
