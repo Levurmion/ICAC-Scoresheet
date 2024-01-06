@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import clientSocket from "@/lib/clientSocket";
 import { SocketIORedisMatchState } from "@/lib/types";
 import { MatchSPAControllerStates, MatchSPAPagesWithData } from "./MatchSPATypes";
@@ -81,7 +81,6 @@ export default function MatchSPAController() {
         };
 
         const onConfirmationUpdate = (data: SocketIORedisMatchState) => {
-
             setPageState({
                 page: "confirmation",
                 data,
@@ -114,8 +113,8 @@ export default function MatchSPAController() {
         const onSaveUpdate = (data: SocketIORedisMatchState) => {
             setPageState({
                 page: "finished",
-                data
-            })
+                data,
+            });
         };
 
         const onConnectError = (error: Error) => {
@@ -184,19 +183,12 @@ export default function MatchSPAController() {
     }, []);
 
     useEffect(() => {
-    }, [pageState]);
-
-    useEffect(() => {
-        
-    }, [paused]);
-
-    useEffect(() => {
         if (viewScoresheet) {
-            document.body.style.overflowY = "hidden"
+            document.body.style.overflowY = "hidden";
         } else {
-            document.body.style.overflowY = ""
+            document.body.style.overflowY = "";
         }
-    }, [viewScoresheet])
+    }, [viewScoresheet]);
 
     return (
         <section className='w-full h-full flex flex-col'>
@@ -214,29 +206,35 @@ export default function MatchSPAController() {
                     </nav>
                     <AnimatePresence>
                         {viewScoresheet && (
-                            <motion.div
-                                key='scoresheet-modal'
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className='flex flex-col absolute z-40 top-0 left-0 w-full h-full sm:h-[100vh] p-4 sm:p-0 items-center justify-center bg-black/25'>
-                                <motion.div
-                                    className='flex flex-col gap-2 w-full sm:w-[420px] h-[55dvh]'>
-                                    <button
-                                        onClick={() => {
-                                            setViewScoresheet(false);
-                                        }}
-                                        className='flex gap-1 items-center py-2 px-4 bg-red-600 w-fit font-semibold text-white rounded-md shadow-md'>
-                                        <VisibilityOffIcon /> Close
-                                    </button>
-                                    <MatchResults data={pageState.data as SocketIORedisMatchState} />
-                                </motion.div>
-                            </motion.div>
+                            <ScoresheetModal
+                                data={pageState.data as SocketIORedisMatchState}
+                                closeModalCb={() => {
+                                    setViewScoresheet(false);
+                                }}
+                            />
                         )}
                     </AnimatePresence>
                 </>
             )}
             {renderMatchSPA()}
         </section>
+    );
+}
+
+export function ScoresheetModal({ data, closeModalCb }: { data: SocketIORedisMatchState; closeModalCb: (e: MouseEvent<HTMLButtonElement>) => void }) {
+    return (
+        <motion.div
+            key='scoresheet-modal'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='flex flex-col absolute z-40 top-0 left-0 w-full h-full sm:h-[100vh] p-4 sm:p-0 items-center justify-center bg-black/25'>
+            <motion.div className='flex flex-col gap-2 w-full sm:w-[420px] h-[55dvh]'>
+                <button onClick={closeModalCb} className='flex gap-1 items-center py-2 px-4 bg-red-600 w-fit font-semibold text-white rounded-md shadow-md'>
+                    <VisibilityOffIcon /> Close
+                </button>
+                <MatchResults data={data} />
+            </motion.div>
+        </motion.div>
     );
 }

@@ -18,13 +18,11 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
     const archers = data.participants.filter(
         (participant) => participant.scores !== undefined && participant.ends_confirmed !== undefined
     ) as UserSession<"archer">[];
-    const userContext = useUserContext();
-    const userId = userContext?.id;
 
     const handleConfirm = () => {
         socket.emit("user-confirm", (reply: string) => {
             if (reply !== "OK") {
-                alert(reply)
+                alert(reply);
             }
         });
     };
@@ -32,7 +30,7 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
     const handleReject = () => {
         socket.emit("user-reject", (reply: string) => {
             if (reply !== "OK") {
-                alert(reply)
+                alert(reply);
             }
         });
     };
@@ -52,7 +50,6 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
                             archer={archer}
                             currentEnd={current_end}
                             arrowsPerEnd={arrows_per_end}
-                            isUser={archer.user_id === userId}
                         />
                     ))}
                 </ul>
@@ -66,7 +63,7 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
                 </ClientButton>
                 <ClientButton onClickHandler={handleConfirm}>
                     <p className='flex text-responsive__xx-large font-semibold p-2 items-center justify-center gap-2'>
-                        <VerifiedIcon fontSize="inherit" /> Accept
+                        <VerifiedIcon fontSize='inherit' /> Accept
                     </p>
                 </ClientButton>
             </section>
@@ -74,21 +71,10 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
     );
 }
 
-export function EndTotal({
-    archer,
-    currentEnd,
-    arrowsPerEnd,
-    isUser,
-}: {
-    archer: UserSession<"archer">;
-    currentEnd: number;
-    arrowsPerEnd: number;
-    isUser: boolean;
-}) {
+export function EndTotal({ archer, currentEnd, arrowsPerEnd }: { archer: UserSession<"archer">; currentEnd: number; arrowsPerEnd: number }) {
     const endArrowStart = currentEnd * arrowsPerEnd - arrowsPerEnd;
     const endArrowFinish = currentEnd * arrowsPerEnd;
     const endArrows = archer.scores.slice(endArrowStart, endArrowFinish);
-    const runningTotal = archer.scores.reduce((prevScore, currScore) => prevScore + (currScore.score === "X" ? 10 : currScore.score), 0);
     const endTotal = endArrows.reduce((prevScore, currScore) => prevScore + (currScore.score === "X" ? 10 : currScore.score), 0);
     const endConfirmed = archer.ends_confirmed[currentEnd - 1];
 
@@ -97,15 +83,7 @@ export function EndTotal({
             <div className='flex flex-col h-fit py-1 gap-1'>
                 <div className='flex flex-col'>
                     <div className='flex text-responsive__xxx-large font-bold items-center'>
-                        {endConfirmed === true ? (
-                            <span className='text-green-700 pe-2 drop-shadow-sm flex'>
-                                <VerifiedIcon fontSize='inherit' />
-                            </span>
-                        ) : endConfirmed === false ? (
-                            <span className='text-red-600 pe-2 drop-shadow-sm flex'>
-                                <DoNotDisturbAltOutlinedIcon fontSize='inherit' />
-                            </span>
-                        ) : null}
+                        <ConfirmationIcon confirmationState={endConfirmed} />
                         {archer.first_name} {archer.last_name}
                     </div>
                 </div>
@@ -124,4 +102,23 @@ export function EndTotal({
             </div>
         </li>
     );
+}
+
+export function ConfirmationIcon ({ confirmationState }: { confirmationState: boolean | null}) {
+
+    if (confirmationState === true) {
+        return (
+            <span className='text-green-700 pe-2 drop-shadow-sm flex'>
+                <VerifiedIcon fontSize='inherit' />
+            </span>
+        )
+    } else if (confirmationState === false) {
+        return (
+            <span className='text-red-600 pe-2 drop-shadow-sm flex'>
+                <DoNotDisturbAltOutlinedIcon fontSize='inherit' />
+            </span>
+        )
+    } else {
+        return null
+    }
 }

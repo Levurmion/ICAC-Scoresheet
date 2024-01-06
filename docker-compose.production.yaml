@@ -12,7 +12,6 @@ services:
       - ./backend/.env.production
     environment:
       - HOST_DOMAIN=icac-scoresheet.com
-
   match_server_1:
     image: levurmion/icac-scoresheet:match-server-arm64-v1.0
     ports:
@@ -23,7 +22,6 @@ services:
       - SESSION_EXPIRY=15
       - HOST_DOMAIN=icac-scoresheet.com
       - PORT=3030
-  
   match_server_2:
     image: levurmion/icac-scoresheet:match-server-arm64-v1.0
     ports:
@@ -54,3 +52,7 @@ services:
       - match_server_2
     ports:
       - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/prod/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/prod/certs:/etc/nginx/certs/
