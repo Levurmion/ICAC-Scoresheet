@@ -34,12 +34,12 @@ jobs:
         run: |
           echo "STATUS=${{ steps.docker-build.outcome }}" >> "$GITHUB_OUTPUT"
       - name: Log in to Docker Hub
-        if: steps.docker_build_status.outputs.STATUS == 0
+        if: steps.docker_build_status.outputs.STATUS == 0 && (steps.service_changed.outputs.src == 'true' || steps.service_changed.outputs.deps == 'true' || steps.service_changed.outputs.dockerfile == 'true' || steps.service_changed.outputs.cd_pipeline == 'true')
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Push to Docker Hub
-        if: steps.docker_build_status.outputs.STATUS == 0
+        if: steps.docker_build_status.outputs.STATUS == 0 && (steps.service_changed.outputs.src == 'true' || steps.service_changed.outputs.deps == 'true' || steps.service_changed.outputs.dockerfile == 'true' || steps.service_changed.outputs.cd_pipeline == 'true')
         run: docker push levurmion/icac-scoresheet:${{ matrix.service }}-latest
 
