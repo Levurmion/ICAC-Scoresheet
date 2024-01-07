@@ -22,7 +22,7 @@ export default function ClientDateInput(props: ClientDateInputProps) {
                 />
             </div>
             {!focused && (
-                <div className='w-full h-fit border-solid shadow-sm border rounded-lg py-1 px-2 bg-white border-beige-950 font-normal text-responsive__large text-beige-950'>
+                <div className='w-full h-fit border-solid shadow-sm border rounded-md py-1 px-2 bg-white border-beige-500 font-normal text-responsive__large text-beige-950'>
                     {props.placeholder}
                 </div>
             )}

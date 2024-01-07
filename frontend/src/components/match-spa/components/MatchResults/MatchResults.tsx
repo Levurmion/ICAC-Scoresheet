@@ -3,7 +3,7 @@
 import { Arrow, SocketIORedisMatchState, UserSession } from "@/lib/types";
 import * as Tabs from "@radix-ui/react-tabs";
 import styles from "./MatchResults.module.scss";
-import { ArrowScore } from "../ArrowScore";
+import ArrowScore from "../ArrowScore";
 
 function splitScoresIntoEnds(scores: Arrow[], arrowsPerEnd: number) {
     let ends: Arrow[][] = [];
@@ -57,7 +57,7 @@ export default function MatchResults({ data }: { data: SocketIORedisMatchState }
                                                 return (
                                                     <tr key={`${archer.user_id}-${endIdx}`} className='w-full'>
                                                         <td>{endIdx + 1}</td>
-                                                        <td className='flex gap-2 justify-center'>
+                                                        <td className='w-fit grid grid-cols-3 grid-flow-row place-items-center mx-auto gap-1'>
                                                             {end.map((score, arrIdx) => {
                                                                 if (score.score === "X" || score.score === 10) {
                                                                     golds += 1;

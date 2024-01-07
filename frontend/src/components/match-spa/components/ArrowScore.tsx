@@ -1,8 +1,9 @@
 "use client"
 
 import { Arrow, Score } from "@/lib/types";
+import { memo } from "react";
 
-export function ArrowScore({ score }: { score: Score | Arrow | null }) {
+function ArrowScore({ score }: { score: Score | Arrow | null }) {
 
     const arrowScore = (() => {
         if (typeof score === "string" || typeof score === "number") {
@@ -38,3 +39,7 @@ export function ArrowScore({ score }: { score: Score | Arrow | null }) {
         </div>
     );
 }
+
+const MemoizedArrowScore = memo(ArrowScore)
+MemoizedArrowScore.displayName = "ArrowScore"
+export default MemoizedArrowScore

@@ -2,7 +2,7 @@
 
 import { useUserContext } from "@/lib/contexts/ServerToClientUserContextProvider";
 import { ConfirmationPageProps } from "./MatchSPATypes";
-import { ArrowScore } from "./components/ArrowScore";
+import ArrowScore from "./components/ArrowScore";
 import { SubmitSlider } from "./components/SubmitSlider";
 import { UserSession } from "@/lib/types";
 import VerifiedIcon from "@mui/icons-material/Verified";
@@ -36,14 +36,14 @@ export default function ConfirmationPage({ socket, data }: ConfirmationPageProps
     };
 
     return (
-        <div className='w-full h-full flex flex-col gap-8 mt-4'>
+        <div className='w-full h-full flex flex-col gap-8'>
             <div className='w-full flex flex-col'>
                 <h1 className='font-extrabold'>Confirm End {current_end}</h1>
                 <p className='text-responsive__x-large'>If any of the participants rejects, the match will be asked to resubmit the current end.</p>
             </div>
 
             <section className='flex flex-col w-full gap-6 justify-center grow'>
-                <ul className='flex flex-col py-1 gap-4'>
+                <ul className='flex flex-col py-1 gap-4 w-full'>
                     {archers.map((archer, idx) => (
                         <EndTotal
                             key={archer.user_id}
@@ -80,25 +80,25 @@ export function EndTotal({ archer, currentEnd, arrowsPerEnd }: { archer: UserSes
 
     return (
         <li key={`${archer.user_id}-${endConfirmed}`} className='flex flex-row w-full h-fit items-center justify-between'>
-            <div className='flex flex-col h-fit py-1 gap-1'>
-                <div className='flex flex-col'>
+            <div className='flex flex-col w-full h-fit py-1 gap-1'>
+                <div className='w-full flex flex-col'>
                     <div className='flex text-responsive__xxx-large font-bold items-center'>
                         <ConfirmationIcon confirmationState={endConfirmed} />
                         {archer.first_name} {archer.last_name}
                     </div>
                 </div>
-                <div className='flex flex-row w-full gap-2'>
-                    {endArrows.map((score, arrowIdx) => {
-                        return (
-                            <div key={`arrow:${archer.user_id}-${arrowIdx}-${score.score}`} className='h-14 w-fit text-2xl drop-shadow-sm'>
-                                <ArrowScore score={score} />
-                            </div>
-                        );
-                    })}
+                <div className='w-full flex flex-row justify-between items-center gap-2'>
+                    <div className="grid grid-cols-3 grid-flow-row gap-2">
+                        {endArrows.map((score, arrowIdx) => {
+                            return (
+                                <div key={`arrow:${archer.user_id}-${arrowIdx}-${score.score}`} className='h-14 w-fit text-2xl drop-shadow-sm'>
+                                    <ArrowScore score={score} />
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className='text-3xl grid place-items-center h-16 aspect-square font-bold'>{endTotal}</div>
                 </div>
-            </div>
-            <div className='ms-auto flex flex-col justify-end h-full'>
-                <div className='text-2xl grid place-items-center h-16 aspect-square font-bold'>{endTotal}</div>
             </div>
         </li>
     );

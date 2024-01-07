@@ -5,7 +5,7 @@ import { MouseEvent } from "react";
 
 export default function Home() {
     return (
-        <>
+        <div className="w-full h-full sm:w-[420px] flex flex-col">
             <h1 className='mt-[30vh] w-full'>
                 <span className='font-extrabold'>ICAC</span> Scoresheet
             </h1>
@@ -21,6 +21,6 @@ export default function Home() {
                     </Link>
                 </ClientButton>
             </div>
-        </>
+        </div>
     );
 }

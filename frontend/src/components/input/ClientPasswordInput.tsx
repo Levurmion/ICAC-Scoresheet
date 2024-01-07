@@ -10,7 +10,7 @@ export default function ClientPasswordInput() {
 
     return (
         <div className='flex w-full h-fit relative'>
-            <ClientInput type={visible ? "text" : "password"} placeholder='password' name='password' required />
+            <ClientInput type={visible ? "text" : "password"} minLength={8} placeholder='password' name='password' required />
             <div className='absolute h-full aspect-square right-0 grid place-items-center text-beige-950' onClick={() => setVisible((prev) => !prev)}>
                 {visible ? <VisibilityIcon /> : <VisibilityOffIcon />}
             </div>

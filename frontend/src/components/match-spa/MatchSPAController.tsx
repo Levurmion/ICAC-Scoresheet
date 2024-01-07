@@ -195,7 +195,7 @@ export default function MatchSPAController() {
             <PausedModal socket={clientSocket} data={paused} />
             {matchIsRunning() && (
                 <>
-                    <nav className={`flex flex-row justify-center w-[100dvw] sm:w-[420px] -mt-4 mb-2 ${viewScoresheet}`}>
+                    <nav className={`flex flex-row justify-center w-[100dvw] sm:w-full -mt-4 -ms-4 sm:ms-0 mb-4 ${viewScoresheet}`}>
                         <button
                             onClick={() => {
                                 setViewScoresheet((prev) => !prev);

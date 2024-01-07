@@ -36,7 +36,7 @@ export default function RejoinMatchButton() {
     return (
         <Link
             href='/user/match/live'
-            className={`flex items-center gap-1 w-[100dvw] sm:w-[420px] -mt-4 px-4 bg-red-500 font-semibold text-white text-lg transition-all duration-500 overflow-hidden ${
+            className={`flex items-center gap-1 w-[100dvw] sm:w-[420px] -mt-4 -ms-4 sm:ms-0 px-4 mb-4 bg-red-500 font-semibold text-white text-lg transition-all duration-500 overflow-hidden ${
                 sessionCountdown ? "h-12 py-2" : "h-0 py-0"
             }`}>
             <ErrorOutlineIcon /> <span className='underline'>You have an active match</span>

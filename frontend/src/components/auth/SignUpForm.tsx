@@ -10,7 +10,15 @@ import { extractFormData } from "@/lib/utilities";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-const universities = ["Imperial College London"];
+const universities = [
+    "Imperial College London",
+    "University College London",
+    "University of Cambridge",
+    "University of Oxford",
+    "Queen Mary University of London",
+    "University of Southampton",
+    "University of Leicester"
+];
 
 export default function SignUpForm() {
     const router = useRouter();
@@ -18,14 +26,11 @@ export default function SignUpForm() {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         const formValues = extractFormData(e);
+        console.log(formValues)
         try {
-            const response = await axios.post(
-                "/api/auth/sign-up/user",
-                formValues,
-                {
-                    validateStatus: (status) => status < 500,
-                }
-            );
+            const response = await axios.post("/api/auth/sign-up/user", formValues, {
+                validateStatus: (status) => status < 500,
+            });
 
             if (response.status === 201) {
                 router.push("/");
@@ -41,7 +46,7 @@ export default function SignUpForm() {
 
     return (
         <form onSubmit={handleSubmit} className='h-[80dvh] w-full mt-auto flex flex-col gap-2' suppressHydrationWarning>
-            <ClientInput type='text' placeholder='email' name='email' required />
+            <ClientInput type='text' placeholder='email' name='email' pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" required />
             <ClientPasswordInput />
             <ClientInput type='text' placeholder='first name' name='first_name' required />
             <ClientInput type='text' placeholder='last name' name='last_name' required />

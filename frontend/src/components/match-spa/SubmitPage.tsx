@@ -4,7 +4,7 @@ import { Score, UserSession } from "@/lib/types";
 import { SubmitPageProps } from "./MatchSPATypes";
 import { MouseEvent, useEffect, useRef, useState } from "react";
 import { useUserContext } from "@/lib/contexts/ServerToClientUserContextProvider";
-import { ArrowScore } from "./components/ArrowScore";
+import ArrowScore from "./components/ArrowScore";
 import BackspaceIcon from "@mui/icons-material/Backspace";
 import { PanInfo, motion } from "framer-motion";
 import LoadingSpinner from "../svg-icons/LoadingSpinner";

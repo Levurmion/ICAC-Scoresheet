@@ -14,6 +14,7 @@ import { error } from "console";
 import LoadingSpinner from "../svg-icons/LoadingSpinner";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import ClientDropdownInput from "../input/ClientDropdownInput";
 
 function createMatch(matchParams: MatchParams | null) {
     return useSWR(
@@ -90,13 +91,14 @@ export default function HostMatchForm() {
     const handleCreateMatchSubmit = (e: FormEvent) => {
         e.preventDefault();
         const matchParams = extractFormData(e) as unknown as MatchParams;
+        console.log(matchParams)
         setCreateMatchParams(matchParams);
     };
 
     return (
         <form onSubmit={handleCreateMatchSubmit} className='w-full mt-auto flex flex-col gap-2' suppressHydrationWarning>
             <ClientInput id="match-name-field" onChangeCb={handleMatchNameChange} type='text' placeholder='match name' name='name' pattern='^[A-Za-z0-9_ ]+$' required />
-            <ClientInput id="round-name-field" type='text' placeholder='round (optional)' name='round' />
+            <ClientDropdownInput id="round" name="round" placeholder="round (optional)" options={[undefined, "Portsmouth"]} defaultValue={undefined} />
             <ClientNumberInput min={2} step={1} placeholder='number of participants' name='max_participants' required />
             <p className='mt-4'>
                 <span className='font-extrabold'>total: </span>
