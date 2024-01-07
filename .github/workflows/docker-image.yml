@@ -22,7 +22,9 @@ jobs:
               - '${{ matrix.service }}/package*.json'
       - name: Rebuild ${{ matrix.service }}
         if: steps.service_changed.outputs.src == 'true' || steps.service_changed.outputs.deps == 'true'
-        run: docker build ./${{ matrix.service }} --platform linux/arm64 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
+        run: |
+          cd ./${{ matrix.service }}
+          docker build . --platform linux/arm64 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
       - name: Set docker build status
         id: docker_build_status
         run: |
