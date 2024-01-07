@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: aws-euw-ec2-arm64
+    runs-on: self-hosted
     strategy:
       matrix:
         service: ['backend', 'frontend', 'match_server']
