@@ -28,7 +28,7 @@ jobs:
         if: steps.service_changed.outputs.src == 'true' || steps.service_changed.outputs.deps == 'true' || steps.service_changed.outputs.dockerfile == 'true' || steps.service_changed.outputs.cd_pipeline == 'true'
         run: |
           cd ./${{ matrix.service }}
-          docker build . --platform linux/x86 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
+          docker build . --platform linux/amd64 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
       - name: Set docker build status
         id: docker_build_status
         run: |
