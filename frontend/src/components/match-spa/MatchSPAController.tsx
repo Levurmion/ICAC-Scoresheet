@@ -191,16 +191,16 @@ export default function MatchSPAController() {
     }, [viewScoresheet]);
 
     return (
-        <section className='w-full h-full flex flex-col'>
+        <>
             <PausedModal socket={clientSocket} data={paused} />
             {matchIsRunning() && (
                 <>
-                    <nav className={`flex flex-row justify-center w-[100dvw] sm:w-[420px] -ms-4 -mt-4 ${viewScoresheet}`}>
+                    <nav className={`flex flex-row justify-center w-[100dvw] sm:w-[420px] -mt-4 mb-2 ${viewScoresheet}`}>
                         <button
                             onClick={() => {
                                 setViewScoresheet((prev) => !prev);
                             }}
-                            className='flex items-center justify-center gap-1 w-full py-2 px-4 font-semibold bg-gray-600 text-white shadow-md text-responsive__x-large'>
+                            className='flex items-center justify-center w-full gap-1 py-2 px-4 font-semibold bg-gray-600 text-white shadow-md text-responsive__x-large'>
                             <AssignmentIcon fontSize='inherit' /> Scoresheet
                         </button>
                     </nav>
@@ -216,8 +216,10 @@ export default function MatchSPAController() {
                     </AnimatePresence>
                 </>
             )}
-            {renderMatchSPA()}
-        </section>
+            <section className='w-full h-full flex flex-col overflow-y-scroll no-scrollbar'>
+                {renderMatchSPA()}
+            </section>
+        </>
     );
 }
 
