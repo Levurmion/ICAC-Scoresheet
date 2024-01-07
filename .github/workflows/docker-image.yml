@@ -28,6 +28,9 @@ jobs:
       # run docker build and save exit status
       run: |
         docker build ${{ matrix.service }} --file Dockerfile --platform linux/arm64 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
+    # set docket build status
+    - name: Set docker build status
+      run: |
         echo "DOCKER_BUILD_STATUS=$?" >> $GITHUB_ENV
     # login to docker hub
     - name: Log in to Docker Hub
