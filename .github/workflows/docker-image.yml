@@ -13,35 +13,35 @@ jobs:
       matrix:
         service: ['backend', 'frontend', 'match_server']
     steps:
-    - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
-      id: service_changed
-      with:
-        filters: |
-          src:
-            - '${{ matrix.service }}/src/**'
-          deps:
-            - '${{ matrix.service }}/package*.json'
-    # only run build if changes were detected
-    - name: Rebuild ${{ matrix.service }}
-      if: steps.service_changed.outputs.src == 'true' || steps.service_changed.outputs.deps == 'true'
-      # run docker build and save exit status
-      run: |
-        docker build ${{ matrix.service }} --file Dockerfile --platform linux/arm64 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
-    # set docket build status
-    - name: Set docker build status
-      id: docker_build_status
-      run: |
-        echo "STATUS=$?" >> $GITHUB_OUTPUT
-    # login to docker hub
-    - name: Log in to Docker Hub
-      if: steps.docker_build_status.outputs.STATUS == '0'
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    # push to docker hub
-    - name: Push to Docker Hub
-      if: steps.docker_build_status.outputs.STATUS == '0'
-      run: |
-        docker push levurmion/icac-scoresheet:${{ matrix.service }}-latest
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: service_changed
+        with:
+          filters: |
+            src:
+              - '${{ matrix.service }}/src/**'
+            deps:
+              - '${{ matrix.service }}/package*.json'
+      # only run build if changes were detected
+      - name: Rebuild ${{ matrix.service }}
+        if: steps.service_changed.outputs.src == 'true' || steps.service_changed.outputs.deps == 'true'
+        # run docker build and save exit status
+        run: |
+          docker build ${{ matrix.service }} --file Dockerfile --platform linux/arm64 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
+      # set docket build status
+      - name: Set docker build status
+        id: docker_build_status
+        run: |
+          echo "STATUS=$?" >> $GITHUB_OUTPUT
+      # login to docker hub
+      - name: Log in to Docker Hub
+        if: steps.docker_build_status.outputs.STATUS == '0'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # push to docker hub
+      - name: Push to Docker Hub
+        if: steps.docker_build_status.outputs.STATUS == '0'
+        run: |
+          docker push levurmion/icac-scoresheet:${{ matrix.service }}-latest
