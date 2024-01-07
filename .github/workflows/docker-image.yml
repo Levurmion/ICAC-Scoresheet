@@ -30,18 +30,18 @@ jobs:
         docker build ${{ matrix.service }} --file Dockerfile --platform linux/arm64 --tag levurmion/icac-scoresheet:${{ matrix.service }}-latest
     # set docket build status
     - name: Set docker build status
+      id: docker_build_status
       run: |
-        echo "DOCKER_BUILD_STATUS=$?" >> $GITHUB_ENV
-        echo "docker build status: ${DOCKER_BUILD_STATUS}"
+        echo "STATUS=$?" >> $GITHUB_OUTPUT
     # login to docker hub
     - name: Log in to Docker Hub
-      if: $DOCKER_BUILD_STATUS == '0'
+      if: steps.docker_build_status.outputs.STATUS == '0'
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     # push to docker hub
     - name: Push to Docker Hub
-      if: $DOCKER_BUILD_STATUS == '0'
+      if: steps.docker_build_status.outputs.STATUS == '0'
       run: |
         docker push levurmion/icac-scoresheet:${{ matrix.service }}-latest
