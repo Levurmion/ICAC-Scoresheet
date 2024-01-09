@@ -70,6 +70,7 @@ io.on("connection", async (socket) => {
 
     // initialize socket with appropriate event listeners depending on user role
     let user: Archer
+    console.log(role)
     if (role === "archer") {
         user = await Archer.initArcher(userId, userRedisClient) as Archer
         await initArcherSocket(socket, io, user, redisClient, userRedisClient)
