@@ -16,7 +16,7 @@ services:
     environment:
       - HOST_DOMAIN=http://localhost
 
-  match_server_1:
+  match_server:
     build:
       context: match_server
       dockerfile: Dockerfile
@@ -29,21 +29,7 @@ services:
       - SESSION_EXPIRY=15
       - HOST_DOMAIN=http://localhost
       - PORT=3030
-  
-  match_server_2:
-    build:
-      context: match_server
-      dockerfile: Dockerfile
-      target: prod
-    ports:
-      - "3031:3031"
-    env_file:
-      - match_server/.env.production
-    environment:
-      - SESSION_EXPIRY=15
-      - HOST_DOMAIN=http://localhost
-      - PORT=3031
-  
+
   frontend:
     build:
       dockerfile: Dockerfile
@@ -63,11 +49,9 @@ services:
     depends_on:
       - frontend
       - backend
-      - match_server_1
-      - match_server_2
+      - match_server
     ports:
       - '80:80'
       - '443:443'
     volumes:
-      - ./nginx/prod/default.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/prod/certs:/etc/nginx/certs/
+      - ./nginx/dev/default.conf:/etc/nginx/conf.d/default.conf

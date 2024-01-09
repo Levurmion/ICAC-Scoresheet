@@ -21,7 +21,6 @@ import {
 } from "./fixtures";
 import useSupabaseBasicClient from "../../lib/supabase/useSupabaseBasicClient";
 const io = require("socket.io-client");
-const dotenv = require('dotenv')
 
 // TEST DATA
 const testMatchId = "match:test-match-fake-id-001";
