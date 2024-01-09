@@ -110,7 +110,7 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
             if (sessionId) {
                 // remove reservation
                 await redisClient.DEL(`reservation:${tokenPayload.match_uuid}:${authToken.id}`)
-                saveDataIntoSocket(socket, tokenPayload.match_uuid, authToken.id, sessionId, accessToken.role);
+                saveDataIntoSocket(socket, tokenPayload.match_uuid, authToken.id, sessionId, tokenPayload.role);
                 next();
             } else {
                 return next(new Error("Failed to set a new session."));
