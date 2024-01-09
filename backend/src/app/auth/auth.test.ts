@@ -4,7 +4,7 @@ import { userSignIn, userSignUp } from "../../lib/utilities"
 const supertest = require('supertest')
 const agent = supertest.agent
 
-const userAgent = agent('http://localhost:8001/api')
+const userAgent = agent('http://localhost:80/api')
 
 describe('Testing /auth Endpoints', () => {
 

@@ -7,6 +7,7 @@ import Match from "./classes/Match";
 import redisClient from "./redis/redisClient";
 
 const cookie = require("cookie")
+const dotenv = require('dotenv').config() 
 
 // authentication middleware
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
@@ -30,7 +31,7 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
     // permit access for development
     const { devToken } = socket.handshake.auth
     console.log(devToken)
-    if (devToken) {
+    if (devToken && process.env.NODE_ENV === "development") {
         console.log('connecting with devToken')
         const devUserSession: UserSession<"archer"> = {
             match_id: devToken.match_uuid,
@@ -47,13 +48,13 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
         const sessionExists = await Match.getSession(devToken.user_id, redisClient);
         console.log(sessionExists)
         if (sessionExists) {
-            saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, Match.createUserSessionId(devToken.user_id));
+            saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, Match.createUserSessionId(devToken.user_id), "archer");
             return next()
         }
 
         const sessionId = await Match.setSession(devUserSession, redisClient);
         if (sessionId) {
-            saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, sessionId);
+            saveDataIntoSocket(socket, devToken.match_uuid, devToken.user_uuid, sessionId, "archer");
             return next();
         }
     }
@@ -79,7 +80,7 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
 
     if (userSession) {
         const sessionId = Match.createUserSessionId(userId)
-        saveDataIntoSocket(socket, userSession.match_id, userId, sessionId);
+        saveDataIntoSocket(socket, userSession.match_id, userId, sessionId, userSession.role);
         next();
     } else if (accessToken) {
         // verify, throw error otherwise
@@ -109,7 +110,7 @@ export async function authenticateConnectionRequest (socket: Socket, next: (err?
             if (sessionId) {
                 // remove reservation
                 await redisClient.DEL(`reservation:${tokenPayload.match_uuid}:${authToken.id}`)
-                saveDataIntoSocket(socket, tokenPayload.match_uuid, authToken.id, sessionId);
+                saveDataIntoSocket(socket, tokenPayload.match_uuid, authToken.id, sessionId, accessToken.role);
                 next();
             } else {
                 return next(new Error("Failed to set a new session."));

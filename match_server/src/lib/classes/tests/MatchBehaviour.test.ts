@@ -1,8 +1,9 @@
 import { RedisJSON } from "@redis/json/dist/commands";
 import { RedisClientType, createClient } from "redis";
-import * as types from "../types";
-import Match from "./Match";
-import redisClient from "../redis/redisClient";
+import * as types from "../../types";
+import Match from "../Match";
+import { Archer } from "../Archer";
+import redisClient from "../../redis/redisClient";
 import { beforeEach, afterEach } from "@jest/globals";
 
 // create new client because we are testing from outside the container
@@ -330,7 +331,7 @@ describe("Match Testing Suite", () => {
     });
 
     describe("Testing the Behaviour of Match Instances in the Lobby (open, full, and transition to submit)", () => {
-        const matchInstances: Array<Match> = [];
+        const archerInstances: Array<Archer> = [];
 
         beforeAll(async () => {
             await Match.createRedisMatch(testMatchId, testMatch, testClient);
@@ -346,20 +347,20 @@ describe("Match Testing Suite", () => {
         test("Match Instances Can Be Created for Users with Active Sessions", async () => {
             for (const userSession of testUserSessions) {
                 const userId = userSession.user_id;
-                matchInstances.push((await Match.initMatchForUser(userId, testClient)) as Match);
+                archerInstances.push((await Archer.initArcher(userId, testClient)) as Archer);
             }
-            for (const matchInstance of matchInstances) {
-                expect(matchInstance).toBeInstanceOf(Match);
+            for (const archerInstance of archerInstances) {
+                expect(archerInstance).toBeInstanceOf(Archer);
             }
         });
 
         test("Match Instances Cannot Be Created Without an Active Session", async () => {
-            const noSessionInstance = await Match.initMatchForUser(extraUserId, testClient);
+            const noSessionInstance = await Archer.initArcher(extraUserId, testClient);
             expect(noSessionInstance).toBe(null);
         });
 
         test("Getter Instance Methods Wrap Static Methods But Ties Responses to the Instance's Match ID", async () => {
-            const firstUser = matchInstances[0];
+            const firstUser = archerInstances[0];
             expect(await firstUser.getNumParticipants()).toBe(4);
             expect((await firstUser.getRedisMatch()).name).toEqual(testMatch.name);
             expect(await firstUser.getSession()).toEqual(testUserSessions[0]);
@@ -374,14 +375,14 @@ describe("Match Testing Suite", () => {
             expect(firstUser.matchId).toBe(undefined);
             expect(firstUser.userId).toBe(undefined);
 
-            matchInstances.shift();
+            archerInstances.shift();
         });
 
         test("Users Can Ready But Match Will Not Move to Submit Unless it Is Full", async () => {
-            for (const matchInstance of matchInstances) {
-                await matchInstance.setReady();
+            for (const archerInstance of archerInstances) {
+                await archerInstance.setReady();
             }
-            const matchState = await matchInstances[0].getState();
+            const matchState = await archerInstances[0].getState();
             expect(matchState).toEqual({
                 current_state: "open",
                 previous_state: "full",
@@ -389,10 +390,10 @@ describe("Match Testing Suite", () => {
         });
 
         test("Users Can Unready", async () => {
-            for (const matchInstance of matchInstances) {
-                await matchInstance.setUnready();
+            for (const archerInstance of archerInstances) {
+                await archerInstance.setUnready();
             }
-            const participants = await matchInstances[0].getParticipants();
+            const participants = await archerInstances[0].getParticipants() as types.UserSession<types.MatchRole>[];
             for (const participant of participants) {
                 expect(participant.ready).toBe(false);
             }
@@ -400,14 +401,14 @@ describe("Match Testing Suite", () => {
 
         test("Match moves to submit when it is full and all users are ready", async () => {
             await Match.setSession(testUserSessions[0], testClient);
-            matchInstances.unshift((await Match.initMatchForUser(testUserSessions[0].user_id, testClient)) as Match);
-            const matchState = await matchInstances[0].getState();
+            archerInstances.unshift((await Archer.initArcher(testUserSessions[0].user_id, testClient)) as Archer);
+            const matchState = await archerInstances[0].getState();
             expect(matchState).toEqual({
                 current_state: "full",
                 previous_state: "open",
             });
-            for (const matchInstance of matchInstances) {
-                await matchInstance.setReady();
+            for (const archerInstance of archerInstances) {
+                await archerInstance.setReady();
             }
             const newMatchState = await Match.getState(testMatchId, testClient);
             expect(newMatchState).toEqual({
@@ -418,7 +419,7 @@ describe("Match Testing Suite", () => {
     });
 
     describe("Testing the Behaviour of Match Setup", () => {
-        const matchInstances: Array<Match> = [];
+        const archerInstances: Array<Archer> = [];
         const matchSubmissionMap = {
             "user-004": "match-session:user-001",
             "user-001": "match-session:user-002",
@@ -451,9 +452,9 @@ describe("Match Testing Suite", () => {
             await Match.createRedisMatch(testMatchId, testMatch, testClient);
             for (const testSession of testUserSessions) {
                 await Match.setSession(testSession, testClient);
-                const matchInstance = (await Match.initMatchForUser(testSession.user_id, testClient)) as Match;
-                await matchInstance.setReady();
-                matchInstances.push(matchInstance);
+                const archerInstance = (await Archer.initArcher(testSession.user_id, testClient)) as Archer;
+                await archerInstance.setReady();
+                archerInstances.push(archerInstance);
             }
         });
 
@@ -470,10 +471,10 @@ describe("Match Testing Suite", () => {
         });
 
         test("A Disconnecting User Should Pause the Match", async () => {
-            const firstUser = matchInstances[0];
-            const secondUser = matchInstances[1];
-            await firstUser.setDisconnect();
-            await secondUser.setDisconnect();
+            const firstUser = archerInstances[0];
+            const secondUser = archerInstances[1];
+            await firstUser.setDisconnect(60);
+            await secondUser.setDisconnect(60);
             const matchState = await Match.getState(testMatchId, testClient);
             expect(matchState).toEqual({
                 current_state: "paused",
@@ -484,8 +485,8 @@ describe("Match Testing Suite", () => {
         });
 
         test("When all disconnected users reconnect, the Match should unpause and revert to its previous state", async () => {
-            const firstUser = matchInstances[0];
-            const secondUser = matchInstances[1];
+            const firstUser = archerInstances[0];
+            const secondUser = archerInstances[1];
             await firstUser.setConnect();
             expect(await firstUser.getState()).toEqual({
                 current_state: "paused",
@@ -506,38 +507,38 @@ describe("Match Testing Suite", () => {
         });
 
         test("Users Can Get Submission Forms", async () => {
-            const firstUser = matchInstances[0];
-            const thirdUser = matchInstances[2];
+            const firstUser = archerInstances[0];
+            const thirdUser = archerInstances[2];
             expect(await firstUser.getEndSubmissionForm()).toEqual(firstUserSubmissionForm);
             expect(await thirdUser.getEndSubmissionForm()).toEqual(thirdUserSubmissionForm);
         });
     });
 
     describe("Testing the Behaviour of End Submissions", () => {
-        let matchInstances: Match[] = [];
+        let archerInstances: Array<Archer> = [];
 
         // set up to submit stage before each test
         beforeEach(async () => {
             await Match.createRedisMatch(testMatchId, testMatch, testClient);
             for (const testSession of testUserSessions) {
                 await Match.setSession(testSession, testClient);
-                const matchInstance = (await Match.initMatchForUser(testSession.user_id, testClient)) as Match;
-                await matchInstance.setReady();
-                matchInstances.push(matchInstance);
+                const archerInstance = (await Archer.initArcher(testSession.user_id, testClient)) as Archer;
+                await archerInstance.setReady();
+                archerInstances.push(archerInstance);
             }
         });
 
         // reset after each test
         afterEach(async () => {
-            matchInstances = [];
+            archerInstances = [];
             await Match.deleteRedisMatch(testMatchId, testClient);
         });
 
         test("Users Can Submit Arrows", async () => {
-            for (const user of matchInstances) {
+            for (const user of archerInstances) {
                 await user.submitEndArrows([9, 9, 10]);
             }
-            const firstUser = matchInstances[0];
+            const firstUser = archerInstances[0];
             const firstUserScores = await firstUser.getScores();
             expect(firstUserScores).toEqual([
                 { score: 10, submitted_by: "user-004" },
@@ -547,38 +548,48 @@ describe("Match Testing Suite", () => {
         });
 
         test("Users Should Not Be Able to Submit More/Less Arrows Than What The Match Specifies Per End", async () => {
-            const firstUser = matchInstances[0];
-            expect(async () => {
-                await firstUser.submitEndArrows([9, 9, 10, 10]);
-            }).rejects.toThrow("End submission rejected: Number arrows submitted greater than arrows_per_end.");
-            expect(async () => {
-                await firstUser.submitEndArrows([9, 9]);
-            }).rejects.toThrow("End submission rejected: Number arrows submitted less than arrows_per_end.");
+            const firstUser = archerInstances[0];
+            try {
+                await firstUser.submitEndArrows([9, 9, 10, 10])
+            } catch (error: any) {
+                expect(error.message).toBe("End submission rejected: Number arrows submitted greater than arrows_per_end.")
+            }
+
+            try {
+                await firstUser.submitEndArrows([9, 9])
+            } catch (error: any) {
+                expect(error.message).toBe("End submission rejected: Number arrows submitted less than arrows_per_end.")
+            }
         });
 
         test("Users Should Not Be Able to Submit Invalid Scores", async () => {
-            const firstUser = matchInstances[0];
-            expect(async () => {
-                await firstUser.submitEndArrows([9, 9, 11] as any[]);
-            }).rejects.toThrow("End submission rejected: Scores must be between 0-10 or an X.");
-            expect(async () => {
-                await firstUser.submitEndArrows([9, 9, "A"] as any[]);
-            }).rejects.toThrow("End submission rejected: Scores must be between 0-10 or an X.");
+            const firstUser = archerInstances[0];
+            try {
+                await firstUser.submitEndArrows([9, 9, 11] as any[])
+            } catch (error: any) {
+                expect(error.message).toBe("End submission rejected: Scores must be between 0-10 or an X.")
+            }
+
+            try {
+                await firstUser.submitEndArrows([9, 9, "A"] as any[])
+            } catch (error: any) {
+                expect(error.message).toBe("End submission rejected: Scores must be between 0-10 or an X.")
+            }
         });
 
         test("Match Should Move To Confirmation Stage Once All Users Have Submitted Scores For This End", async () => {
             // only half of users submitted
-            for (const user of matchInstances.slice(0, 2)) {
+            for (const user of archerInstances.slice(0, 2)) {
                 await user.submitEndArrows([9, 9, 10]);
             }
-            const firstUser = matchInstances[0];
+            const firstUser = archerInstances[0];
             const matchState = await firstUser.getState();
             expect(matchState).toEqual({
                 current_state: "submit",
                 previous_state: "full",
             });
             // other half submits
-            for (const user of matchInstances.slice(2, 4)) {
+            for (const user of archerInstances.slice(2, 4)) {
                 await user.submitEndArrows([9, 9, 10]);
             }
             const confirmationMatchState = await firstUser.getState();
@@ -590,7 +601,7 @@ describe("Match Testing Suite", () => {
     });
 
     describe("Testing the Behaviour of End Confirmation", () => {
-        let matchInstances: Match[] = [];
+        let archerInstances: Array<Archer> = [];
         const firstEndTotal: types.EndTotals = {
             current_end: 1,
             arrows_shot: 3,
@@ -843,18 +854,18 @@ describe("Match Testing Suite", () => {
             await Match.createRedisMatch(testMatchId, testMatch, testClient);
             for (const testSession of testUserSessions) {
                 await Match.setSession(testSession, testClient);
-                const matchInstance = (await Match.initMatchForUser(testSession.user_id, testClient)) as Match;
-                await matchInstance.setReady();
-                matchInstances.push(matchInstance);
+                const archerInstance = (await Archer.initArcher(testSession.user_id, testClient)) as Archer;
+                await archerInstance.setReady();
+                archerInstances.push(archerInstance);
             }
-            for (const user of matchInstances) {
+            for (const user of archerInstances) {
                 await user.submitEndArrows([9, 9, 10]);
             }
         });
 
         // reset after each test
         afterEach(async () => {
-            matchInstances = [];
+            archerInstances = [];
             await Match.deleteRedisMatch(testMatchId, testClient);
         });
 
@@ -867,7 +878,7 @@ describe("Match Testing Suite", () => {
         });
 
         test("Users Can Get Everyone's End Totals", async () => {
-            for (const user of matchInstances) {
+            for (const user of archerInstances) {
                 const thisEndTotal = await user.getEndTotals();
                 expect(thisEndTotal).toEqual(firstEndTotal);
             }
@@ -875,17 +886,17 @@ describe("Match Testing Suite", () => {
 
         test("When All Users Confirm, Match Moves To Second End", async () => {
             // only half of users confirm
-            for (const user of matchInstances.slice(0, 2)) {
+            for (const user of archerInstances.slice(0, 2)) {
                 await user.confirmEnd();
             }
-            const firstUser = matchInstances[0];
+            const firstUser = archerInstances[0];
             const matchState = await firstUser.getState();
             expect(matchState).toEqual({
                 current_state: "confirmation",
                 previous_state: "submit",
             });
             // other half confirms
-            for (const user of matchInstances.slice(2, 4)) {
+            for (const user of archerInstances.slice(2, 4)) {
                 await user.confirmEnd();
             }
             const confirmationMatchState = await firstUser.getState();
@@ -899,11 +910,11 @@ describe("Match Testing Suite", () => {
 
         test("When one of users disagree, the confirm/reject methods return reject", async () => {
             // only 3 of users confirm
-            for (const user of matchInstances.slice(0, 3)) {
+            for (const user of archerInstances.slice(0, 3)) {
                 const confirmAction = await user.confirmEnd();
                 expect(confirmAction).toBe("waiting");
             }
-            const lastUser = matchInstances[3];
+            const lastUser = archerInstances[3];
             const lastUserConfirmAction = await lastUser.rejectEnd();
             expect(lastUserConfirmAction).toEqual("reject");
 
@@ -912,7 +923,7 @@ describe("Match Testing Suite", () => {
             expect(match.current_end).toBe(1);
 
             // check that arrows were reset
-            const participants = await lastUser.getParticipants();
+            const participants = await lastUser.getParticipants() as types.UserSession<types.MatchRole>[];
             for (const participant of participants) {
                 expect(participant.scores).toEqual([]);
             }
@@ -921,37 +932,37 @@ describe("Match Testing Suite", () => {
     });
 
     describe("Testing the Behaviour of A Finished Match", () => {
-        let matchInstances: Match[] = []
+        let archerInstances: Array<Archer> = []
 
         // set up to confirmation stage before each test
         beforeEach(async () => {
             await Match.createRedisMatch(testMatchId, testMatch, testClient);
             for (const testSession of testUserSessions) {
                 await Match.setSession(testSession, testClient);
-                const matchInstance = (await Match.initMatchForUser(testSession.user_id, testClient)) as Match;
-                await matchInstance.setReady();
-                matchInstances.push(matchInstance);
+                const archerInstance = (await Archer.initArcher(testSession.user_id, testClient)) as Archer;
+                await archerInstance.setReady();
+                archerInstances.push(archerInstance);
             }
             // get it to the final end
             for (let end = 1; end <= 2; end ++) {
                 // submit
-                for (const user of matchInstances) {
+                for (const user of archerInstances) {
                     await user.submitEndArrows([9, 9, 10]);
                 }
                 // confirm
-                for (const user of matchInstances) {
+                for (const user of archerInstances) {
                     await user.confirmEnd();
                 }
             }
             // submit arrows for the 3rd end
-            for (const user of matchInstances) {
+            for (const user of archerInstances) {
                 await user.submitEndArrows([9, 9, 10]);
             }
         });
 
         // reset after each test
         afterEach(async () => {
-            matchInstances = [];
+            archerInstances = [];
             await Match.deleteRedisMatch(testMatchId, testClient);
         });
 
@@ -961,7 +972,7 @@ describe("Match Testing Suite", () => {
             expect(match.current_end).toBe(3)
 
             // check running total
-            const firstUser = matchInstances[0]
+            const firstUser = archerInstances[0]
             const scores = await firstUser.getScores()
             expect(Match.calculateArrowTotal(scores)).toBe(84)
 
@@ -973,10 +984,10 @@ describe("Match Testing Suite", () => {
 
         test("Successful Confirmation of the Final End Moves the Match to the Finished State", async () => {
             // confirm
-            for (const user of matchInstances) {
+            for (const user of archerInstances) {
                 await user.confirmEnd();
             }
-            const firstUser = matchInstances[0]
+            const firstUser = archerInstances[0]
             const matchState = await firstUser.getState()
             expect(matchState).toEqual({
                 current_state: "finished",
@@ -986,10 +997,10 @@ describe("Match Testing Suite", () => {
 
         test("Failed Confirmation of the Final End Moves the Match Maintains the Match in The Submit State", async () => {
             // reject
-            for (const user of matchInstances) {
+            for (const user of archerInstances) {
                 await user.rejectEnd();
             }
-            const firstUser = matchInstances[0]
+            const firstUser = archerInstances[0]
             const matchState = await firstUser.getState()
             const match = await firstUser.getRedisMatch()
             expect(match.current_end).toBe(3)
@@ -1002,7 +1013,7 @@ describe("Match Testing Suite", () => {
 
     describe("Testing the Behaviour of Finished Matches", () => {
 
-        let matchInstances: Match[] = []
+        let archerInstances: Array<Archer> = []
         const expectedMatchReport = {
             host: "57ab3332-c2fe-4233-9fcb-df1387de331e",
             name: "Test Match",
@@ -1012,8 +1023,7 @@ describe("Match Testing Suite", () => {
                     user_id: "user-001",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
@@ -1023,15 +1033,14 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
                         { score: 9, submitted_by: "user-004" },
-                    ]
+                    ])
                 },
                 {
                     round: "Portsmouth",
                     user_id: "user-002",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
@@ -1041,15 +1050,14 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
                         { score: 9, submitted_by: "user-001" },
-                    ]
+                    ])
                 },
                 {
                     round: "Portsmouth",
                     user_id: "user-003",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
@@ -1059,15 +1067,14 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
                         { score: 9, submitted_by: "user-002" },
-                    ]
+                    ])
                 },
                 {
                     round: "Portsmouth",
                     user_id: "user-004",
                     arrows_shot: 9,
                     arrows_per_end: 3,
-                    num_ends: 3,
-                    scoresheet: [
+                    scoresheet: JSON.stringify([
                         { score: 10, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
@@ -1077,7 +1084,7 @@ describe("Match Testing Suite", () => {
                         { score: 10, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
                         { score: 9, submitted_by: "user-003" },
-                    ]
+                    ])
                 }
             ]
         } as types.MatchReport
@@ -1087,18 +1094,18 @@ describe("Match Testing Suite", () => {
             await Match.createRedisMatch(testMatchId, testMatch, testClient);
             for (const testSession of testUserSessions) {
                 await Match.setSession(testSession, testClient);
-                const matchInstance = (await Match.initMatchForUser(testSession.user_id, testClient)) as Match;
-                await matchInstance.setReady();
-                matchInstances.push(matchInstance);
+                const archerInstance = (await Archer.initArcher(testSession.user_id, testClient)) as Archer;
+                await archerInstance.setReady();
+                archerInstances.push(archerInstance);
             }
             // finish match
             for (let end = 1; end <= 3; end ++) {
                 // submit
-                for (const user of matchInstances) {
+                for (const user of archerInstances) {
                     await user.submitEndArrows([9, 9, 10]);
                 }
                 // confirm
-                for (const user of matchInstances) {
+                for (const user of archerInstances) {
                     await user.confirmEnd();
                 }
             }
@@ -1106,7 +1113,7 @@ describe("Match Testing Suite", () => {
 
         // reset after each test
         afterEach(async () => {
-            matchInstances = [];
+            archerInstances = [];
             await Match.deleteRedisMatch(testMatchId, testClient);
         });
 
@@ -1124,9 +1131,9 @@ describe("Match Testing Suite", () => {
         })
 
         test("Only One User can Retrieve the Match Report", async () => {
-            const firstUser = matchInstances[0]
+            const firstUser = archerInstances[0]
             const matchReports = []
-            for (const user of matchInstances) {
+            for (const user of archerInstances) {
                 matchReports.push(await user.getMatchReport())
             }
 

@@ -4,7 +4,7 @@ import { persistentUserSignIn, testUsersSignIn } from "../../lib/utilities"
 const supertest = require('supertest')
 const agent = supertest.agent
 
-const userAgent = agent('http://localhost:8001/api')
+const userAgent = agent('http://localhost:80/api')
 
 // test user
 const testUserDetails = {
@@ -137,9 +137,9 @@ describe("Testing /matches endpoints", () => {
 
         // initialize 3 user agents
         const userAgents = [
-            agent('http://localhost:8001/api'),
-            agent('http://localhost:8001/api'),
-            agent('http://localhost:8001/api')
+            agent('http://localhost:80/api'),
+            agent('http://localhost:80/api'),
+            agent('http://localhost:80/api')
         ]
 
         // sign in all 3

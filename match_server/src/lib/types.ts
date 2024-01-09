@@ -204,4 +204,5 @@ export interface SocketData {
     sessionId: string;
     matchId: string;
     userId: string;
+    role: MatchRole
 }

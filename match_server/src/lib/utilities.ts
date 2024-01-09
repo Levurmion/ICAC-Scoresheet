@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import useSupabaseClient from "./supabase/useSupabaseClient"
-import { RedisMatch, UserSession, MatchTokenPayload, UserSignInCredentials, UserSignUpCredentials } from "./types"
+import { RedisMatch, UserSession, MatchTokenPayload, UserSignInCredentials, UserSignUpCredentials, MatchRole } from "./types"
 import redisClient from "./redis/redisClient"
 import 'dotenv/config'
 import EventEmitter = require("events")
@@ -152,11 +152,12 @@ export async function setSession (authToken: User, accessToken: MatchTokenPayloa
     }
 }
 
-export function saveDataIntoSocket (socket: Socket, matchId: string, userId: string, sessionId: string) {
+export function saveDataIntoSocket (socket: Socket, matchId: string, userId: string, sessionId: string, role: MatchRole) {
     socket.data = {
         matchId,
         userId,
-        sessionId
+        sessionId,
+        role
     }
 }
 
