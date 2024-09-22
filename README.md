@@ -145,16 +145,6 @@ However, only use these ports for debugging purposes. For development, connect t
 
 Therefore, all client-side API calls should be prefixed with the `/api/` path so that NGINX can proxy the request to the backend service.
 
-## Creating Pull Requests
-
-Once finished, remember to create a pull request with a descriptive message describing what it is you worked on. Include a README to document the work. For example, if you built a React component, give a couple words on:
-- The main features of the component
-- How the interface works
-- Key limitations
-- Proposed future extensions (if any)
-- Preferrably an example
-
-
 
 
 
